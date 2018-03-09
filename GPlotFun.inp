@@ -1,0 +1,480 @@
+/* Gnu GRETL + PLOT LIBRARY */
+
+set verbose off
+
+# helper
+function strings s2a (matrix y)
+    # put numerical values into an array of strings
+    n = rows(y)
+    strings S=array(n)
+    loop i=1..n -q
+        sprintf s "%d", y[i]
+        S[i] = "@s"
+    endloop
+    return S
+end function
+# helper
+function strings asdate (strings S "stringified $obsdate array",
+      int dform[0:5:1] "0=Y/M/D, 1=y/M/D, 2=Y/M, 3=y/M, 4=M/D, 5=M/y")
+    n=nelem(S)
+    strings D = array(n)
+    loop i=1..n -q
+        string s = S[i]
+        string y = substr(s,1,4)			# year
+        string m = substr(s,5,6)			# month
+        string d = substr(s,7,8)			# day
+        if dform==0
+            D[i] = sprintf("%s/%s/%s",y,m,d)
+        elif dform==1
+            y = substr(y,3,4)
+            D[i] = sprintf("%s/%s/%s",y,m,d)
+        elif dform==2
+            D[i] = sprintf("%s/%s",y,m)
+        elif dform==3
+            y = substr(y,3,4)
+            D[i] = sprintf("%s/%s",y,m)
+        elif dform==4
+            D[i] = sprintf("%s/%s",m,d)
+        elif dform==5
+            y = substr(y,3,4)
+            D[i] = sprintf("%s/%s",m,y)
+        endif        
+    endloop
+    return D
+end function
+
+
+#private
+function void GnuPlotFun(bundle *b, string which)   
+
+    #--------------
+    # MAIN FUNCTION
+    #--------------
+
+    b.which=which
+    # 1st checks for basic information
+    if !inbundle(b, "fname")
+        funcerr "Provide a file name: 'name.TYPE'"
+    endif
+    # FIXME: maybe StrLeg is not needed being specified
+    if !inbundle(b, "StrLeg")	#TODO: rename to Legend
+        funcerr "Provide an array of legend names"
+    endif
+
+    # Define default values
+    if !inbundle(b, "dateform")
+        b.dateform = 1
+    endif
+    if !inbundle(b, "nstep")
+        b.nstep = 4
+    endif
+    if !inbundle(b, "fontsize")
+        b.fontsize = 14
+    endif
+    if !inbundle(b, "legend")
+        b.legend = 1
+    endif
+    if !inbundle(b, "poslegend")
+        b.poslegend = 0
+    endif
+    if !inbundle(b, "grid")
+        b.grid = 0
+    endif
+    if !inbundle(b, "ps")
+        b.ps = 0.5	#*ones(12,1)
+    endif
+    if !inbundle(b, "pival")
+        b.pival = 4
+    endif
+    if !inbundle(b, "height")
+        b.height = 480
+    endif
+    if !inbundle(b, "width")
+        b.width = 640
+    endif
+    if !inbundle(b, "colors")
+        #b.colors = seq(1,12)
+        strings colors = defarray("black", "black", "black", "grey", "grey", "grey", "grey", "black", "black", "black", "black", "black")	# color string        
+        b.colors = colors
+    endif
+    if !inbundle(b, "Vcolors")		# for vertical lines
+        strings Vcolors = defarray("black", "black", "black", "black", "black", "black")	# color string
+        b.Vcolors = Vcolors
+    endif    
+    if !inbundle(b, "linewidth")
+        b.linewidth = ones(12,1)	# default lw=1
+    endif
+    if !inbundle(b, "dashtype")
+        b.dashtype = ones(12,1)		# default: all solid lines
+    endif
+    if !inbundle(b, "Vlinewidth")   # for vertical lines
+        b.Vlinewidth = ones(12,1)	# default lw=1
+    endif
+    if !inbundle(b, "Vdashtype")	# for vertical lines
+        b.Vdashtype = ones(12,1)		# default: all solid lines
+    endif
+    if !inbundle(b, "pattern")
+        # define pattern style: https://stackoverflow.com/questions/19412382/gnuplot-line-types
+        b.pat = {0,4,2,3,8}    	# pattern orderings
+    endif
+
+    # Call plot function
+    if which == "ShadedLine"
+        doShadedLine(&b)
+    elif which == "StackedBar"
+        doStackedBar(&b)
+        #elif which == "ShadedLine"
+        #    doShadedLine(&b)
+    endif
+            
+end function
+    
+# helper function
+function void GPFbasics (bundle *b)
+    # Write basic settings which hold for all figure types
+    set warnings off
+    
+    if inbundle(b, "obsdate")
+        # re-define obsdate as array of strings
+        strings S = s2a(b.obsdate)        
+        strings b.Date = asdate(S,b.dateform)
+    endif
+    
+    tmpfile = sprintf("%s/gplotfun_tmp_%g.gp", $dotdir, int(randgen1(u,1,10^6)))
+    b.tmpfile = tmpfile
+    outfile @tmpfile --write    
+    
+    # terminal settings
+    printf "set encoding utf8\n"    
+    # Set resolution
+    if b.height && b.width
+        scalar slong = strlen(b.fname)
+        string ftype = substr(b.fname,(slong-2),slong)	# retrive last 3 characters-->filetype        
+        if ftype=="png" || b.fname=="display"
+            sprintf optTERM "set term pngcairo size %d,%d enhanced font 'serif,%d'\n", b.width,b.height,b.fontsize
+        elif ftype=="pdf"
+            sprintf optTERM "set term pdf size %d,%d enhanced font 'serif,%d'\n", b.width,b.height,b.fontsize
+        elif ftype=="eps"
+            sprintf optTERM "set term eps size %.2f,%.2f font 'serif,%d'\n", b.width,b.height,b.fontsize	# NOTE: width, height must be in inches!
+        elif ftype=="svg"
+            sprintf optTERM "set term svg size %d,%d enhanced font 'serif,%d'\n", b.width,b.height,b.fontsize                        
+        else
+            funcerr "*** Setting resolution is only allowed for png or pdf files. ***"
+        endif
+    endif
+    printf "%s", optTERM
+
+    # Options
+    sprintf PS "%.2f", b.ps
+    #sprintf LW "%.2f", lw
+    sprintf FS "%d", b.fontsize
+    sprintf PIV "%d", b.pival
+
+    # Legend
+    if b.legend==0
+        sprintf strLEG "set nokey"
+    else
+        if b.poslegend == 0
+            string strLEG = "set key outside below horizontal"
+        elif b.poslegend == 1
+            string strLEG = "set key top left"
+        elif b.poslegend == 2
+            string strLEG = "set key top right"
+        elif b.poslegend == 3
+            string strLEG = "set key bottom left"
+        elif b.poslegend == 4
+            string strLEG = "set key bottom right"
+        endif
+        printf "set key opaque\n"
+    endif
+    printf "%s \n", strLEG
+
+    # GRID
+    if b.grid==0
+        printf "unset grid\n"
+    else
+        #add a slight grid to make it easier to follow the exact position of the curves
+        printf "set style line 12 lc rgb 'black' lt 0 lw 1 \n"	# light grey color (#808080)
+        printf "set grid back ls 12 \n"
+    endif
+            
+    # XTICS
+    #printf "set xtics 500 border in scale 1,0 rotate by -90 \n"
+    printf "set xtics border out scale 1,0.5 nomirror rotate by -90\n"	#autojustify
+    
+    # MXTICS
+    printf "unset mxtics\n"		# don't print minor xtics
+    # Y tics    
+    printf "set ytics nomirror border out\n"
+    if inbundle(b, "LineLHSMat")
+        printf "set y2tics nomirror border out\n"
+    endif    
+    
+    # yrange settings
+    if inbundle(b,"ymin") && inbundle(b,"ymax")
+        printf "set yrange[%.5f:%.5f] \n", b.ymin, b.ymax
+    elif inbundle(b,"ymin") && !inbundle(b,"ymax")
+        printf "set yrange[%.5f:] \n", b.ymin
+    elif !inbundle(b,"ymin") && inbundle(b,"ymax")
+        printf "set yrange[:%.5f] \n", b.ymax
+    else
+        #printf "set yrange[:] \n"
+    endif
+
+    # Labels + title
+    if inbundle(b, "xlab")
+        printf "set xlabel '%s'\n", b.xlab
+    endif
+    if inbundle(b, "ylab")
+        printf "set ylabel '%s'\n", b.ylab
+    endif
+    if inbundle(b, "title")
+        printf "set title '%s'\n", b.title
+    endif
+  
+    # Make graph nicer
+    #2) put the border more to the background by applying it
+    # only on the left and bottom part and put it and the tics in gray
+    printf "set style line 11 lc rgb 'black' lt 1 \n"	# #808080
+    #printf "set border 3 back ls 11 \n"			# get rid of upper + left border    
+
+
+    # VShadMat: Vertical, grey shaded areas
+    # pairs of starting/ending dates are put into a n by 2 matrix where
+    # col. refer to start/ending and rows to specific events
+    if inbundle(b, "VShadMat")
+        printf "set style rect fc lt -1 fs solid 0.45 noborder\n"
+        loop i=1..rows(b.VShadMat) -q
+            printf "set obj rect from %d, graph 0 to %d, graph 1\n", b.VShadMat[i,1],b.VShadMat[i,2]
+        endloop
+    endif
+
+    # VLineMat: Vertical (dashed) lines + LABELS
+    # provide a vector of dates (obsdate format) by a n by 1 matrix where
+    # rows refer to specific events
+    if inbundle(b, "VLineMat")
+        b.VLineMat = vec(b.VLineMat)
+        loop i=1..rows(b.VLineMat) -q            
+            printf "set arrow from %d, graph 0 to %d, graph 1 nohead lw %.1f lc rgb '%s' \
+            linetype $i dashtype %d front\n", b.VLineMat[i],b.VLineMat[i],b.Vlinewidth[i],b.Vcolors[i],b.Vdashtype[i]
+        endloop
+        # Add label to vertical lines
+        if inbundle(b,"ymax")
+            scalar y_max = b.ymax
+        else
+            loop i=1..3 -q
+                if i==1 && inbundle(b,"LineMat")
+                    matrix mat = b.LineMat
+                    scalar y_max = max(maxc(mat))
+                elif i==2 && inbundle(b,"LineLHSMat")
+                    mat = b.LineLHSMat
+                elif i==3 && inbundle(b,"StackMat")
+                    mat = sumr(b.StackMat)	# sum over all columns since we look at stacked values
+                endif
+                if i>1
+                    if max(maxc(mat))>y_max
+                        y_max = max(maxc(mat))
+                    endif
+                endif                
+            endloop
+        endif
+        scalar incr = y_max*0.02	# move label a bit higher (2% above max. value)
+        loop i=1..rows(b.VLineMat) -q
+            printf "set label '$i' at %d,%g point lt 0 center offset 0,%g \n", b.VLineMat[i],y_max,incr
+        endloop
+    endif
+    
+    outfile --close
+end function
+
+
+function void doStackedBar (bundle *b)
+    # StackMat = T by k matrix, k=separate bar plot (x1,...,xk), T=time dim.
+
+    if inbundle(b, "StackMat")
+        matrix mat = b.StackMat
+    else
+        funcerr "Warning: doShadedLine() requires at least matrix 'StackMat'!"
+    endif
+
+    GPFbasics(&b)	# Run basic settings
+    
+    tmpfile = b.tmpfile   
+    outfile @tmpfile --append
+    
+    # Set style
+    printf "set style data histogram \n"
+    printf "set style histogram rowstacked\n"    
+    # Colored vs. mono
+    #if mono==0
+    #    printf "set style fill solid border -1 \n"	# OR border -2 ??
+    #    printf "set style fill solid 0.35\n"
+    #else
+    printf "set style fill pattern 9 border -2\n"	# you can change pattern 'n'
+    # FIXME: For large datesets (many rows) one has to set "border -2"--WHY?
+    #endif
+
+    # write data block
+    printf "$data <<EOF\n"
+    loop i=1..rows(mat) -q
+        loop j=1..cols(mat) -q
+            printf "%g ", mat[i,j]
+        endloop
+        if inbundle(b, "Date")            
+            if i==1 || i % b.nstep == 0 #|| i==rows(mat)-15		# put xtics at 1st obs, every nstep obs. and last obs.
+                printf "%s", b.Date[i]
+            else
+                #printf "-1"		# put major tick for (almost) each  obs.                
+            endif
+        endif
+        printf "\n"
+    endloop
+    printf "EOF\n"
+    
+    # write plot specification
+    printf "plot \\\n"
+    loop j=1..cols(mat) -q
+        if j == 1 && inbundle(b, "Date")  # first date entry
+            k = cols(mat)+1
+            #printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle pattern %d ", k, k, StrLeg[j], pat[j]
+            printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5 lc rgb '%s'", k, k, b.StrLeg[j], b.colors[j]
+            #printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5", k, k, b.StrLeg[j]
+            #elif j == cols(mat) #&& exists(obsdate)	# last date entry
+            #    printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5", k, k, StrLeg[j]
+        else            
+            printf "$data using %d t '%s' fillstyle pattern %d lc rgb '%s'", j, b.StrLeg[j], b.pat[j], b.colors[j]
+            #printf "$data using %d t '%s' fillstyle pattern %d", j, b.StrLeg[j], b.pat[j]
+        endif
+        printf(j == cols(mat) ? "\n" : ", \\\n")
+    endloop
+
+    outfile --close
+    string fname = b.fname
+    gnuplot --input="@tmpfile" --output="@fname"
+
+end function
+
+function void doShadedLine (bundle *b)
+    # LineMat = draw horizonal lines
+    # CImat = draw horizonal shaded areas    
+
+    GPFbasics(&b)	# Run basic settings
+        
+    tmpfile = b.tmpfile   
+    outfile @tmpfile --append
+    
+    if inbundle(b, "LineMat")
+    else
+        funcerr "Warning: doShadedLine() requires at least matrix 'LineMat'!"
+    endif
+
+    # plot CIs
+    if inbundle(b, "CImat")
+        printf "set style fill transparent solid 0.95 noborder\n"		# degree of transparency
+    endif
+
+    printf "plot \\\n"
+    if inbundle(b, "CImat")	# Plot CI
+        printf "'-' using 1:2:3 t '' lc rgb '#dddddd' w filledcurve, \\\n"
+    endif
+    # Plot lines
+    crhs = cols(b.LineMat)
+    matrix MAT = b.LineMat
+    if inbundle(b, "LineLHSMat")
+        clhs = cols(b.LineLHSMat)
+        matrix MAT ~=b.LineLHSMat
+    endif
+    loop j=1..cols(MAT) -q
+        if j==1 && inbundle(b, "Date")
+            k = 2		# date strings are in the 2nd col.
+            printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+              t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", k, k, b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
+        else
+            if j<=crhs
+                printf "'-'using 1 t '%s' w lines linetype $j dashtype %d lc \
+                  rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
+            else
+                printf "'-'using 1 axes x1y2 t '%s' w lines linetype $j dashtype %d lc \
+                  rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
+            endif
+        endif
+        printf(j == cols(MAT) ? "\n" : ", \\\n")
+    endloop
+    # write data block for horizontal mat2=CImat shaded area
+    if inbundle(b, "CImat")
+        loop j=1..rows(b.CImat) -q		# CI
+            printf "$j %g %g\n", b.CImat[j,1], b.CImat[j,2]
+        endloop
+        printf "e\n"
+    endif
+
+    # Plot lines
+    loop i=1..cols(MAT) -q
+        loop j=1..rows(MAT) -q
+            if inbundle(b, "Date")
+                if i==1 && ( j==1 || j % b.nstep == 0)# || j==rows(b.LineMat) )		# put xtics at 1st obs, every nstep obs. and last obs.
+                    printf "%g %s\n", MAT[j,i], b.Date[j]
+                else
+                    #printf "%g -1\n", b.LineMat[j,i]	# put major tick (w.o. label) at each period
+                    printf "%g \n", MAT[j,i]		# don't put major tick if no label is provided
+                endif
+            else
+                #printf "%g -1\n", b.LineMat[j,i]
+                printf "%g \n", MAT[j,i]			# don't put major tick if no label is provided
+            endif
+        endloop
+        printf "e\n"
+    endloop
+
+    outfile --close
+    string fname = b.fname
+    gnuplot --input="@tmpfile" --output="@fname"
+end function
+
+
+########################################################
+/*
+# EXAMPLE
+open denmark.gdt -q
+bundle b = null
+matrix point = {LRM}
+matrix low = point.-2
+matrix up = point.+2
+
+# Optional information
+b.dashtype = {3,1,1}
+b.Vdashtype = {1,2,3}		# for vertical lines
+b.linewidth = {2,2.5,5,1,1,1,1}
+b.colors = defarray("black", "black", "black", "grey", "grey", "grey", "grey", "black", "black", "black", "black", "black")	# color string
+b.nstep = 12
+b.dateform = 5
+b.fontsize = 11
+b.legend = 1
+b.posleg = 0
+b.grid = 0
+b.ps = 0
+b.pival = 1
+b.height = 320
+b.width = 540
+
+# needed for Shaded line plot
+b.obsdate = {$obsdate}
+# CI-Shaded Plot +  Line Plot + Vertical shaded area
+b.LineMat = (point~1.2.*point)	# T by k matrix of line plots, RHS
+b.LineLHSMat = point*0.4		# T by k matrix of line plots, LHS
+b.CImat = low~up				# T by 2 matrix of shaded horizonal area
+b.VShadMat = {obsnum(1977:1)} ~ {obsnum(1980:2)}	# n by 2 matrox of shaded area between 2 dates
+b.VLineMat = {obsnum(1981:1)} ~ {obsnum(1985:4)}
+b.ymax = 15
+b.StrLeg = defarray("LRM", "1.2*LRM", "0.4*LRM")
+string fname = sprintf("%s/testplot.png", $dotdir)	# "display"
+b.fname = fname
+GnuPlotFun(&b, "ShadedLine")
+
+# Stacked Bar Plot
+b.StackMat = b.LineMat
+delete b.VShadMat
+string fname = sprintf("%s/StackBar.png", $dotdir)	# "display"
+b.fname = fname
+GnuPlotFun(&b, "StackedBar")
+*/
