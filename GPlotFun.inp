@@ -74,7 +74,7 @@ function void GnuPlotFun(bundle *b, string which)
     if !inbundle(b, "legend")
         b.legend = 1
     endif
-    if !inbundle(b, "poslegend")
+    if !inbundle(b, "posleg")
         b.poslegend = 0
     endif
     if !inbundle(b, "grid")
@@ -159,7 +159,7 @@ function void GPFbasics (bundle *b)
         elif ftype=="svg"
             sprintf optTERM "set term svg size %d,%d enhanced font 'serif,%d'\n", b.width,b.height,b.fontsize                        
         else
-            funcerr "*** Setting resolution is only allowed for png or pdf files. ***"
+            funcerr "*** Setting resolution is only allowed for png, pdf, eps and svg files. ***"
         endif
     endif
     printf "%s", optTERM
