@@ -75,7 +75,7 @@ function void GnuPlotFun(bundle *b, string which)
         b.legend = 1
     endif
     if !inbundle(b, "posleg")
-        b.poslegend = 0
+        b.posleg = 0
     endif
     if !inbundle(b, "grid")
         b.grid = 0
@@ -174,15 +174,15 @@ function void GPFbasics (bundle *b)
     if b.legend==0
         sprintf strLEG "set nokey"
     else
-        if b.poslegend == 0
+        if b.posleg == 0
             string strLEG = "set key outside below horizontal"
-        elif b.poslegend == 1
+        elif b.posleg == 1
             string strLEG = "set key top left"
-        elif b.poslegend == 2
+        elif b.posleg == 2
             string strLEG = "set key top right"
-        elif b.poslegend == 3
+        elif b.posleg == 3
             string strLEG = "set key bottom left"
-        elif b.poslegend == 4
+        elif b.posleg == 4
             string strLEG = "set key bottom right"
         endif
         printf "set key opaque\n"
@@ -236,8 +236,9 @@ function void GPFbasics (bundle *b)
     #2) put the border more to the background by applying it
     # only on the left and bottom part and put it and the tics in gray
     printf "set style line 11 lc rgb 'black' lt 1 \n"	# #808080
-    #printf "set border 3 back ls 11 \n"			# get rid of upper + left border    
-
+    if inbundle(b, "noborder")
+        printf "set border 3 back ls 11 \n"			# get rid of upper + left border    
+    endif    
 
     # VShadMat: Vertical, grey shaded areas
     # pairs of starting/ending dates are put into a n by 2 matrix where
