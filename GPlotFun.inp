@@ -371,7 +371,7 @@ function void doShadedLine (bundle *b)
 
     # plot CIs
     if inbundle(b, "CImat")
-        printf "set style fill transparent solid 0.95 noborder\n"		# degree of transparency
+        printf "set style fill transparent solid 1.0 noborder\n"		# degree of transparency
     endif
 
     printf "plot \\\n"
