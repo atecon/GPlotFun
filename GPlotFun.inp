@@ -281,7 +281,7 @@ function void GPFbasics (bundle *b)
         endif
         scalar incr = y_max*0.02	# move label a bit higher (2% above max. value)
         loop i=1..rows(b.VLineMat) -q
-            printf "set label '$i' at %d,%g point lt 0 center offset 0,%g \n", b.VLineMat[i],y_max,incr
+            printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',10' \n", b.VLineMat[i],y_max,incr
         endloop
     endif
     
