@@ -113,8 +113,8 @@ function void GnuPlotFun(bundle *b, string which)
     if !inbundle(b, "Vdashtype")	# for vertical lines
         b.Vdashtype = ones(12,1)		# default: all solid lines
     endif
-    if !inbundle(b, "VLineFontSize") # font size of labels for vertical lines
-        b.Vdashtype = 10
+    if !inbundle(b, "Vfontsize") # font size of labels for vertical lines
+        b.Vfontsize = 10
     endif    
     if !inbundle(b, "pattern")
         # define pattern style: https://stackoverflow.com/questions/19412382/gnuplot-line-types
@@ -258,9 +258,9 @@ function void GPFbasics (bundle *b)
     # rows refer to specific events
     if inbundle(b, "VLineMat")
         b.VLineMat = vec(b.VLineMat)
-        loop i=1..rows(b.VLineMat) -q            
+        loop i=1..rows(b.VLineMat) -q
             printf "set arrow from %d, graph 0 to %d, graph 1 nohead lw %.1f lc rgb '%s' \
-            linetype $i dashtype %d front\n", b.VLineMat[i], b.VLineMat[i], b.Vlinewidth[i], b.Vcolors[i], b.Vdashtype[i]
+            linetype $i dashtype %d front \n", b.VLineMat[i], b.VLineMat[i], b.Vlinewidth[i], b.Vcolors[i], b.Vdashtype[i]
         endloop
         # Add label to vertical lines
         if inbundle(b,"ymax")
