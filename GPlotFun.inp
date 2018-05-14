@@ -113,7 +113,7 @@ function void GnuPlotFun(bundle *b, string which)
     if !inbundle(b, "Vdashtype")	# for vertical lines
         b.Vdashtype = ones(12,1)		# default: all solid lines
     endif
-    if !inbundle(n, "VLineFontSize") # font size of labels for vertical lines
+    if !inbundle(b, "VLineFontSize") # font size of labels for vertical lines
         b.Vdashtype = 10
     endif    
     if !inbundle(b, "pattern")
