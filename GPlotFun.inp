@@ -113,6 +113,9 @@ function void GnuPlotFun(bundle *b, string which)
     if !inbundle(b, "Vdashtype")	# for vertical lines
         b.Vdashtype = ones(12,1)		# default: all solid lines
     endif
+    if !inbundle(n, "VLineFontSize") # font size of labels for vertical lines
+        b.Vdashtype = 10
+    endif    
     if !inbundle(b, "pattern")
         # define pattern style: https://stackoverflow.com/questions/19412382/gnuplot-line-types
         b.pat = {0,4,2,3,8}    	# pattern orderings
@@ -279,9 +282,9 @@ function void GPFbasics (bundle *b)
                 endif                
             endloop
         endif
-        scalar incr = y_max*0.02	# move label a bit higher (2% above max. value)
+        scalar incr = y_max*0.2	# move label a bit higher (2% above max. value)
         loop i=1..rows(b.VLineMat) -q
-            printf "set label '$i' at %d,%g point lt 0 center offset 0,%g \n", b.VLineMat[i],y_max,incr
+            printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',%d'\n", b.VLineMat[i],y_max,incr, VLineFontSize
         endloop
     endif
     
