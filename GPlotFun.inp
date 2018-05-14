@@ -260,7 +260,7 @@ function void GPFbasics (bundle *b)
         b.VLineMat = vec(b.VLineMat)
         loop i=1..rows(b.VLineMat) -q            
             printf "set arrow from %d, graph 0 to %d, graph 1 nohead lw %.1f lc rgb '%s' \
-            linetype $i dashtype %d front\n", b.VLineMat[i],b.VLineMat[i],b.Vlinewidth[i],b.Vcolors[i],b.Vdashtype[i]
+            linetype $i dashtype %d front\n", b.VLineMat[i], b.VLineMat[i], b.Vlinewidth[i], b.Vcolors[i], b.Vdashtype[i]
         endloop
         # Add label to vertical lines
         if inbundle(b,"ymax")
@@ -284,7 +284,7 @@ function void GPFbasics (bundle *b)
         endif
         scalar incr = y_max*0.2	# move label a bit higher (2% above max. value)
         loop i=1..rows(b.VLineMat) -q
-            printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',%d'\n", b.VLineMat[i],y_max,incr, VLineFontSize
+            printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',%d'\n", b.VLineMat[i],y_max,incr, b.Vfontsize
         endloop
     endif
     
