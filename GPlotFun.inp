@@ -94,11 +94,11 @@ function void GnuPlotFun(bundle *b, string which)
     endif
     if !inbundle(b, "colors")
         #b.colors = seq(1,12)
-        strings colors = defarray("black", "black", "black", "grey", "grey", "grey", "grey", "black", "black", "black", "black", "black")	# color string        
+        strings colors = defarray("black", "black", "black", "grey", "grey", "grey", "grey", "black", "black", "black", "black", "black")	# color string
         b.colors = colors
     endif
     if !inbundle(b, "Vcolors")		# for vertical lines
-        strings Vcolors = defarray("black", "black", "black", "black", "black", "black")	# color string
+        strings Vcolors = defarray("black", "black", "black", "grey", "grey", "grey", "grey", "black", "black", "black", "black", "black")	# color string
         b.Vcolors = Vcolors
     endif    
     if !inbundle(b, "linewidth")
