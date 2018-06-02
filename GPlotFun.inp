@@ -386,7 +386,7 @@ function void doShadedLine (bundle *b)
     matrix MAT = b.LineMat
     if inbundle(b, "LineLHSMat")
         clhs = cols(b.LineLHSMat)
-        matrix MAT ~=b.LineLHSMat
+        matrix MAT ~= b.LineLHSMat
     endif
     loop j=1..cols(MAT) -q
         if j==1 && inbundle(b, "Date")
