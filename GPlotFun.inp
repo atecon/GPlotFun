@@ -218,7 +218,7 @@ function void GPFbasics (bundle *b)
     printf "unset mxtics\n"		# don't print minor xtics
     # Y tics    
     printf "set ytics nomirror border out\n"
-    if inbundle(b, "LineLHSMat")
+    if inbundle(b, "LineLHSMat") || inbundle(b, "ImpLHSMat")
         printf "set y2tics nomirror border out\n"
     endif    
     
@@ -235,13 +235,13 @@ function void GPFbasics (bundle *b)
 
     # Labels + title
     if inbundle(b, "xlab")
-        printf "set xlabel '%s'\n", b.xlab
+        printf "set xlabel '%s' font ',%d'\n", b.xlab, b.fontsize        
     endif
     if inbundle(b, "ylab")
-        printf "set ylabel '%s'\n", b.ylab
+        printf "set ylabel '%s' font ',%d'\n", b.ylab, b.fontsize
     endif
     if inbundle(b, "title")
-        printf "set title '%s'\n", b.title
+        printf "set title '%s' font ',%d'\n", b.title, b.fontsize
     endif
   
     # Make graph nicer
@@ -397,52 +397,7 @@ function void doShadedLine (bundle *b)
         printf "'-' using 1:2:3 t '' lc rgb '#dddddd' w filledcurve, \\\n"
     endif
     
-    #------------
-    # Plot lines
-    #------------
-    if inbundle(b, "LineMat") || inbundle(b, "LineLHSMat")
-        matrix MAT = {}
-        if inbundle(b, "LineMat")
-            crhs = cols(b.LineMat)
-            matrix MAT = b.LineMat
-        else
-            crhs = 0
-        endif
-        if inbundle(b, "LineLHSMat")
-            clhs = cols(b.LineLHSMat)
-            matrix MAT ~= b.LineLHSMat
-        endif
-        loop j=1..cols(MAT) -q
-            if j==1 && inbundle(b, "Date")
-                k = 2		# date strings are in the 2nd col.
-                if crhs>0
-                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
-                      t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", k, k, b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
-                else
-                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
-                      t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", k, k, b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
-                endif                            
-            else
-                if j<=crhs
-                    printf "'-'using 1 t '%s' w lines linetype $j dashtype %d lc \
-                      rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
-                else
-                    printf "'-'using 1 axes x1y2 t '%s' w lines linetype $j dashtype %d lc \
-                      rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
-                endif
-            endif
-            if j<cols(MAT)
-                printf(j == cols(MAT) ? "\n" : ", \\\n")
-            elif j==cols(MAT) && inbundle(b, "ImpMat")
-                printf ", \\\n"
-            elif j==cols(MAT) && inbundle(b, "ImpLHSMat")
-                printf ", \\\n"
-            else
-                printf(j == cols(MAT) ? "\n" : ", \\\n")
-            endif            
-        endloop
-    endif
-    
+
     #-------------
     # Plot Impulse
     #-------------
@@ -475,9 +430,60 @@ function void doShadedLine (bundle *b)
                     printf "'-'using 1 axes x1y2 t '%s' w impulses lc rgb '%s' lw %.1f", b.StrLeg[j], b.colors[j], b.impwidth[j]
                 endif
             endif
-            printf(j == cols(IMPMAT) ? "\n" : ", \\\n")
+            # make sure following line plot works
+            if j<cols(IMPMAT)
+                printf(j == cols(IMPMAT) ? "\n" : ", \\\n")
+            elif j==cols(IMPMAT) && inbundle(b, "LineMat")
+                printf ", \\\n"
+            elif j==cols(IMPMAT) && inbundle(b, "LineLHSMat")
+                printf ", \\\n"
+            else
+                printf(j == cols(IMPMAT) ? "\n" : ", \\\n")
+            endif      
         endloop
+        addcol = cols(IMPMAT)	# just for correct coloring of eventual impulse plots
+    else
+        addcol = 0
     endif
+
+    #------------
+    # Plot lines
+    #------------
+    if inbundle(b, "LineMat") || inbundle(b, "LineLHSMat")        
+        matrix MAT = {}
+        if inbundle(b, "LineMat")
+            crhs = cols(b.LineMat)
+            matrix MAT = b.LineMat
+        else
+            crhs = 0
+        endif
+        if inbundle(b, "LineLHSMat")
+            clhs = cols(b.LineLHSMat)
+            matrix MAT ~= b.LineLHSMat
+        endif
+        loop j=1..cols(MAT) -q
+            if j==1 && inbundle(b, "Date")
+                k = 2		# date strings are in the 2nd col.
+                if crhs>0
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", k, k, b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.linewidth[j], b.pival
+                else
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
+                      t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", k, k, b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.linewidth[j], b.pival
+                endif
+            else
+                if j<=crhs
+                    printf "'-'using 1 t '%s' w lines linetype $j dashtype %d lc \
+                      rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.linewidth[j], b.pival
+                else
+                    printf "'-'using 1 axes x1y2 t '%s' w lines linetype $j dashtype %d lc \
+                      rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.linewidth[j], b.pival
+                endif
+            endif
+            printf(j == cols(MAT) ? "\n" : ", \\\n")
+        endloop
+    endif   
+    
     # write data block for horizontal mat2=CImat shaded area
     if inbundle(b, "CImat")
         loop j=1..rows(b.CImat) -q		# CI
@@ -485,6 +491,28 @@ function void doShadedLine (bundle *b)
         endloop
         printf "e\n"
     endif
+
+    #-------------------
+    # Plot impulse values
+    # write data block
+    #-------------------
+    if inbundle(b, "ImpMat") || inbundle(b, "ImpLHSMat")
+        loop i=1..cols(IMPMAT) -q
+            loop j=1..rows(IMPMAT) -q
+                if inbundle(b, "Date")
+                    if i==1 && ( j==1 || j % b.nstep == 0)
+                        printf "%g %s\n", IMPMAT[j,i], b.Date[j]
+                    else
+                        printf "%g \n", IMPMAT[j,i]		# don't put major tick if no label is provided
+                    endif
+                else
+                    printf "%g \n", IMPMAT[j,i]			# don't put major tick if no label is provided
+                endif
+            endloop
+            printf "e\n"
+        endloop
+    endif    
+
 
     #-------------------
     # Plot lines values
@@ -508,27 +536,6 @@ function void doShadedLine (bundle *b)
             printf "e\n"
         endloop
     endif
-
-    #-------------------
-    # Plot impulse values
-    # write data block
-    #-------------------
-    if inbundle(b, "ImpMat") || inbundle(b, "ImpLHSMat")
-        loop i=1..cols(IMPMAT) -q
-            loop j=1..rows(IMPMAT) -q
-                if inbundle(b, "Date")
-                    if i==1 && ( j==1 || j % b.nstep == 0)
-                        printf "%g %s\n", IMPMAT[j,i], b.Date[j]
-                    else
-                        printf "%g \n", IMPMAT[j,i]		# don't put major tick if no label is provided
-                    endif
-                else
-                    printf "%g \n", IMPMAT[j,i]			# don't put major tick if no label is provided
-                endif
-            endloop
-            printf "e\n"
-        endloop
-    endif    
 
     outfile --close
     string fname = b.fname
