@@ -415,13 +415,13 @@ function void doShadedLine (bundle *b)
         loop j=1..cols(MAT) -q
             if j==1 && inbundle(b, "Date")
                 k = 2		# date strings are in the 2nd col.
-            if crhs>0
-                printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
-                  t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", k, k, b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
-            else
-                printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
-                  t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", k, k, b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
-            endif                            
+                if crhs>0
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", k, k, b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
+                else
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
+                      t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", k, k, b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
+                endif                            
             else
                 if j<=crhs
                     printf "'-'using 1 t '%s' w lines linetype $j dashtype %d lc \
@@ -462,12 +462,12 @@ function void doShadedLine (bundle *b)
             if j==1 && inbundle(b, "Date")
                 k = 2		# date strings are in the 2nd col.
                 if crhs>0
-                printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
-                  t '%s' w impulses lc rgb '%s' lw %.1f ", k, k, b.StrLeg[j], b.colors[j], b.impwidth[j]
-            else
-                printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
-                  t '%s' w impulses lc rgb '%s' lw %.1f ", k, k, b.StrLeg[j], b.colors[j], b.impwidth[j]
-            endif            
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      t '%s' w impulses lc rgb '%s' lw %.1f ", k, k, b.StrLeg[j], b.colors[j], b.impwidth[j]
+                else
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
+                      t '%s' w impulses lc rgb '%s' lw %.1f ", k, k, b.StrLeg[j], b.colors[j], b.impwidth[j]
+                endif            
             else
                 if j<=crhs
                     printf "'-'using 1 t '%s' w impulses lc rgb '%s' lw %.1f", b.StrLeg[j], b.colors[j], b.impwidth[j]
@@ -566,7 +566,7 @@ end function
    b.obsdate = {$obsdate}
    # CI-Shaded Plot +  Line Plot + Vertical shaded area
    b.LineMat = (point~1.2.*point)	# T by k matrix of line plots, RHS
-  # b.LineLHSMat = point*0.4		# T by k matrix of line plots, LHS
+   # b.LineLHSMat = point*0.4		# T by k matrix of line plots, LHS
    #b.ImpMat = muniform(nobs(LRM),1)*10
    b.ImpLHSMat = muniform(nobs(LRM),1)*10
    b.CImat = low~up				# T by 2 matrix of shaded horizonal area
