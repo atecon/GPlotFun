@@ -415,10 +415,15 @@ function void doShadedLine (bundle *b)
         loop j=1..cols(MAT) -q
             if j==1 && inbundle(b, "Date")
                 k = 2		# date strings are in the 2nd col.
+            if crhs>0
                 printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
                   t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", k, k, b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
             else
-                if j<=crhs && crhs>0
+                printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
+                  t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", k, k, b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
+            endif                            
+            else
+                if j<=crhs
                     printf "'-'using 1 t '%s' w lines linetype $j dashtype %d lc \
                       rgb '%s' pt 2 ps %.2f lw %.1f pointinterval %.2f", b.StrLeg[j], b.dashtype[j], b.colors[j], b.ps, b.linewidth[j], b.pival
                 else
@@ -456,10 +461,15 @@ function void doShadedLine (bundle *b)
         loop j=1..cols(IMPMAT) -q
             if j==1 && inbundle(b, "Date")
                 k = 2		# date strings are in the 2nd col.
+                if crhs>0
                 printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
                   t '%s' w impulses lc rgb '%s' lw %.1f ", k, k, b.StrLeg[j], b.colors[j], b.impwidth[j]
             else
-                if j<=crhs && crhs>0
+                printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
+                  t '%s' w impulses lc rgb '%s' lw %.1f ", k, k, b.StrLeg[j], b.colors[j], b.impwidth[j]
+            endif            
+            else
+                if j<=crhs
                     printf "'-'using 1 t '%s' w impulses lc rgb '%s' lw %.1f", b.StrLeg[j], b.colors[j], b.impwidth[j]
                 else
                     printf "'-'using 1 axes x1y2 t '%s' w impulses lc rgb '%s' lw %.1f", b.StrLeg[j], b.colors[j], b.impwidth[j]
