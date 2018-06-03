@@ -163,13 +163,13 @@ function void GPFbasics (bundle *b)
         scalar slong = strlen(b.fname)
         string ftype = substr(b.fname,(slong-2),slong)	# retrive last 3 characters-->filetype        
         if ftype=="png" || b.fname=="display"
-            sprintf optTERM "set term pngcairo size %d,%d enhanced font 'serif,%d'\n", b.width,b.height,b.fontsize
+            sprintf optTERM "set term pngcairo size %.1f,%.1f enhanced font 'serif,%.1f'\n", b.width,b.height,b.fontsize
         elif ftype=="pdf"
-            sprintf optTERM "set term pdf size %d,%d enhanced font 'serif,%d'\n", b.width,b.height,b.fontsize
+            sprintf optTERM "set term pdf size %.1f,%.1f enhanced font 'serif,%.1f'\n", b.width,b.height,b.fontsize
         elif ftype=="eps"
-            sprintf optTERM "set term eps size %.2f,%.2f font 'serif,%d'\n", b.width,b.height,b.fontsize	# NOTE: width, height must be in inches!
+            sprintf optTERM "set term eps size %.2f,%.2f font 'serif,%.1f'\n", b.width,b.height,b.fontsize	# NOTE: width, height must be in inches!
         elif ftype=="svg"
-            sprintf optTERM "set term svg size %d,%d enhanced font 'serif,%d'\n", b.width,b.height,b.fontsize                        
+            sprintf optTERM "set term svg size %.1f,%.1f enhanced font 'serif,%.1f'\n", b.width,b.height,b.fontsize                        
         else
             funcerr "*** Setting resolution is only allowed for png, pdf, eps and svg files. ***"
         endif
