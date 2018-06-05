@@ -50,7 +50,6 @@ function void GnuPlotFun(bundle *b, string which)
     #--------------
     # MAIN FUNCTION
     #--------------
-
     b.which=which
     # 1st checks for basic information
     if !inbundle(b, "fname")
