@@ -177,6 +177,7 @@ function void GPFbasics (bundle *b)
     printf "%s", optTERM
 
     # Options
+    printf "set datafile missing \"?\" \n"    
     sprintf PS "%.2f", b.ps
     #sprintf LW "%.2f", lw
     sprintf FS "%d", b.fontsize
@@ -377,6 +378,7 @@ function void doShadedLine (bundle *b)
 
     GPFbasics(&b)	# Run basic settings
         
+    set warnings off    
     tmpfile = b.tmpfile
     outfile @tmpfile --append
     
@@ -501,12 +503,24 @@ function void doShadedLine (bundle *b)
             loop j=1..rows(IMPMAT) -q
                 if inbundle(b, "Date")
                     if i==1 && ( j==1 || j % b.nstep == 0)
-                        printf "%g %s\n", IMPMAT[j,i], b.Date[j]
+                        if ok(IMPMAT[j,i])
+                            printf "%g %s\n", IMPMAT[j,i], b.Date[j]
+                        else
+                            printf "? %s\n", IMPMAT[j,i], b.Date[j]
+                        endif                        
                     else
-                        printf "%g \n", IMPMAT[j,i]		# don't put major tick if no label is provided
+                        if ok(IMPMAT[j,i])
+                            printf "%g \n", IMPMAT[j,i]		# don't put major tick if no label is provided
+                        else
+                            printf "? \n"
+                        endif                        
                     endif
                 else
-                    printf "%g \n", IMPMAT[j,i]			# don't put major tick if no label is provided
+                    if ok(IMPMAT[j,i])
+                        printf "%g \n", IMPMAT[j,i]			# don't put major tick if no label is provided
+                    else
+                        printf "? \n"
+                    endif                    
                 endif
             endloop
             printf "e\n"
@@ -523,14 +537,26 @@ function void doShadedLine (bundle *b)
             loop j=1..rows(MAT) -q
                 if inbundle(b, "Date")
                     if i==1 && ( j==1 || j % b.nstep == 0)# || j==rows(b.LineMat) )		# put xtics at 1st obs, every nstep obs. and last obs.
-                        printf "%g %s\n", MAT[j,i], b.Date[j]
+                        if ok(MAT[j,i])
+                            printf "%g %s\n", MAT[j,i], b.Date[j]
+                        else
+                            printf "? %s\n", MAT[j,i], b.Date[j]
+                        endif                        
                     else
-                        #printf "%g -1\n", b.LineMat[j,i]	# put major tick (w.o. label) at each period
-                        printf "%g \n", MAT[j,i]		# don't put major tick if no label is provided
+                        if ok(MAT[j,i])
+                            #printf "%g -1\n", b.LineMat[j,i]	# put major tick (w.o. label) at each period
+                            printf "%g \n", MAT[j,i]		# don't put major tick if no label is provided
+                        else
+                            printf "? \n", MAT[j,i]
+                        endif                    
                     endif
                 else
                     #printf "%g -1\n", b.LineMat[j,i]
-                    printf "%g \n", MAT[j,i]			# don't put major tick if no label is provided
+                    if ok(MAT[j,i])
+                        printf "%g \n", MAT[j,i]		# don't put major tick if no label is provided
+                    else
+                        printf "? \n", MAT[j,i]
+                    endif                    
                 endif
             endloop
             printf "e\n"
@@ -573,6 +599,7 @@ end function
    b.obsdate = {$obsdate}
    # CI-Shaded Plot +  Line Plot + Vertical shaded area
    b.LineMat = (point~1.2.*point)	# T by k matrix of line plots, RHS
+   b.LineMat[1:10,1] = NA
    # b.LineLHSMat = point*0.4		# T by k matrix of line plots, LHS
    #b.ImpMat = muniform(nobs(LRM),1)*10
    b.ImpLHSMat = muniform(nobs(LRM),1)*10
@@ -585,7 +612,8 @@ end function
    string fname = sprintf("%s/testplot.png", $dotdir)	# "display"
    b.fname = fname
    GnuPlotFun(&b, "ShadedLine")
-
+   stop
+   
    # Stacked Bar Plot
    b.StackMat = b.LineMat
    delete b.VShadMat
