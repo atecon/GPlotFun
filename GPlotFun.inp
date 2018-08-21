@@ -184,7 +184,7 @@ function void GPFbasics (bundle *b)
         printf "%s", optTERM
 
         # Options
-        printf "set datafile missing \"?\" \n"
+        printf "set datafile missing \"NaN\" \n"
         sprintf PS "%.2f", b.ps
         #sprintf LW "%.2f", lw
         sprintf FS "%d", b.fontsize
@@ -263,7 +263,10 @@ function void GPFbasics (bundle *b)
                 if printlab[$i]==1
                     string vname = ynames[$i]
                     vname = strsub(vname, "_", "-")
-                    printf "\"%s\" %d, ", vname,($i-1)
+                    printf "\"%s\" %d ", vname,($i-1)
+                    if i<rows(printlab)
+                        printf ", "
+                    endif
                 endif
             endloop
             printf " ) font 'serif,%.1f' out\n", b.fontsize #rotate by 45
@@ -342,9 +345,8 @@ function void GPFbasics (bundle *b)
 end function
 
 
-#/*
 function void doHeatMap (bundle *b)
-    # TODO: HeatMat = T by k matrix, k=separate bar plot (x1,...,xk), T=time dim.
+    # HeatMat = k by T matrix, k=cross-sectional dim., T=time dim.
     # LineMat = draw horizonal lines
     # NOTE: Stacked Bar is not allowed for this type of plot
 
@@ -368,6 +370,12 @@ function void doHeatMap (bundle *b)
     tmpfile = b.tmpfile
     outfile @tmpfile --append
 
+        # Put the border more to the background by applying it
+        # only on the left and bottom part and put it and the tics in gray
+        printf "set style line 11 lc rgb \"#808080\" lt 1 \n"
+        printf "set border 3 back ls 11\n"			# get rid of upper + left border
+        printf "set tics nomirror \n"
+        
         # SET palette color
         # Defining a palette with discrete colors
         #printf "set palette defined ( 0 '#000fff', 1 '#90ff70', 2 '#ee0000') \n"
@@ -380,57 +388,48 @@ function void doHeatMap (bundle *b)
             printf "set palette gray negative gamma 1.5\n"
         endif
         # REMOVE COLORBOX
-        if b.colorbox==0
+        if b.nocolorbox==1
             printf "unset colorbox\n"
         endif
-
-        # write data block
-        printf "$data <<EOF\n"
-        loop i=1..rows(mat) -q
-            loop j=1..cols(mat) -q
-                printf "%g ", mat[i,j]
-            endloop
-            if inbundle(b, "Date")
-                if i==1 || i % b.nstep == 0 #|| i==rows(mat)-15		# put xtics at 1st obs, every nstep obs. and last obs.
-                    printf "%s", b.Date[i]
-                else
-                    #printf "-1"		# put major tick for (almost) each  obs.
+        
+        # Write xtics (date strings)
+        scalar count = 1
+        printf "set xtics ("
+        loop i=1..cols(mat) -q
+            if count==b.nstep || i==1
+                printf "\"%s\" %d", b.Date[i], $i
+                count = 1
+                if (cols(mat)-$i) > b.nstep
+                    printf ", "
                 endif
-            endif
-            printf "\n"
+            endif  
+            count++
         endloop
-        printf "EOF\n"
+        printf " ) out \n"
 
         # write plot specification
-        printf "plot \\\n"
-        loop j=1..cols(mat) -q
-            if j == 1 && inbundle(b, "Date")  # first date entry
-                k = cols(mat)+1
-                #printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5 lc rgb '%s'", k, k, b.StrLeg[j], b.colors[j]
-                printf "$data using 1:2:3:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' w image ", k, k, b.StrLeg[j]
-
-            else
-                # TODO: add line plot
-                /*
-                   if j>1 && j<=nstack	# stacked barplot
-                   printf "$data using %d t '%s' fillstyle pattern %d lc rgb '%s'", j, b.StrLeg[j], b.pat[j], b.colors[j]
-                   elif j>nstack
-                   printf "$data using $j axes x1y2 t '%s' w lines linetype %d dashtype %d lc rgb '%s' \
-                   pt 2 ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j], ($j-nstack), b.dashtype[j-nstack], \
-                   b.colors[j], b.ps, b.linewidth[j-nstack], b.pival
-                   endif
-                */
-
-            endif
-            printf(j == cols(mat) ? "\n" : ", \\\n")
+        printf "plot '-' using 1:2:3 matrix with image t ''\n"        
+        # HEATMAP data block
+        loop i=1..rows(mat) -q
+            loop j=1..cols(mat) -q
+                if mat[i,j]<0 || mat[i,j]>=0
+                    printf "%g", mat[i,j]
+                else
+                    printf "NaN"
+                endif
+                if j<cols(mat)
+                    printf ", "
+                endif
+            endloop
+            printf "\n"
         endloop
+        printf "e \n"
 
     end outfile
     string fname = b.fname
     gnuplot --input="@tmpfile" --output="@fname"
 
 end function
-#*/
 
 
 function void doStackedBar (bundle *b)
@@ -711,7 +710,7 @@ end function
 
 
 ########################################################
-#/*
+/*
 # EXAMPLE
 open denmark.gdt -q
 bundle b = null
