@@ -100,6 +100,12 @@ function void GnuPlotFun(bundle *b, string which)
         strings Vcolors = defarray("black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black")	# color string
         b.Vcolors = Vcolors
     endif
+    if !inbundle(b, "Heatmono")		# for heatmap only
+        b.mono = 0
+    endif
+    if !inbundle(b, "nocolorbox")		# for heatmap only
+        b.colorbox = 1
+    endif
     if !inbundle(b, "linewidth")
         b.linewidth = ones(12,1)	# default lw=1
     endif
@@ -305,6 +311,98 @@ function void GPFbasics (bundle *b)
     
     outfile end
 end function
+
+
+
+function void doHeatMap (bundle *b)
+    # TODO: HeatMat = T by k matrix, k=separate bar plot (x1,...,xk), T=time dim.
+    # LineMat = draw horizonal lines
+    # NOTE: Stacked Bar is not allowed for this type of plot
+    
+    if inbundle(b, "HeatMat")
+        matrix mat = b.HeatMat
+    else
+        funcerr "Warning: doHeatmap() requires at least matrix 'HeatMat'!"
+    endif
+    # TODO: add line plot
+    /*
+    if inbundle(b, "LineMat")
+        mat ~= b.LineMat
+    elif inbundle(b, "LineLHSMat")
+        mat ~= b.LineLHSMat
+    endif
+    */
+
+    GPFbasics(&b)	# Run basic settings
+    
+    set warnings off  # omit warning for NAs
+    tmpfile = b.tmpfile   
+    outfile @tmpfile --append
+    
+    # SET palette color
+    # Defining a palette with discrete colors
+    #printf "set palette defined ( 0 '#000fff', 1 '#90ff70', 2 '#ee0000') \n"
+    # MATLAB COLORS:
+    if b.mono==0
+         printf "set palette defined (0 0 0 0.5, 1 0 0 1, 2 0 0.5 1, 3 0 1 1, 4 0.5 1 0.5, 5 1 1 0, 6 1 0.5 0, 7 1 0 0, 8 0.5 0 0)\n"
+         #printf "set palette maxcolors 10 \n"
+    else
+         #printf "set palette gray negative\n" #gray positive
+         printf "set palette gray negative gamma 1.5\n"
+    endif
+    # REMOVE COLORBOX
+    if b.colorbox==0
+        printf "unset colorbox\n"
+    endif
+
+    # write data block
+    printf "$data <<EOF\n"
+    loop i=1..rows(mat) -q
+        loop j=1..cols(mat) -q
+            printf "%g ", mat[i,j]
+        endloop
+        if inbundle(b, "Date")            
+            if i==1 || i % b.nstep == 0 #|| i==rows(mat)-15		# put xtics at 1st obs, every nstep obs. and last obs.
+                printf "%s", b.Date[i]
+            else
+                #printf "-1"		# put major tick for (almost) each  obs.                
+            endif
+        endif
+        printf "\n"
+    endloop
+    printf "EOF\n"
+    
+    # write plot specification    
+    printf "plot \\\n"
+    loop j=1..cols(mat) -q
+        if j == 1 && inbundle(b, "Date")  # first date entry
+            k = cols(mat)+1
+            #printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5 lc rgb '%s'", k, k, b.StrLeg[j], b.colors[j]
+            printf "$data using 1:2:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' w image ", k, k, b.StrLeg[j]
+
+        else
+            # TODO: add line plot
+            /*  
+            if j>1 && j<=nstack	# stacked barplot
+                printf "$data using %d t '%s' fillstyle pattern %d lc rgb '%s'", j, b.StrLeg[j], b.pat[j], b.colors[j]
+            elif j>nstack
+                printf "$data using $j axes x1y2 t '%s' w lines linetype %d dashtype %d lc rgb '%s' \
+                  pt 2 ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j], ($j-nstack), b.dashtype[j-nstack], \
+                  b.colors[j], b.ps, b.linewidth[j-nstack], b.pival
+            endif            
+            */
+            
+        endif
+        printf(j == cols(mat) ? "\n" : ", \\\n")
+    endloop
+
+    outfile end
+    string fname = b.fname
+    gnuplot --input="@tmpfile" --output="@fname"
+
+end function
+
+
 
 
 function void doStackedBar (bundle *b)
