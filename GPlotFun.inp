@@ -56,7 +56,7 @@ function void GnuPlotFun(bundle *b, string which)
         funcerr "Provide a file name: 'name.TYPE'"
     endif
     # FIXME: maybe StrLeg is not needed being specified
-    if !inbundle(b, "StrLeg")	#TODO: rename to Legend
+    if !inbundle(b, "StrLeg") && b.which != "HeatMap"	#TODO: rename to Legend
         funcerr "Provide an array of legend names"
     endif
 
@@ -100,11 +100,11 @@ function void GnuPlotFun(bundle *b, string which)
         strings Vcolors = defarray("black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black")	# color string
         b.Vcolors = Vcolors
     endif
-    if !inbundle(b, "Heatmono")		# for heatmap only
+    if !inbundle(b, "mono")		# for heatmap only
         b.mono = 0
     endif
     if !inbundle(b, "nocolorbox")		# for heatmap only
-        b.colorbox = 1
+        b.nocolorbox = 0
     endif
     if !inbundle(b, "linewidth")
         b.linewidth = ones(12,1)	# default lw=1
@@ -225,20 +225,49 @@ function void GPFbasics (bundle *b)
         # MXTICS
         printf "unset mxtics\n"		# don't print minor xtics
         # Y tics
-        printf "set ytics nomirror border out\n"
-        if inbundle(b, "LineLHSMat") || inbundle(b, "ImpLHSMat")
-            printf "set y2tics nomirror border out\n"
-        endif
+        if !inbundle(b, "ynames")
 
-        # yrange settings
-        if inbundle(b,"ymin") && inbundle(b,"ymax")
-            printf "set yrange[%.5f:%.5f] \n", b.ymin, b.ymax
-        elif inbundle(b,"ymin") && !inbundle(b,"ymax")
-            printf "set yrange[%.5f:] \n", b.ymin
-        elif !inbundle(b,"ymin") && inbundle(b,"ymax")
-            printf "set yrange[:%.5f] \n", b.ymax
-        else
-            #printf "set yrange[:] \n"
+            printf "set ytics nomirror border out\n"
+            if inbundle(b, "LineLHSMat") || inbundle(b, "ImpLHSMat")
+                printf "set y2tics nomirror border out\n"
+            endif
+            # yrange settings
+            if inbundle(b,"ymin") && inbundle(b,"ymax")
+                printf "set yrange[%.5f:%.5f] \n", b.ymin, b.ymax
+            elif inbundle(b,"ymin") && !inbundle(b,"ymax")
+                printf "set yrange[%.5f:] \n", b.ymin
+            elif !inbundle(b,"ymin") && inbundle(b,"ymax")
+                printf "set yrange[:%.5f] \n", b.ymax
+            else
+                #printf "set yrange[:] \n"
+            endif
+
+        else	# case when ylabels are provided (currently only for heatmap)
+            ynames = b.ynames
+            matrix printlab = zeros(nelem(ynames),1)
+            loop i=2..nelem(ynames) -q
+                scalar nval = strlen(ynames[$i-1])
+                string S1 = ynames[$i-1]
+                #S1 = substr(S1,1,(nval-3))
+                string S2 = ynames[$i]
+                #S2 = substr(S2,1,(nval-3))
+                if S1!=S2
+                    printlab[i] = 1
+                endif
+            endloop
+            printf "set ytics ("
+            string vname = ynames[1]
+            vname = strsub(vname, "_", "-")		# substitute certain strings
+            printf "\"%s\" %d, ", vname, 0
+            loop i=2..rows(printlab) -q
+                if printlab[$i]==1
+                    string vname = ynames[$i]
+                    vname = strsub(vname, "_", "-")
+                    printf "\"%s\" %d, ", vname,($i-1)
+                endif
+            endloop
+            printf " ) font 'serif,%.1f' out\n", b.fontsize #rotate by 45
+
         endif
 
         # Labels + title
@@ -313,8 +342,7 @@ function void GPFbasics (bundle *b)
 end function
 
 
-# FIXME: NOT WORKING YET
-/*
+#/*
 function void doHeatMap (bundle *b)
     # TODO: HeatMat = T by k matrix, k=separate bar plot (x1,...,xk), T=time dim.
     # LineMat = draw horizonal lines
@@ -402,7 +430,7 @@ function void doHeatMap (bundle *b)
     gnuplot --input="@tmpfile" --output="@fname"
 
 end function
-*/
+#*/
 
 
 function void doStackedBar (bundle *b)
@@ -736,23 +764,24 @@ string fname = sprintf("%s/StackBar.png", $dotdir)	# "display"
 b.fname = fname
 GnuPlotFun(&b, "StackedBar")
 
-##FIXME: Heatmap Plot
-# bundle b = null
-# b.nstep = 12
-# b.dateform = 5
-# b.fontsize = 11
-# b.legend = 1
-# b.posleg = 0
-# b.grid = 0
-# b.ps = 0
-# b.pival = 1
-# b.height = 320
-# b.width = 540
-# b.obsdate = {$obsdate}
-# b.HeatMat = {LRM}' | {LRY}'
-# b.StrLeg = defarray("LRM", "LRY")
-# string fname = sprintf("%s/HeatMap.png", $dotdir)	# "display"
-# b.fname = fname
-# GnuPlotFun(&b, "HeatMap")
+# Heatmap Plot
+bundle b = null
+b.nstep = 5
+b.dateform = 5
+b.fontsize = 11
+b.legend = 1
+b.posleg = 0
+b.grid = 0
+b.ps = 0
+b.pival = 1
+b.height = 320
+b.width = 540
+b.mono = 1
+b.obsdate = {$obsdate}
+b.HeatMat = mnormal(3,20)
+b.ynames = defarray("L1", "L2", "L3")
+string fname = sprintf("%s/HeatMap.png", $dotdir)	# "display"
+b.fname = fname
+GnuPlotFun(&b, "HeatMap")
 
 */
