@@ -136,6 +136,8 @@ function void GnuPlotFun(bundle *b, string which)
         doStackedBar(&b)
         #elif which == "ShadedLine"
         #    doShadedLine(&b)
+    elif which == "HeatMap"
+        doHeatMap(&b)
     endif
             
 end function
@@ -301,7 +303,7 @@ function void GPFbasics (bundle *b)
         endloop
     endif
     
-    outfile --close
+    outfile end
 end function
 
 
@@ -380,7 +382,7 @@ function void doStackedBar (bundle *b)
         printf(j == cols(mat) ? "\n" : ", \\\n")
     endloop
 
-    outfile --close
+    outfile end
     string fname = b.fname
     gnuplot --input="@tmpfile" --output="@fname"
 
@@ -577,7 +579,7 @@ function void doShadedLine (bundle *b)
         endloop
     endif
 
-    outfile --close
+    outfile end
     string fname = b.fname
     gnuplot --input="@tmpfile" --output="@fname"
 end function
