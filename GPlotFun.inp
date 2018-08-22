@@ -372,8 +372,8 @@ function void doHeatMap (bundle *b)
 
         # Put the border more to the background by applying it
         # only on the left and bottom part and put it and the tics in gray
-        printf "set style line 11 lc rgb \"#808080\" lt 1 \n"
-        printf "set border 3 back ls 11\n"			# get rid of upper + left border
+        #printf "set style line 11 lc rgb \"#808080\" lt 1 \n"
+        #printf "set border 3 back ls 11\n"			# get rid of upper + left border
         printf "set tics nomirror \n"
         
         # SET palette color
