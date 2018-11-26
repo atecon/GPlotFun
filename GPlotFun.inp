@@ -375,6 +375,8 @@ function void doHeatMap (bundle *b)
         #printf "set style line 11 lc rgb \"#808080\" lt 1 \n"
         #printf "set border 3 back ls 11\n"			# get rid of upper + left border
         printf "set tics nomirror \n"
+        printf "set datafile missing \"NA\" \n"
+        printf "set cbrange[%.5f:%.5f] \n", b.ymin, b.ymax # set the value-range for legend
         
         # SET palette color
         # Defining a palette with discrete colors
@@ -709,78 +711,3 @@ function void doShadedLine (bundle *b)
 end function
 
 
-########################################################
-/*
-# EXAMPLE
-open denmark.gdt -q
-bundle b = null
-matrix point = {LRM}
-matrix low = point.-2
-matrix up = point.+2
-
-# Optional information
-b.dashtype = {3,1,1,1}
-b.Vdashtype = {1,2,3}		# for vertical lines
-b.linewidth = {2,2.5,5,1,1,1,1}
-b.impwidth = {1}
-b.colors = defarray("black", "black", "black", "grey", "grey", "grey", "grey", "black", "black", "black", "black", "black")	# color string
-b.nstep = 12
-b.dateform = 5
-b.fontsize = 11
-b.legend = 1
-b.posleg = 0
-b.grid = 0
-b.ps = 0
-b.pival = 1
-b.height = 320
-b.width = 540
-
-# needed for Shaded line plot
-b.obsdate = {$obsdate}
-# CI-Shaded Plot +  Line Plot + Vertical shaded area
-b.LineMat = (point~1.2.*point)	# T by k matrix of line plots, RHS
-b.LineMat[1:10,1] = NA
-# b.LineLHSMat = point*0.4		# T by k matrix of line plots, LHS
-#b.ImpMat = muniform(nobs(LRM),1)*10
-b.ImpLHSMat = muniform(nobs(LRM),1)*10
-b.CImat = low~up				# T by 2 matrix of shaded horizonal area
-b.VShadMat = {obsnum(1977:1)} ~ {obsnum(1980:2)}	# n by 2 matrox of shaded area between 2 dates
-b.VLineMat = {obsnum(1981:1)} ~ {obsnum(1985:4)}
-b.ymax = 15
-b.ymin = 0
-b.StrLeg = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse")
-string fname = sprintf("%s/testplot.png", $dotdir)	# "display"
-b.fname = fname
-GnuPlotFun(&b, "ShadedLine")
-#stop
-
-# Stacked Bar Plot
-b.StackMat = b.LineMat
-b.LineMat = ones(55,1) #(point/2)
-delete b.VShadMat
-b.StrLeg = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo", "foo", "foo")
-string fname = sprintf("%s/StackBar.png", $dotdir)	# "display"
-b.fname = fname
-GnuPlotFun(&b, "StackedBar")
-
-# Heatmap Plot
-bundle b = null
-b.nstep = 5
-b.dateform = 5
-b.fontsize = 11
-b.legend = 1
-b.posleg = 0
-b.grid = 0
-b.ps = 0
-b.pival = 1
-b.height = 320
-b.width = 540
-b.mono = 1
-b.obsdate = {$obsdate}
-b.HeatMat = mnormal(3,20)
-b.ynames = defarray("L1", "L2", "L3")
-string fname = sprintf("%s/HeatMap.png", $dotdir)	# "display"
-b.fname = fname
-GnuPlotFun(&b, "HeatMap")
-
-*/
