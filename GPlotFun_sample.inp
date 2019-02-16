@@ -1,6 +1,8 @@
 set verbose off
 
-include "/home/ninja/BrainLocalData/shared/git_atecon/GPlotFun/GPlotFun.inp"
+string WD = "/home/at/git/GPlotFun"
+
+include "@WD/GPlotFun.inp"
 
 # EXAMPLE
 open denmark.gdt -q

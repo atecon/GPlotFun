@@ -1,7 +1,5 @@
 /* Gnu GRETL + PLOT LIBRARY */
 
-set verbose off
-
 # helper
 function strings s2a (matrix y)
     # put numerical values into an array of strings
@@ -13,6 +11,7 @@ function strings s2a (matrix y)
     endloop
     return S
 end function
+
 # helper
 function strings asdate (strings S "stringified $obsdate array",
                          int dform[0:5:1] "0=Y/M/D, 1=y/M/D, 2=Y/M, 3=y/M, 4=M/D, 5=M/y")
@@ -44,96 +43,101 @@ function strings asdate (strings S "stringified $obsdate array",
 end function
 
 
+# helper function
+function bundle default_opts ()
+
+    bundle self
+
+    # Define default values
+    #-----------------------
+
+    string self.fname = "display"	# output file
+
+    # font related
+    self.fontsize = 14				# font size for TODO ???
+    self.Vfontsize = 10				# labels for vertical lines
+
+    # date format
+    self.dateform = 1				# date format
+    self.nstep = 4					# put xticks every n-th unit
+
+    # legend
+    self.legend = 1					# show legend (default: true)
+    self.posleg = 0					# default pos. of legend
+
+    # style
+    self.grid = 0					# draw no grid
+    self.dashtype = ones(12,1)		# default: all solid lines
+    b.Vdashtype = ones(12,1)		# for vertical lines
+
+    # linetype
+    self.ps = 0.5					# point size
+    self.pival = 4					# TODO ??
+    self.mono = 0					# monochrome off
+
+    # linewidth
+    self.linewidth = ones(12,1)		# for rhs lines
+    self.lineLHSwidth = ones(12,1)	# for lhs lines
+    self.impwidth = ones(12,1)		# for rhs impulses
+    self.impLHSwidth = ones(12,1)	# for lhs impulses
+    self.Vlinewidth = ones(12,1)	# for vertical lines
+
+    # line colors
+    strings lc = array(12)
+    loop i=1..nelem(lc) -q
+        lc[i] = "black"
+    endloop
+    self.colors = lc
+
+    # line colors for vertical lines
+    strings lc = array(12)
+    loop i=1..nelem(lc) -q
+        lc[i] = "black"
+    endloop
+    self.vcolors = lc
+
+    # colorbox for heatmap
+    self.nocolorbox = 0
+
+    # define pattern style:
+    # https://stackoverflow.com/questions/19412382/gnuplot-line-types
+    self.pat = {0,4,2,3,8}    	# pattern orderings
+
+
+    # output size
+    self.height = 480					# height of plot
+    self.width = 640					# width of plot
+
+    return self
+end function
+
+
 #private
 function void GnuPlotFun(bundle *b, string which)
 
     #--------------
     # MAIN FUNCTION
     #--------------
+    
     b.which=which
-    # 1st checks for basic information
-    if !inbundle(b, "fname")
-        funcerr "Provide a file name: 'name.TYPE'"
-    endif
+    
+    # CHECKS
     # FIXME: maybe StrLeg is not needed being specified
     if !inbundle(b, "StrLeg") && b.which != "HeatMap"	#TODO: rename to Legend
         funcerr "Provide an array of legend names"
     endif
 
-    # Define default values
-    if !inbundle(b, "dateform")
-        b.dateform = 1
+    # Set up the bundle
+    bundle b = default_opts(y, X)
+    if exists(gblm_opts)
+        # override defaults
+        b = gblm_opts + b
+        set seed b.set_seed
+        string estimator = b.estimator
     endif
-    if !inbundle(b, "nstep")
-        b.nstep = 4
-    endif
-    if !inbundle(b, "fontsize")
-        b.fontsize = 14
-    endif
-    if !inbundle(b, "legend")
-        b.legend = 1
-    endif
-    if !inbundle(b, "posleg")
-        b.posleg = 0
-    endif
-    if !inbundle(b, "grid")
-        b.grid = 0
-    endif
-    if !inbundle(b, "ps")
-        b.ps = 0.5	#*ones(12,1)
-    endif
-    if !inbundle(b, "pival")
-        b.pival = 4
-    endif
-    if !inbundle(b, "height")
-        b.height = 480
-    endif
-    if !inbundle(b, "width")
-        b.width = 640
-    endif
-    if !inbundle(b, "colors")
-        #b.colors = seq(1,12)
-        strings colors = defarray("black", "black", "black", "grey", "grey", "grey", "grey", "black", "black", "black", "black", "black", "black")	# color string
-        b.colors = colors
-    endif
-    if !inbundle(b, "Vcolors")		# for vertical lines
-        strings Vcolors = defarray("black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black")	# color string
-        b.Vcolors = Vcolors
-    endif
-    if !inbundle(b, "mono")		# for heatmap only
-        b.mono = 0
-    endif
-    if !inbundle(b, "nocolorbox")		# for heatmap only
-        b.nocolorbox = 0
-    endif
-    if !inbundle(b, "linewidth")
-        b.linewidth = ones(14,1)	# default lw=1
-    endif
-    if !inbundle(b, "lineLHSwidth")
-        b.lineLHSwidth = ones(14,1)	# default lw=1
-    endif
-    if !inbundle(b, "impwidth")
-        b.impwidth = ones(12,1)	# default lw=1
-    endif
-    if !inbundle(b, "impLHSwidth")
-        b.impLHSwidth = ones(12,1)	# default lw=1
-    endif
-    if !inbundle(b, "dashtype")
-        b.dashtype = ones(12,1)		# default: all solid lines
-    endif
-    if !inbundle(b, "Vlinewidth")   # for vertical lines
-        b.Vlinewidth = ones(12,1)	# default lw=1
-    endif
-    if !inbundle(b, "Vdashtype")	# for vertical lines
-        b.Vdashtype = ones(12,1)		# default: all solid lines
-    endif
-    if !inbundle(b, "Vfontsize") # font size of labels for vertical lines
-        b.Vfontsize = 10
-    endif
-    if !inbundle(b, "pattern")
-        # define pattern style: https://stackoverflow.com/questions/19412382/gnuplot-line-types
-        b.pat = {0,4,2,3,8}    	# pattern orderings
-    endif
+
+
+
 
     # Call plot function
     if which == "ShadedLine"
@@ -147,6 +151,7 @@ function void GnuPlotFun(bundle *b, string which)
     endif
 
 end function
+
 
 # helper function
 function void GPFbasics (bundle *b)
