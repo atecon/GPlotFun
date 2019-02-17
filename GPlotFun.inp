@@ -166,8 +166,8 @@ function void GnuPlotFun(bundle *self)
     if self.which == "Standard"
         doStandard(&self)
         
-    elif self.which == "StackedBar"
-        doStackedBar(&self)
+    elif self.which == "stackedbar"
+        dostackedbar(&self)
         #elif which == "Standard"
         #    doStandard(&b)
         
@@ -263,7 +263,7 @@ function void GPFbasics (bundle *b)
         if !inbundle(b, "ynames")
 
             printf "set ytics nomirror border out\n"
-            if inbundle(b, "LineLHSMat") || inbundle(b, "ImpLHSMat")
+            if inbundle(b, "lines_lhs") || inbundle(b, "ImpLHSMat")
                 printf "set y2tics nomirror border out\n"
             endif
             # yrange settings
@@ -330,35 +330,35 @@ function void GPFbasics (bundle *b)
 #            printf "set tics nomirror out scale 0.75 \n"
         endif
 
-        # VShadMat: Vertical, grey shaded areas
+        # vfilled: Vertical, grey shaded areas
         # pairs of starting/ending dates are put into a n by 2 matrix where
         # col. refer to start/ending and rows to specific events
-        if inbundle(b, "VShadMat")
+        if inbundle(b, "vfilled")
             printf "set style rect fc lt -1 fs solid 0.45 noborder\n"
-            loop i=1..rows(b.VShadMat) -q
-                printf "set obj rect from %d, graph 0 to %d, graph 1\n", b.VShadMat[i,1], b.VShadMat[i,2]
+            loop i=1..rows(b.vfilled) -q
+                printf "set obj rect from %d, graph 0 to %d, graph 1\n", b.vfilled[i,1], b.vfilled[i,2]
             endloop
         endif
 
-        # VLineMat: Vertical (dashed) lines + LABELS
+        # vlines: Vertical (dashed) lines + LABELS
         # provide a vector of dates (obsdate format) by a n by 1 matrix where
         # rows refer to specific events
-        if inbundle(b, "VLineMat")
-            b.VLineMat = vec(b.VLineMat)
-            loop i=1..rows(b.VLineMat) -q
+        if inbundle(b, "vlines")
+            b.vlines = vec(b.vlines)
+            loop i=1..rows(b.vlines) -q
                 printf "set arrow from %d, graph 0 to %d, graph 1 nohead lw %.2f lc rgb '%s' \
-                  linetype $i dashtype %d front \n", b.VLineMat[i], b.VLineMat[i], b.Vlinewidth[i], b.vcolors[i], b.Vdashtype[i]
+                  linetype $i dashtype %d front \n", b.vlines[i], b.vlines[i], b.Vlinewidth[i], b.vcolors[i], b.Vdashtype[i]
             endloop
             # Add label to vertical lines
             if inbundle(b,"ymax")
                 scalar y_max = b.ymax
             else
                 loop i=1..5 -q
-                    if i==1 && inbundle(b,"LineMat")
-                        matrix mat = b.LineMat
+                    if i==1 && inbundle(b,"lines")
+                        matrix mat = b.lines
                         scalar y_max = max(maxc(mat))
-                    elif i==2 && inbundle(b,"LineLHSMat")
-                        mat = b.LineLHSMat
+                    elif i==2 && inbundle(b,"lines_lhs")
+                        mat = b.lines_lhs
                     elif i==3 && inbundle(b,"ImpMat")
                         mat = b.ImpMat
                     elif i==4 && inbundle(b,"ImpLHSMat")
@@ -375,8 +375,8 @@ function void GPFbasics (bundle *b)
             endif
             scalar incr = y_max*0.2	# move label a bit higher (2% above max. value)
             # TODO: value 0.2 should be another option
-            loop i=1..rows(b.VLineMat) -q
-                printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',%d'\n", b.VLineMat[i],y_max,incr, b.Vfontsize
+            loop i=1..rows(b.vlines) -q
+                printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',%d'\n", b.vlines[i],y_max,incr, b.Vfontsize
             endloop
         endif
 
@@ -386,7 +386,7 @@ end function
 
 function void doHeatMap (bundle *b)
     # HeatMat = k by T matrix, k=cross-sectional dim., T=time dim.
-    # LineMat = draw horizonal lines
+    # lines = draw horizonal lines
     # NOTE: Stacked Bar is not allowed for this type of plot
 
     if inbundle(b, "HeatMat")
@@ -396,10 +396,10 @@ function void doHeatMap (bundle *b)
     endif
     # TODO: add line plot
     /*
-       if inbundle(b, "LineMat")
-       mat ~= b.LineMat
-       elif inbundle(b, "LineLHSMat")
-       mat ~= b.LineLHSMat
+       if inbundle(b, "lines")
+       mat ~= b.lines
+       elif inbundle(b, "lines_lhs")
+       mat ~= b.lines_lhs
        endif
     */
 
@@ -415,7 +415,9 @@ function void doHeatMap (bundle *b)
         #printf "set border 3 back ls 11\n"			# get rid of upper + left border
         printf "set tics nomirror \n"
         printf "set datafile missing \"NA\" \n"
-        printf "set cbrange[%.5f:%.5f] \n", b.ymin, b.ymax # set the value-range for legend
+        if inbundle(b, ymin) && inbundle(b, ymax)
+            printf "set cbrange[%.5f:%.5f] \n", b.ymin, b.ymax # set the value-range for legend
+        endif        
         
         # SET palette color
         # Defining a palette with discrete colors
@@ -473,19 +475,19 @@ function void doHeatMap (bundle *b)
 end function
 
 
-function void doStackedBar (bundle *b)
+function void dostackedbar (bundle *b)
     # StackMat = T by k matrix, k=separate bar plot (x1,...,xk), T=time dim.
-    # LineMat = draw horizonal lines
+    # lines = draw horizonal lines
 
     if inbundle(b, "StackMat")
         matrix mat = b.StackMat
     else
         funcerr "Warning: doStandard() requires at least matrix 'StackMat'!"
     endif
-    if inbundle(b, "LineMat")
-        mat ~= b.LineMat
-    elif inbundle(b, "LineLHSMat")
-        mat ~= b.LineLHSMat
+    if inbundle(b, "lines")
+        mat ~= b.lines
+    elif inbundle(b, "lines_lhs")
+        mat ~= b.lines_lhs
     endif
 
     GPFbasics(&b)	# Run basic settings
@@ -555,8 +557,8 @@ end function
 
 
 function void doStandard (bundle *b)
-    # LineMat = draw horizonal lines
-    # CImat = draw horizonal shaded areas
+    # lines = draw horizonal lines
+    # hfilled = draw horizonal shaded areas
 
     GPFbasics(&b)	# Run basic settings
 
@@ -565,20 +567,20 @@ function void doStandard (bundle *b)
 
     outfile @tmpfile --append
 
-        if inbundle(b, "LineMat") || inbundle(b, "ImpMat")
+        if inbundle(b, "lines") || inbundle(b, "ImpMat")
         else
-            funcerr "Warning: doStandard() requires at least matrix 'LineMat' or 'ImpMat'!"
+            funcerr "Warning: doStandard() requires at least matrix 'lines' or 'ImpMat'!"
         endif
 
         #------------
         # Plot CIs
         #------------
-        if inbundle(b, "CImat")
+        if inbundle(b, "hfilled")
             printf "set style fill transparent solid 1.0 noborder\n"		# degree of transparency
         endif
 
         printf "plot \\\n"
-        if inbundle(b, "CImat")	# Plot CI
+        if inbundle(b, "hfilled")	# Plot CI
             printf "'-' using 1:2:3 t '' lc rgb '#dddddd' w filledcurve, \\\n"
         endif
 
@@ -618,9 +620,9 @@ function void doStandard (bundle *b)
                 # make sure following line plot works
                 if j<cols(IMPMAT)
                     printf(j == cols(IMPMAT) ? "\n" : ", \\\n")
-                elif j==cols(IMPMAT) && inbundle(b, "LineMat")
+                elif j==cols(IMPMAT) && inbundle(b, "lines")
                     printf ", \\\n"
-                elif j==cols(IMPMAT) && inbundle(b, "LineLHSMat")
+                elif j==cols(IMPMAT) && inbundle(b, "lines_lhs")
                     printf ", \\\n"
                 else
                     printf(j == cols(IMPMAT) ? "\n" : ", \\\n")
@@ -634,17 +636,17 @@ function void doStandard (bundle *b)
         #------------
         # Plot lines
         #------------
-        if inbundle(b, "LineMat") || inbundle(b, "LineLHSMat")
+        if inbundle(b, "lines") || inbundle(b, "lines_lhs")
             matrix MAT = {}
-            if inbundle(b, "LineMat")
-                crhs = cols(b.LineMat)
-                matrix MAT = b.LineMat
+            if inbundle(b, "lines")
+                crhs = cols(b.lines)
+                matrix MAT = b.lines
             else
                 crhs = 0
             endif
-            if inbundle(b, "LineLHSMat")
-                clhs = cols(b.LineLHSMat)
-                matrix MAT ~= b.LineLHSMat
+            if inbundle(b, "lines_lhs")
+                clhs = cols(b.lines_lhs)
+                matrix MAT ~= b.lines_lhs
             endif
             loop j=1..cols(MAT) -q
                 if j==1 && inbundle(b, "Date")
@@ -669,10 +671,10 @@ function void doStandard (bundle *b)
             endloop
         endif
 
-        # write data block for horizontal mat2=CImat shaded area
-        if inbundle(b, "CImat")
-            loop j=1..rows(b.CImat) -q		# CI
-                printf "$j %g %g\n", b.CImat[j,1], b.CImat[j,2]
+        # write data block for horizontal mat2=hfilled shaded area
+        if inbundle(b, "hfilled")
+            loop j=1..rows(b.hfilled) -q		# CI
+                printf "$j %g %g\n", b.hfilled[j,1], b.hfilled[j,2]
             endloop
             printf "e\n"
         endif
@@ -715,11 +717,11 @@ function void doStandard (bundle *b)
         # Plot lines values
         # write data block
         #-------------------
-        if inbundle(b, "LineMat") || inbundle(b, "LineLHSMat")
+        if inbundle(b, "lines") || inbundle(b, "lines_lhs")
             loop i=1..cols(MAT) -q
                 loop j=1..rows(MAT) -q
                     if inbundle(b, "Date")
-                        if i==1 && ( j==1 || j % b.nstep == 0)# || j==rows(b.LineMat) )		# put xtics at 1st obs, every nstep obs. and last obs.
+                        if i==1 && ( j==1 || j % b.nstep == 0)# || j==rows(b.lines) )		# put xtics at 1st obs, every nstep obs. and last obs.
                             if ok(MAT[j,i])
                                 printf "%g %s\n", MAT[j,i], b.Date[j]
                             else
@@ -727,14 +729,14 @@ function void doStandard (bundle *b)
                             endif
                         else
                             if ok(MAT[j,i])
-                                #printf "%g -1\n", b.LineMat[j,i]	# put major tick (w.o. label) at each period
+                                #printf "%g -1\n", b.lines[j,i]	# put major tick (w.o. label) at each period
                                 printf "%g \n", MAT[j,i]		# don't put major tick if no label is provided
                             else
                                 printf "? \n", MAT[j,i]
                             endif
                         endif
                     else
-                        #printf "%g -1\n", b.LineMat[j,i]
+                        #printf "%g -1\n", b.lines[j,i]
                         if ok(MAT[j,i])
                             printf "%g \n", MAT[j,i]		# don't put major tick if no label is provided
                         else

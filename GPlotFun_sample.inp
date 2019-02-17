@@ -41,14 +41,14 @@ b.title = "A nice plot..."
 # needed for Shaded line plot
 b.obsdate = {$obsdate}				# if no obsdate is passed, x-axis is 1,2,...
 # CI-Shaded Plot +  Line Plot + Vertical shaded area
-b.LineMat = (point~1.2.*point)	# T by k matrix of line plots, RHS
-#b.LineMat[1:10,1] = NA
-b.LineLHSMat = point*0.4		# T by k matrix of line plots, LHS
-#b.ImpMat = muniform(nobs(LRM),1)*10
-b.ImpLHSMat = muniform(nobs(LRM),1)*10
-b.CImat = low~up				# T by 2 matrix of shaded horizonal area
-#b.VShadMat = {obsnum(1977:1)} ~ {obsnum(1980:2)}	# n by 2 matrox of shaded area between 2 dates
-b.VLineMat = {obsnum(1981:1)} ~ {obsnum(1985:4)}
+b.lines = (point~1.2.*point)	# T by k matrix of line plots, RHS
+#b.lines[1:10,1] = NA
+b.lines_lhs = point*0.4		# T by k matrix of line plots, LHS
+#b.impulses = muniform(nobs(LRM),1)*10
+#b.impulses_lhs = muniform(nobs(LRM),1)*10
+b.hfilled = low~up				# T by 2 matrix of shaded horizonal area
+b.vfilled = {obsnum(1977:1)} ~ {obsnum(1980:2)}	# n by 2 matrox of shaded area between 2 dates
+b.vlines = {obsnum(1981:1)} ~ {obsnum(1985:4)}	# FIXME: is plotted in white color!
 b.StrLeg = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo")
 
 # Plot + store 
@@ -59,13 +59,15 @@ stop
 
 
 # Stacked Bar Plot
-b.StackMat = b.LineMat
-b.LineMat = ones(55,1) #(point/2)
-delete b.VShadMat
+b.StackMat = b.lines
+b.lines = ones(55,1) #(point/2)
+#delete b.vfilled
 b.StrLeg = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo", "foo", "foo")
-string fname = sprintf("%s/StackBar.png", $dotdir)	# "display"
+string fname = "display" #sprintf("%s/StackBar.png", $dotdir)	# "display"
 b.fname = fname
-GnuPlotFun(&b, "StackedBar")
+b.which = "stackedbar"
+GnuPlotFun(&b)
+stop
 
 # Heatmap Plot
 bundle b = null
@@ -85,4 +87,5 @@ b.HeatMat = mnormal(3,20)
 b.ynames = defarray("L1", "L2", "L3")
 string fname = sprintf("%s/HeatMap.png", $dotdir)	# "display"
 b.fname = fname
-GnuPlotFun(&b, "HeatMap")
+b.which = "HeatMap"
+GnuPlotFun(&b)
