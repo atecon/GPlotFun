@@ -17,9 +17,12 @@ matrix up = point.+0.5
 #b.vlines_dt = {1,2,3}		# for vertical lines
 b.lines_lw = {2,2.5,5,1,1,1,1}
 b.impulses_lw = {3}
+# select color -- either array of rgb colors or a palette
+#---------------------------------------------------------
 #b.colors = defarray("black", "black", "black", "grey", \
   #  "grey", "grey", "grey", "black", "black", "black", "black", "black")	# color string
-.colors = "greys_pal"
+#string b.colors = "greys_pal"
+
 b.dateform = 5
 b.fontsize = 11
 /*

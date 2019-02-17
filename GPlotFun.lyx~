@@ -1673,8 +1673,6 @@ Option
 \begin_inset Text
 
 \begin_layout Plain Layout
-
-\family typewriter
 lines_lw
 \end_layout
 
@@ -1695,8 +1693,6 @@ matrix, specify line width of rhs lines (default: 1 for 12 lines)
 \begin_inset Text
 
 \begin_layout Plain Layout
-
-\family typewriter
 lines_lws_lw
 \end_layout
 
@@ -1717,6 +1713,8 @@ matrix, specify line width of lhs lines (default: 1 for 12 lines)
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 vlines_lw
 \end_layout
 
@@ -1737,6 +1735,8 @@ matrix, specify line width of rhs vertical lines (default: 1 for 12 lines)
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 impulses_lw
 \end_layout
 
@@ -1757,6 +1757,8 @@ matrix, specify line width of rhs impulses (default: 1 for 12 impulses)
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 impulses_lhs_lw
 \end_layout
 
@@ -1777,6 +1779,8 @@ matrix, specify line width of lhs impulses (default: 1 for 12 impulses)
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 vlines_lw
 \end_layout
 
@@ -1832,7 +1836,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="6" columns="2">
+<lyxtabular version="3" rows="7" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -1946,7 +1950,7 @@ matrix, set dash type for rhs lines (default: solid lines (=1) for 12 lines)
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1957,12 +1961,34 @@ vlines_dt
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 matrix, set dash type for vertical lines (default: solid lines (=1) for
  12 lines)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+pat
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+matrix, pattern styles for stacked bars (default {0,4,2,3,8})
 \end_layout
 
 \end_inset
@@ -2043,6 +2069,8 @@ Option
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 colors
 \end_layout
 
@@ -2054,7 +2082,7 @@ colors
 \begin_layout Plain Layout
 string array, specify line/ point color either as RGB color (default: 
 \family typewriter
-dark2
+dark2_pal
 \family default
  palette)
 \end_layout
@@ -2068,6 +2096,8 @@ dark2
 
 \begin_layout Plain Layout
 
+\family typewriter
+vcolors
 \end_layout
 
 \end_inset
@@ -2076,7 +2106,12 @@ dark2
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+string array, specify vertical line color either as RGB color (default:
+ 
+\family typewriter
+jet_pal
+\family default
+ palette)
 \end_layout
 
 \end_inset
@@ -2173,7 +2208,70 @@ Overview of line-/ point-types-related options.
 \end_layout
 
 \begin_layout Standard
-For colors the user can either choose among 3 pre-defined color pallets:
+For colors the user can either choose among 3 pre-defined color pallets
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+These color pallets are downloaded from 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+https://github.com/Gnuplotting/gnuplot-palettes/
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+dark2_pal
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+greys_pal
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+jet_pal
+\end_layout
+
+\begin_layout Standard
+or set a string array as for instance by 
+\family typewriter
+b.colors = defarray(
+\begin_inset Quotes eld
+\end_inset
+
+black
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+blue
+\begin_inset Quotes erd
+\end_inset
+
+)
+\family default
+.
 \end_layout
 
 \begin_layout Subsection
@@ -2182,10 +2280,6 @@ Date format
 
 \begin_layout Subsection
 legend
-\end_layout
-
-\begin_layout Subsection
-style
 \end_layout
 
 \begin_layout Subsection

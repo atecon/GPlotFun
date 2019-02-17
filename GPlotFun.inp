@@ -98,7 +98,7 @@ function bundle default_opts ()
        endloop
        self.colors = lc
     */
-    self.colors = colpal("dark2_pal") 	# greys_pal(), jet_pal(), dark2_pal()
+    self.color = colpal("dark2_pal") 	# greys_pal(), jet_pal(), dark2_pal()
 
     # line colors for vertical lines
     /*
@@ -108,7 +108,7 @@ function bundle default_opts ()
        endloop
        self.vcolors = lc
     */
-    self.vcolors = greys_pal() 	# greys_pal(), jet_pal(), dark2_pal()
+    self.vcolors =  colpal("jet_pal") 	# greys_pal(), jet_pal(), dark2_pal()
 
     # colorbox for heatmap
     self.nocolorbox = 0
@@ -158,6 +158,28 @@ function void GnuPlotFun(bundle *self)
     # Set up the bundle
     # override defaults
     self = self + default_opts()
+    
+
+    # Color check for point and lines
+    if inbundle(self, "colors")
+        if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> BUG: "string" doesn't work
+            tmp = colpal(self.colors)     		# just a trick
+            self.colors = tmp					# update
+        endif        
+    else
+        self.colors = self.color			# use default palette
+    endif
+
+    # Color check for vertical lines
+    if inbundle(self, "colors")
+        if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> BUG: "string" doesn't work
+            tmp = colpal(self.colors)     		# just a trick
+            self.colors = tmp					# update
+        endif        
+    else
+        self.colors = self.color			# use default palette
+    endif
+
 
 
     # CHECKS
