@@ -1834,7 +1834,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="7" columns="2">
+<lyxtabular version="3" rows="8" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -1874,7 +1874,27 @@ ps
 \begin_inset Text
 
 \begin_layout Plain Layout
+matrix, specify point size of rhs lines (default: 0 for 12 lines)
+\end_layout
 
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+pt
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+matrix, specify point size of rhs lines (default: 1 for 12 lines)
 \end_layout
 
 \end_inset
@@ -1927,7 +1947,7 @@ dashtype
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+Vdashtype
 \end_layout
 
 \end_inset
@@ -1947,7 +1967,7 @@ dashtype
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+mono
 \end_layout
 
 \end_inset

@@ -26,10 +26,11 @@ b.nstep = 12
 
 b.legend = 1
 b.posleg = 0
-b.ps = 0
+
 b.pival = 1
 b.noborder = 1
 */
+b.ps = ones(12,1)
 b.grid = 1
 b.height = 390
 b.width = 640

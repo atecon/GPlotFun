@@ -75,7 +75,8 @@ function bundle default_opts ()
     self.noborder = 0				# draw no border = draw top and rhs axis
 
     # linetype
-    self.ps = 0.5					# point size
+    self.ps = 0*ones(12,1)			# point size
+    self.pt = seq(1,6) ~ seq(1,6)	# point type
     self.pival = 4					# point interval
     self.dashtype = ones(12,1)		# default: all solid lines
     self.Vdashtype = ones(12,1)		# for vertical lines
@@ -217,10 +218,10 @@ function void GPFbasics (bundle *b)
 
         # Options
         printf "set datafile missing \"NaN\" \n"			# TODO: is this correctly handled?
-        sprintf PS "%.2f", b.ps
+        #sprintf PS "%.2f", b.ps
         #sprintf LW "%.2f", lw
-        sprintf FS "%d", b.fs
-        sprintf PIV "%d", b.pival
+        #sprintf FS "%d", b.fs
+        #sprintf PIV "%d", b.pival
 
         # Legend
         if b.legend==0
@@ -263,7 +264,7 @@ function void GPFbasics (bundle *b)
         if !inbundle(b, "ynames")
 
             printf "set ytics nomirror border out\n"
-            if inbundle(b, "lines_lhs") || inbundle(b, "ImpLHSMat")
+            if inbundle(b, "lines_lhs") || inbundle(b, "impulses_lhs")
                 printf "set y2tics nomirror border out\n"
             endif
             # yrange settings
@@ -359,10 +360,10 @@ function void GPFbasics (bundle *b)
                         scalar y_max = max(maxc(mat))
                     elif i==2 && inbundle(b,"lines_lhs")
                         mat = b.lines_lhs
-                    elif i==3 && inbundle(b,"ImpMat")
-                        mat = b.ImpMat
-                    elif i==4 && inbundle(b,"ImpLHSMat")
-                        mat = b.ImpLHSMat
+                    elif i==3 && inbundle(b,"impulses")
+                        mat = b.impulses
+                    elif i==4 && inbundle(b,"impulses_lhs")
+                        mat = b.impulses_lhs
                     elif i==5 && inbundle(b,"StackMat")
                         mat = sumr(b.StackMat)	# sum over all columns since we look at stacked values
                     endif
@@ -542,8 +543,8 @@ function void dostackedbar (bundle *b)
                     #printf "$data using %d t '%s' fillstyle pattern %d", j, b.StrLeg[j], b.pat[j]
                 elif j>nstack
                     printf "$data using $j axes x1y2 t '%s' w lines linetype %d dashtype %d lc rgb '%s' \
-                      pt 2 ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j], ($j-nstack), b.dashtype[j-nstack], \
-                      b.colors[j], b.ps, b.lines_lw[j-nstack], b.pival
+                      pt %d ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j], ($j-nstack), b.dashtype[j-nstack], \
+                      b.colors[j], b.pt[j-nstack], b.ps[j-nstack], b.lines_lw[j-nstack], b.pival
                 endif
 
             endif
@@ -567,9 +568,9 @@ function void doStandard (bundle *b)
 
     outfile @tmpfile --append
 
-        if inbundle(b, "lines") || inbundle(b, "ImpMat")
+        if inbundle(b, "lines") || inbundle(b, "impulses")
         else
-            funcerr "Warning: doStandard() requires at least matrix 'lines' or 'ImpMat'!"
+            funcerr "Warning: doStandard() requires at least matrix 'lines' or 'impulses'!"
         endif
 
         #------------
@@ -588,17 +589,17 @@ function void doStandard (bundle *b)
         #-------------
         # Plot Impulse
         #-------------
-        if inbundle(b, "ImpMat") || inbundle(b, "ImpLHSMat")
+        if inbundle(b, "impulses") || inbundle(b, "impulses_lhs")
             matrix IMPMAT = {}
-            if inbundle(b, "ImpMat")
-                crhs = cols(b.ImpMat)
-                IMPMAT = b.ImpMat
+            if inbundle(b, "impulses")
+                crhs = cols(b.impulses)
+                IMPMAT = b.impulses
             else
                 crhs = 0
             endif
-            if inbundle(b, "ImpLHSMat")
-                clhs = cols(b.ImpLHSMat)
-                matrix IMPMAT ~= b.ImpLHSMat
+            if inbundle(b, "impulses_lhs")
+                clhs = cols(b.impulses_lhs)
+                matrix IMPMAT ~= b.impulses_lhs
             endif
             loop j=1..cols(IMPMAT) -q
                 if j==1 && inbundle(b, "Date")
@@ -653,18 +654,22 @@ function void doStandard (bundle *b)
                     k = 2		# date strings are in the 2nd col.
                     if crhs>0
                         printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
-                          t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", k, k, b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.lines_lw[j], b.pival
+                          t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                          k, k, b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.pt[j], b.ps[j], b.lines_lw[j], b.pival
                     else
                         printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
-                          t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", k, k, b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.lines_lw[j], b.pival
+                          t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                          k, k, b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.pt[j], b.ps[j], b.lines_lw[j], b.pival
                     endif
                 else
                     if j<=crhs
                         printf "'-'using 1 t '%s' w lines linetype $j dashtype %d lc \
-                          rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.lines_lw[j], b.pival
+                          rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                          b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.pt[j], b.ps[j], b.lines_lw[j], b.pival
                     else
                         printf "'-'using 1 axes x1y2 t '%s' w lines linetype $j dashtype %d lc \
-                          rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.lines_lw[j], b.pival
+                          rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                          b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.pt[j], b.ps[j], b.lines_lw[j], b.pival
                     endif
                 endif
                 printf(j == cols(MAT) ? "\n" : ", \\\n")
@@ -683,7 +688,7 @@ function void doStandard (bundle *b)
         # Plot impulse values
         # write data block
         #-------------------
-        if inbundle(b, "ImpMat") || inbundle(b, "ImpLHSMat")
+        if inbundle(b, "impulses") || inbundle(b, "impulses_lhs")
             loop i=1..cols(IMPMAT) -q
                 loop j=1..rows(IMPMAT) -q
                     if inbundle(b, "Date")
