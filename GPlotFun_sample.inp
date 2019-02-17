@@ -13,12 +13,13 @@ matrix up = point.+0.5
 
 # Optional information
 #======================
-#b.dashtype = {3,1,1,1}
-#b.Vdashtype = {1,2,3}		# for vertical lines
-#b.lines_lw = {2,2.5,5,1,1,1,1}
-#b.impulses_lw = {1}
+#b.lines_dt = seq(1,12) 
+#b.vlines_dt = {1,2,3}		# for vertical lines
+b.lines_lw = {2,2.5,5,1,1,1,1}
+b.impulses_lw = {3}
 #b.colors = defarray("black", "black", "black", "grey", \
   #  "grey", "grey", "grey", "black", "black", "black", "black", "black")	# color string
+.colors = "greys_pal"
 b.dateform = 5
 b.fontsize = 11
 /*
@@ -27,7 +28,7 @@ b.nstep = 12
 b.legend = 1
 b.posleg = 0
 
-b.pival = 1
+b.lines_pi = 1
 b.noborder = 1
 */
 b.ps = ones(12,1)
@@ -56,7 +57,7 @@ b.StrLeg = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo")
 string fname = sprintf("%s/testplot.png", $dotdir)	# "display"
 #b.fname = fname
 GnuPlotFun(&b)
-stop
+#stop
 
 
 # Stacked Bar Plot
@@ -79,7 +80,7 @@ b.legend = 1
 b.posleg = 0
 b.grid = 0
 b.ps = 0
-b.pival = 1
+b.lines_pi = 1
 b.height = 320
 b.width = 540
 b.mono = 1

@@ -1533,6 +1533,8 @@ Option
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 fstyle
 \end_layout
 
@@ -1553,6 +1555,8 @@ string, font style applied to whole plot (default: serif)
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 fs
 \end_layout
 
@@ -1573,6 +1577,8 @@ scalar, font size applied to whole plot (default: 12)
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 vlines_fs
 \end_layout
 
@@ -1669,9 +1675,7 @@ Option
 \begin_layout Plain Layout
 
 \family typewriter
-lines
-\family default
-_lw
+lines_lw
 \end_layout
 
 \end_inset
@@ -1693,9 +1697,7 @@ matrix, specify line width of rhs lines (default: 1 for 12 lines)
 \begin_layout Plain Layout
 
 \family typewriter
-lines
-\family default
-_lws_lw
+lines_lws_lw
 \end_layout
 
 \end_inset
@@ -1821,10 +1823,6 @@ Overview of linewidth-related options.
 \end_layout
 
 \begin_layout Standard
-self.ps = 0.5 # point size self.pival = 4 # point interval 
-\end_layout
-
-\begin_layout Standard
 \begin_inset Float table
 placement h
 wide false
@@ -1834,7 +1832,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="8" columns="2">
+<lyxtabular version="3" rows="6" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -1865,6 +1863,8 @@ Option
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 ps
 \end_layout
 
@@ -1874,27 +1874,7 @@ ps
 \begin_inset Text
 
 \begin_layout Plain Layout
-matrix, specify point size of rhs lines (default: 0 for 12 lines)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-pt
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-matrix, specify point size of rhs lines (default: 1)
+matrix, specify point size of rhs points or lines (default: 0 for 12 lines)
 \end_layout
 
 \end_inset
@@ -1907,7 +1887,187 @@ matrix, specify point size of rhs lines (default: 1)
 \begin_layout Plain Layout
 
 \family typewriter
-pival
+pt
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+matrix, specify point size of rhs points or lines (default: 1 to 6 for 12
+ lines)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+lines_pi
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+scalar, specify that only the pival-th point of the plot is given a symbol
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+lines_dt
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+matrix, set dash type for rhs lines (default: solid lines (=1) for 12 lines)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+vlines_dt
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+matrix, set dash type for vertical lines (default: solid lines (=1) for
+ 12 lines)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:linetype-options"
+
+\end_inset
+
+Overview of line-/ point-types-related options.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Color format
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="2">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Option
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+colors
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+string array, specify line/ point color either as RGB color (default: 
+\family typewriter
+dark2
+\family default
+ palette)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
 \end_layout
 
 \end_inset
@@ -1927,7 +2087,7 @@ pival
 \begin_inset Text
 
 \begin_layout Plain Layout
-dashtype
+
 \end_layout
 
 \end_inset
@@ -1947,27 +2107,7 @@ dashtype
 \begin_inset Text
 
 \begin_layout Plain Layout
-Vdashtype
-\end_layout
 
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-mono
 \end_layout
 
 \end_inset
@@ -2015,11 +2155,11 @@ mono
 \begin_layout Plain Layout
 \begin_inset CommandInset label
 LatexCommand label
-name "tab:linetype-options"
+name "tab:color-options"
 
 \end_inset
 
-Overview of linetypes-related options.
+Overview of line-/ point-types-related options.
 \end_layout
 
 \end_inset
@@ -2030,6 +2170,14 @@ Overview of linetypes-related options.
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+For colors the user can either choose among 3 pre-defined color pallets
+\end_layout
+
+\begin_layout Enumerate
+dark2_pal
 \end_layout
 
 \begin_layout Subsection
