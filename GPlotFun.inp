@@ -58,9 +58,9 @@ function bundle default_opts ()
     string self.fname = "display"	# output file
 
     # font related
-    self.fontstyle = "serif"
-    self.fontsize = 14				# font size for TODO ???
-    self.Vfontsize = 10				# labels for vertical lines
+    self.fstyle = "serif"
+    self.fs = 12				# font size for TODO ???
+    self.vlines_fs = 10				# labels for vertical lines
 
     # date format
     self.dateform = 1				# date format
@@ -73,20 +73,20 @@ function bundle default_opts ()
     # style
     self.grid = 0					# draw no grid
     self.noborder = 0				# draw no border = draw top and rhs axis
-    self.dashtype = ones(12,1)		# default: all solid lines
-    self.Vdashtype = ones(12,1)		# for vertical lines
 
     # linetype
     self.ps = 0.5					# point size
     self.pival = 4					# point interval
+    self.dashtype = ones(12,1)		# default: all solid lines
+    self.Vdashtype = ones(12,1)		# for vertical lines
     self.mono = 0					# monochrome off
 
-    # linewidth
-    self.linewidth = ones(12,1)		# for rhs lines
-    self.lineLHSwidth = ones(12,1)	# for lhs lines
-    self.impwidth = ones(12,1)		# for rhs impulses
-    self.impLHSwidth = ones(12,1)	# for lhs impulses
-    self.Vlinewidth = ones(12,1)	# for vertical lines
+    # lines_lw
+    self.lines_lw = ones(12,1)		#	 for rhs lines
+    self.lines_lhs_lw = ones(12,1)		# for lhs lines
+    self.impulses_lw = ones(12,1)		# for rhs impulses
+    self.impulses_lhs_lw = ones(12,1)	# for lhs impulses
+    self.vlines_lw = ones(12,1)			# for vertical lines
 
     # line colors
     /*
@@ -158,7 +158,7 @@ function void GnuPlotFun(bundle *self)
 
     # CHECKS
     # FIXME: maybe StrLeg is not needed being specified
-    if !inbundle(self, "StrLeg") && self.which != "HeatMap"	#TODO: rename to Legend
+    if !inbundle(self, "StrLeg") && self.which != "heatmap"	#TODO: rename to Legend
         funcerr "Provide an array of legend names"
     endif        
 
@@ -171,8 +171,8 @@ function void GnuPlotFun(bundle *self)
         #elif which == "Standard"
         #    doStandard(&b)
         
-    elif self.which == "HeatMap"
-        doHeatMap(&self)
+    elif self.which == "heatmap"
+        doheatmap(&self)
     endif
 
 end function
@@ -203,13 +203,13 @@ function void GPFbasics (bundle *b)
             string ftype = substr(b.fname,(slong-2),slong)	# retrieve last 3 characters-->filetype
             # TODO: rather look for the '.' (dot) to make stuff more robust
             if ftype=="png" || b.fname=="display"
-                sprintf optTERM "set term pngcairo size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fontstyle,b.fontsize
+                sprintf optTERM "set term pngcairo size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
             elif ftype=="pdf"
-                sprintf optTERM "set term pdf size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fontstyle,b.fontsize
+                sprintf optTERM "set term pdf size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
             elif ftype=="eps"
-                sprintf optTERM "set term eps size %.2f,%.2f font '%s,%.1f'\n", b.width,b.height,b.fontstyle,b.fontsize	# NOTE: width, height must be in inches!
+                sprintf optTERM "set term eps size %.2f,%.2f font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs	# NOTE: width, height must be in inches!
             elif ftype=="svg"
-                sprintf optTERM "set term svg size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fontstyle,b.fontsize
+                sprintf optTERM "set term svg size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
             else
                 funcerr "*** Setting resolution is only allowed for png, pdf, eps and svg files. ***"
             endif
@@ -219,7 +219,7 @@ function void GPFbasics (bundle *b)
         printf "set datafile missing \"NaN\" \n"			# TODO: is this correctly handled?
         sprintf PS "%.2f", b.ps
         #sprintf LW "%.2f", lw
-        sprintf FS "%d", b.fontsize
+        sprintf FS "%d", b.fs
         sprintf PIV "%d", b.pival
 
         # Legend
@@ -304,19 +304,19 @@ function void GPFbasics (bundle *b)
                     endif
                 endif
             endloop
-            printf " ) font 'serif,%.1f' out\n", b.fontsize #rotate by 45
+            printf " ) font 'serif,%.1f' out\n", b.fs #rotate by 45
 
         endif
 
         # Labels + title
         if inbundle(b, "xlab")
-            printf "set xlabel '%s' font '%s,%d'\n", b.xlab, b.fontstyle, b.fontsize
+            printf "set xlabel '%s' font '%s,%d'\n", b.xlab, b.fstyle, b.fs
         endif
         if inbundle(b, "ylab")
-            printf "set ylabel '%s' font '%s,%d'\n", b.ylab, b.fontstyle, b.fontsize
+            printf "set ylabel '%s' font '%s,%d'\n", b.ylab, b.fstyle, b.fs
         endif
         if inbundle(b, "title")
-            printf "set title '%s' font '%s,%d'\n", b.title, b.fontstyle, b.fontsize
+            printf "set title '%s' font '%s,%d'\n", b.title, b.fstyle, b.fs
         endif
 
         # Make graph nicer
@@ -347,7 +347,7 @@ function void GPFbasics (bundle *b)
             b.vlines = vec(b.vlines)
             loop i=1..rows(b.vlines) -q
                 printf "set arrow from %d, graph 0 to %d, graph 1 nohead lw %.2f lc rgb '%s' \
-                  linetype $i dashtype %d front \n", b.vlines[i], b.vlines[i], b.Vlinewidth[i], b.vcolors[i], b.Vdashtype[i]
+                  linetype $i dashtype %d front \n", b.vlines[i], b.vlines[i], b.vlines_lw[i], b.vcolors[i], b.Vdashtype[i]
             endloop
             # Add label to vertical lines
             if inbundle(b,"ymax")
@@ -376,7 +376,7 @@ function void GPFbasics (bundle *b)
             scalar incr = y_max*0.2	# move label a bit higher (2% above max. value)
             # TODO: value 0.2 should be another option
             loop i=1..rows(b.vlines) -q
-                printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',%d'\n", b.vlines[i],y_max,incr, b.Vfontsize
+                printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',%d'\n", b.vlines[i],y_max,incr, b.vlines_fs
             endloop
         endif
 
@@ -384,15 +384,15 @@ function void GPFbasics (bundle *b)
 end function
 
 
-function void doHeatMap (bundle *b)
-    # HeatMat = k by T matrix, k=cross-sectional dim., T=time dim.
+function void doheatmap (bundle *b)
+    # heat = k by T matrix, k=cross-sectional dim., T=time dim.
     # lines = draw horizonal lines
     # NOTE: Stacked Bar is not allowed for this type of plot
 
-    if inbundle(b, "HeatMat")
-        matrix mat = b.HeatMat
+    if b.which=="heatmap"
+        matrix mat = b.heat
     else
-        funcerr "Warning: doHeatmap() requires at least matrix 'HeatMat'!"
+        funcerr "Warning: doHeatmap() requires at least matrix 'heat'!"
     endif
     # TODO: add line plot
     /*
@@ -543,7 +543,7 @@ function void dostackedbar (bundle *b)
                 elif j>nstack
                     printf "$data using $j axes x1y2 t '%s' w lines linetype %d dashtype %d lc rgb '%s' \
                       pt 2 ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j], ($j-nstack), b.dashtype[j-nstack], \
-                      b.colors[j], b.ps, b.linewidth[j-nstack], b.pival
+                      b.colors[j], b.ps, b.lines_lw[j-nstack], b.pival
                 endif
 
             endif
@@ -605,16 +605,16 @@ function void doStandard (bundle *b)
                     k = 2		# date strings are in the 2nd col.
                     if crhs>0
                         printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
-                          t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.StrLeg[j], b.colors[j], b.impwidth[j]
+                          t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.StrLeg[j], b.colors[j], b.impulses_lw[j]
                     else
                         printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
-                          t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.StrLeg[j], b.colors[j], b.impLHSwidth[j] 
+                          t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.StrLeg[j], b.colors[j], b.impulses_lhs_lw[j] 
                     endif
                 else
                     if j<=crhs
-                        printf "'-'using 1 t '%s' w impulses lc rgb '%s' lw %.2f", b.StrLeg[j], b.colors[j], b.impwidth[j]
+                        printf "'-'using 1 t '%s' w impulses lc rgb '%s' lw %.2f", b.StrLeg[j], b.colors[j], b.impulses_lw[j]
                     else                        
-                        printf "'-'using 1 axes x1y2 t '%s' w impulses lc rgb '%s' lw %.2f", b.StrLeg[j], b.colors[j], b.impLHSwidth[j]
+                        printf "'-'using 1 axes x1y2 t '%s' w impulses lc rgb '%s' lw %.2f", b.StrLeg[j], b.colors[j], b.impulses_lhs_lw[j]
                     endif
                 endif
                 # make sure following line plot works
@@ -653,18 +653,18 @@ function void doStandard (bundle *b)
                     k = 2		# date strings are in the 2nd col.
                     if crhs>0
                         printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
-                          t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", k, k, b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.linewidth[j], b.pival
+                          t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", k, k, b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.lines_lw[j], b.pival
                     else
                         printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
-                          t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", k, k, b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.linewidth[j], b.pival
+                          t '%s' w lines linetype $j dashtype %d lc rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", k, k, b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.lines_lw[j], b.pival
                     endif
                 else
                     if j<=crhs
                         printf "'-'using 1 t '%s' w lines linetype $j dashtype %d lc \
-                          rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.linewidth[j], b.pival
+                          rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.lines_lw[j], b.pival
                     else
                         printf "'-'using 1 axes x1y2 t '%s' w lines linetype $j dashtype %d lc \
-                          rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.linewidth[j], b.pival
+                          rgb '%s' pt 2 ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j+addcol], b.dashtype[j], b.colors[j+addcol], b.ps, b.lines_lw[j], b.pival
                     endif
                 endif
                 printf(j == cols(MAT) ? "\n" : ", \\\n")

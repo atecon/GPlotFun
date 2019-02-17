@@ -15,8 +15,8 @@ matrix up = point.+0.5
 #======================
 #b.dashtype = {3,1,1,1}
 #b.Vdashtype = {1,2,3}		# for vertical lines
-#b.linewidth = {2,2.5,5,1,1,1,1}
-#b.impwidth = {1}
+#b.lines_lw = {2,2.5,5,1,1,1,1}
+#b.impulses_lw = {1}
 #b.colors = defarray("black", "black", "black", "grey", \
   #  "grey", "grey", "grey", "black", "black", "black", "black", "black")	# color string
 b.dateform = 5
@@ -73,7 +73,7 @@ stop
 bundle b = null
 b.nstep = 5
 b.dateform = 5
-b.fontsize = 11
+b.fs = 11
 b.legend = 1
 b.posleg = 0
 b.grid = 0
@@ -83,9 +83,9 @@ b.height = 320
 b.width = 540
 b.mono = 1
 b.obsdate = {$obsdate}
-b.HeatMat = mnormal(3,20)
+b.heat = mnormal(3,20)
 b.ynames = defarray("L1", "L2", "L3")
-string fname = sprintf("%s/HeatMap.png", $dotdir)	# "display"
+string fname = sprintf("%s/heatmap.png", $dotdir)	# "display"
 b.fname = fname
-b.which = "HeatMap"
+b.which = "heatmap"
 GnuPlotFun(&b)
