@@ -1093,10 +1093,6 @@ standard
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
@@ -1105,6 +1101,22 @@ standard
 \begin_layout Standard
 Each column of the respective matrix specifies another series/ variable
  to plot while rows specify a series' observation(s).
+\end_layout
+
+\begin_layout Subsection
+The 
+\begin_inset Quotes eld
+\end_inset
+
+scatter
+\begin_inset Quotes erd
+\end_inset
+
+ plotting option
+\end_layout
+
+\begin_layout Standard
+TBW
 \end_layout
 
 \begin_layout Subsection

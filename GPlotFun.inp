@@ -232,7 +232,7 @@ function void print_leg_str (bundle *b)
     endif
 end function
 
-
+# helper function
 function void print_term_str (bundle *b)
     if b.ftype=="png" || b.fname=="display"
         printf "set term pngcairo size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
@@ -246,6 +246,45 @@ function void print_term_str (bundle *b)
         funcerr "*** Setting resolution is only allowed for png, pdf, eps and svg files. ***"
     endif
 end function
+
+
+function void write_data_block (bundle *b, matrix mat)
+
+    # Write data block
+
+    if inbundle(b, "points") || inbundle(b, "points_rhs")
+        loop i=1..cols(mat) -q
+            loop j=1..rows(mat) -q
+                if inbundle(b, "Date")
+                    if i==1 && ( j==1 || j % b.skipx == 0)
+                        if ok(mat[j,i])
+                            printf "%g %s\n", mat[j,i], b.Date[j]
+                        else
+                            printf "? %s\n", mat[j,i], b.Date[j]
+                        endif
+                    else
+                        if ok(mat[j,i])
+                            #printf "%g -1\n", b.lines[j,i]	# put major tick (w.o. label) at each period
+                            printf "%g \n", mat[j,i]		# don't put major tick if no label is provided
+                        else
+                            printf "? \n", mat[j,i]
+                        endif
+                    endif
+                else
+                    #printf "%g -1\n", b.lines[j,i]
+                    if ok(mat[j,i])
+                        printf "%g \n", mat[j,i]		# don't put major tick if no label is provided
+                    else
+                        printf "? \n", mat[j,i]
+                    endif
+                endif
+            endloop
+            printf "e\n"
+        endloop
+    endif
+end function
+
+
 
 # helper function
 function void GPFbasics (bundle *b)
@@ -778,34 +817,9 @@ function void doStandard (bundle *b)
         #-------------------
         # Plot impulse values
         # write data block
-        #-------------------
-        if inbundle(b, "impulses") || inbundle(b, "impulses_rhs")
-            loop i=1..cols(IMPMAT) -q
-                loop j=1..rows(IMPMAT) -q
-                    if inbundle(b, "Date")
-                        if i==1 && ( j==1 || j % b.skipx == 0)
-                            if ok(IMPMAT[j,i])
-                                printf "%g %s\n", IMPMAT[j,i], b.Date[j]
-                            else
-                                printf "? %s\n", IMPMAT[j,i], b.Date[j]
-                            endif
-                        else
-                            if ok(IMPMAT[j,i])
-                                printf "%g \n", IMPMAT[j,i]		# don't put major tick if no label is provided
-                            else
-                                printf "? \n"
-                            endif
-                        endif
-                    else
-                        if ok(IMPMAT[j,i])
-                            printf "%g \n", IMPMAT[j,i]			# don't put major tick if no label is provided
-                        else
-                            printf "? \n"
-                        endif
-                    endif
-                endloop
-                printf "e\n"
-            endloop
+        #-------------------        
+        if inbundle(b, "impulses") || inbundle(b, "impulses_rhs")            
+           write_data_block (&b, IMPMAT)
         endif
 
 
@@ -814,34 +828,7 @@ function void doStandard (bundle *b)
         # write data block
         #-------------------
         if inbundle(b, "lines") || inbundle(b, "lines_rhs")
-            loop i=1..cols(MAT) -q
-                loop j=1..rows(MAT) -q
-                    if inbundle(b, "Date")
-                        if i==1 && ( j==1 || j % b.skipx == 0)# || j==rows(b.lines) )		# put xtics at 1st obs, every nstep obs. and last obs.
-                            if ok(MAT[j,i])
-                                printf "%g %s\n", MAT[j,i], b.Date[j]
-                            else
-                                printf "? %s\n", MAT[j,i], b.Date[j]
-                            endif
-                        else
-                            if ok(MAT[j,i])
-                                #printf "%g -1\n", b.lines[j,i]	# put major tick (w.o. label) at each period
-                                printf "%g \n", MAT[j,i]		# don't put major tick if no label is provided
-                            else
-                                printf "? \n", MAT[j,i]
-                            endif
-                        endif
-                    else
-                        #printf "%g -1\n", b.lines[j,i]
-                        if ok(MAT[j,i])
-                            printf "%g \n", MAT[j,i]		# don't put major tick if no label is provided
-                        else
-                            printf "? \n", MAT[j,i]
-                        endif
-                    endif
-                endloop
-                printf "e\n"
-            endloop
+            write_data_block (&b, MAT)
         endif
 
         #-------------------
@@ -849,34 +836,7 @@ function void doStandard (bundle *b)
         # write data block
         #-------------------
         if inbundle(b, "points") || inbundle(b, "points_rhs")
-            loop i=1..cols(PMAT) -q
-                loop j=1..rows(PMAT) -q
-                    if inbundle(b, "Date")
-                        if i==1 && ( j==1 || j % b.skipx == 0)
-                            if ok(PMAT[j,i])
-                                printf "%g %s\n", PMAT[j,i], b.Date[j]
-                            else
-                                printf "? %s\n", PMAT[j,i], b.Date[j]
-                            endif
-                        else
-                            if ok(PMAT[j,i])
-                                #printf "%g -1\n", b.lines[j,i]	# put major tick (w.o. label) at each period
-                                printf "%g \n", PMAT[j,i]		# don't put major tick if no label is provided
-                            else
-                                printf "? \n", PMAT[j,i]
-                            endif
-                        endif
-                    else
-                        #printf "%g -1\n", b.lines[j,i]
-                        if ok(PMAT[j,i])
-                            printf "%g \n", PMAT[j,i]		# don't put major tick if no label is provided
-                        else
-                            printf "? \n", PMAT[j,i]
-                        endif
-                    endif
-                endloop
-                printf "e\n"
-            endloop
+            write_data_block (&b, PMAT)
         endif
 
     end outfile

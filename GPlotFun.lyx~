@@ -1093,10 +1093,6 @@ standard
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
@@ -1105,6 +1101,14 @@ standard
 \begin_layout Standard
 Each column of the respective matrix specifies another series/ variable
  to plot while rows specify a series' observation(s).
+\end_layout
+
+\begin_layout Subsection
+The 'scatter' plotting option
+\end_layout
+
+\begin_layout Standard
+TBW
 \end_layout
 
 \begin_layout Subsection
@@ -2335,6 +2339,8 @@ int, number of entries on the x-axis skipped before the next one shown (default:
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 ymin
 \end_layout
 
@@ -2355,6 +2361,8 @@ scalar, specify minimum value on lhs y-axis (optional)
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 ymax
 \end_layout
 
