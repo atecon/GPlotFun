@@ -103,7 +103,7 @@ literal "false"
 \end_layout
 
 \begin_layout Date
-Version 0.2
+Version 0.1
 \end_layout
 
 \begin_layout Standard
@@ -897,7 +897,7 @@ lines
 \begin_layout Plain Layout
 
 \family typewriter
-lines_lhs
+lines_rhs
 \end_layout
 
 \end_inset
@@ -1242,7 +1242,7 @@ lines
 \begin_layout Plain Layout
 
 \family typewriter
-lines_lhs
+lines_rhs
 \end_layout
 
 \end_inset
@@ -1673,27 +1673,9 @@ Option
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 lines_lw
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-matrix, specify line width of rhs lines (default: 1 for 12 lines)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-lines_lws_lw
 \end_layout
 
 \end_inset
@@ -1715,6 +1697,28 @@ matrix, specify line width of lhs lines (default: 1 for 12 lines)
 \begin_layout Plain Layout
 
 \family typewriter
+lines_rhs_lw
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+matrix, specify line width of rhs lines (default: 1 for 12 lines)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
 vlines_lw
 \end_layout
 
@@ -1724,7 +1728,7 @@ vlines_lw
 \begin_inset Text
 
 \begin_layout Plain Layout
-matrix, specify line width of rhs vertical lines (default: 1 for 12 lines)
+matrix, specify line width of lhs vertical lines (default: 1 for 12 lines)
 \end_layout
 
 \end_inset
@@ -1746,7 +1750,7 @@ impulses_lw
 \begin_inset Text
 
 \begin_layout Plain Layout
-matrix, specify line width of rhs impulses (default: 1 for 12 impulses)
+matrix, specify line width of lhs impulses (default: 1 for 12 impulses)
 \end_layout
 
 \end_inset
@@ -1759,7 +1763,7 @@ matrix, specify line width of rhs impulses (default: 1 for 12 impulses)
 \begin_layout Plain Layout
 
 \family typewriter
-impulses_lhs_lw
+impulses_rhs_lw
 \end_layout
 
 \end_inset
@@ -1768,7 +1772,7 @@ impulses_lhs_lw
 \begin_inset Text
 
 \begin_layout Plain Layout
-matrix, specify line width of lhs impulses (default: 1 for 12 impulses)
+matrix, specify line width of rhs impulses (default: 1 for 12 impulses)
 \end_layout
 
 \end_inset
@@ -1878,7 +1882,7 @@ ps
 \begin_inset Text
 
 \begin_layout Plain Layout
-matrix, specify point size of rhs points or lines (default: 0 for 12 lines)
+matrix, specify point size of points or lines (default: 0 for 12 lines)
 \end_layout
 
 \end_inset
@@ -1900,8 +1904,7 @@ pt
 \begin_inset Text
 
 \begin_layout Plain Layout
-matrix, specify point size of rhs points or lines (default: 1 to 6 for 12
- lines)
+matrix, specify point size of points or lines (default: 1 to 6 for 12 lines)
 \end_layout
 
 \end_inset
@@ -1912,6 +1915,8 @@ matrix, specify point size of rhs points or lines (default: 1 to 6 for 12
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\family typewriter
 lines_pi
 \end_layout
 
@@ -1943,7 +1948,7 @@ lines_dt
 \begin_inset Text
 
 \begin_layout Plain Layout
-matrix, set dash type for rhs lines (default: solid lines (=1) for 12 lines)
+matrix, set dash type for lines (default: solid lines (=1) for 12 lines)
 \end_layout
 
 \end_inset
@@ -2038,7 +2043,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="6" columns="2">
+<lyxtabular version="3" rows="3" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -2091,7 +2096,7 @@ dark2_pal
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -2102,7 +2107,7 @@ vcolors
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -2112,66 +2117,6 @@ string array, specify vertical line color either as RGB color (default:
 jet_pal
 \family default
  palette)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
 \end_layout
 
 \end_inset
@@ -2194,7 +2139,7 @@ name "tab:color-options"
 
 \end_inset
 
-Overview of line-/ point-types-related options.
+Overview of color-related options.
 \end_layout
 
 \end_inset
@@ -2213,7 +2158,7 @@ For colors the user can either choose among 3 pre-defined color pallets
 status open
 
 \begin_layout Plain Layout
-These color pallets are downloaded from 
+These color pallets are taken from 
 \begin_inset Flex URL
 status open
 
@@ -2275,11 +2220,221 @@ blue
 \end_layout
 
 \begin_layout Subsection
-Date format
+Date format, scales and xticks
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="2">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Option
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+obsdate
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+series, YYYYMMDD ISO 8601 “basic” date format (optional)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+dateform
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+int, in case 
+\family typewriter
+obsdate
+\family default
+ is passed, specify date format on the x-axis (default: 1)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+skipx
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+int, number of entries on the x-axis skipped before the next one shown (default:
+ 4)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+ymin
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+scalar, specify minimum value on lhs y-axis (optional)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+ymax
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+scalar, specify maximum value on lhs y-axis (optional)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:date-options"
+
+\end_inset
+
+Overview of legend-related options.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Once the user has passed an 
+\family typewriter
+obsdate
+\family default
+ vector to the bundle, one can select between the following 5 different
+ formats for showing date strings on the x-axis:
+\end_layout
+
+\begin_layout Itemize
+0= YYYY/MM/DD
+\end_layout
+
+\begin_layout Itemize
+1= YY/MM/DD
+\end_layout
+
+\begin_layout Itemize
+2= YYYY/MM
+\end_layout
+
+\begin_layout Itemize
+3= YY/MM
+\end_layout
+
+\begin_layout Itemize
+4= MM/DD
+\end_layout
+
+\begin_layout Itemize
+5= MM/YY
 \end_layout
 
 \begin_layout Subsection
-Legend options
+Legend and options
 \end_layout
 
 \begin_layout Standard
@@ -2306,7 +2461,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="3" columns="2">
+<lyxtabular version="3" rows="8" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -2355,7 +2510,7 @@ bool, show legend/ key (default: true(=1))
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -2366,11 +2521,122 @@ poslegend
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 integer, choose where to put legend (default: 1=outside below horizontal)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+nocolorbox
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+integer, select whether to show the colorbox for a heatmap or not (default:
+ 0 don't show)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+title
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+string, specify title (optional)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+xlabel
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+string, specify xlabel (optional)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ylabel
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+string, specify lhs ylabel (optional)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ylabel_rhs
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+string, specify rhs ylabel (optional)
 \end_layout
 
 \end_inset
@@ -2393,7 +2659,7 @@ name "tab:legend-options"
 
 \end_inset
 
-Overview of legend-related options.
+Overview of legend-/label-related options.
 \end_layout
 
 \end_inset
@@ -2407,7 +2673,11 @@ Overview of legend-related options.
 \end_layout
 
 \begin_layout Standard
-The legend can be put at four different positions:
+The legend can be put at four different positions through the 
+\family typewriter
+poslegend
+\family default
+ option:
 \end_layout
 
 \begin_layout Enumerate
@@ -2440,6 +2710,34 @@ output format
 \end_layout
 
 \begin_layout Standard
+Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:output-options"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the options for specifying the size of the plot and file name plus
+ format.
+ Per default, the option 
+\family typewriter
+fname
+\family default
+ is 
+\begin_inset Quotes eld
+\end_inset
+
+display
+\begin_inset Quotes erd
+\end_inset
+
+ which shows immediately the plot on the screen.
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float table
 placement h
 wide false
@@ -2449,7 +2747,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="6" columns="2">
+<lyxtabular version="3" rows="4" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -2482,7 +2780,7 @@ Option
 \begin_layout Plain Layout
 
 \family typewriter
-colors
+height
 \end_layout
 
 \end_inset
@@ -2491,11 +2789,7 @@ colors
 \begin_inset Text
 
 \begin_layout Plain Layout
-string array, specify line/ point color either as RGB color (default: 
-\family typewriter
-dark2_pal
-\family default
- palette)
+scalar, specify height of the plot (default: 480)
 \end_layout
 
 \end_inset
@@ -2508,7 +2802,7 @@ dark2_pal
 \begin_layout Plain Layout
 
 \family typewriter
-vcolors
+width
 \end_layout
 
 \end_inset
@@ -2517,52 +2811,7 @@ vcolors
 \begin_inset Text
 
 \begin_layout Plain Layout
-string array, specify vertical line color either as RGB color (default:
- 
-\family typewriter
-jet_pal
-\family default
- palette)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
+scalar, specify width of the plot (default: 640)
 \end_layout
 
 \end_inset
@@ -2574,6 +2823,8 @@ jet_pal
 
 \begin_layout Plain Layout
 
+\family typewriter
+fname
 \end_layout
 
 \end_inset
@@ -2582,7 +2833,15 @@ jet_pal
 \begin_inset Text
 
 \begin_layout Plain Layout
+string, path + filename + format of the plot (default: 
+\begin_inset Quotes eld
+\end_inset
 
+display
+\begin_inset Quotes erd
+\end_inset
+
+ for immediate plot on the screen)
 \end_layout
 
 \end_inset

@@ -53,18 +53,18 @@ function bundle default_opts ()
     # Define default values
     #-----------------------
 
-    string self.which = "Standard"	# standard plot incl. lines, CIs around lines, impulses, vertical shaded areas
+    string self.which = "standard"	# standard plot incl. lines, CIs around lines, impulses, vertical shaded areas
 
     string self.fname = "display"	# output file
 
     # font related
     self.fstyle = "serif"
-    self.fs = 12				# font size for TODO ???
+    self.fs = 12					# font size for TODO ???
     self.vlines_fs = 10				# labels for vertical lines
 
     # date format
     self.dateform = 1				# date format
-    self.nstep = 4					# put xticks every n-th unit
+    self.skipx = 4					# put xticks every n-th unit
 
     # legend
     self.legend = 1					# show legend (default: true)
@@ -76,17 +76,17 @@ function bundle default_opts ()
 
     # linetype
     self.ps = 0*ones(12,1)				# point size
-    self.pt = seq(1,6) ~ seq(1,6)		# point type
+    self.pt = {6,7,4,5} ~ seq(8,20)		# point type
     self.lines_pi = 4					# point interval
     self.lines_dt = ones(12,1)			# dash type (default: solid lines) [1:10]: http://gnuplot.sourceforge.net/demo_5.1/dts.html
-    #    self.lines_lhs_dt = ones(12,1)			# dash type (default: solid lines) [1:10]: http://gnuplot.sourceforge.net/demo_5.1/dts.html
+    #    self.lines_rhs_dt = ones(12,1)			# dash type (default: solid lines) [1:10]: http://gnuplot.sourceforge.net/demo_5.1/dts.html
     self.vlines_dt = ones(12,1)			# dash type for vertical lines
 
     # lines_lw
     self.lines_lw = ones(12,1)		#	 for rhs lines
-    self.lines_lhs_lw = ones(12,1)		# for lhs lines
+    self.lines_rhs_lw = ones(12,1)		# for lhs lines
     self.impulses_lw = ones(12,1)		# for rhs impulses
-    self.impulses_lhs_lw = ones(12,1)	# for lhs impulses
+    self.impulses_rhs_lw = ones(12,1)	# for lhs impulses
     self.vlines_lw = ones(12,1)			# for vertical lines
 
     # line colors
@@ -113,9 +113,10 @@ function bundle default_opts ()
     # colorbox for heatmap
     self.nocolorbox = 0
 
-    # define pattern style:
+    # define pattern and transparency style
     # https://stackoverflow.com/questions/19412382/gnuplot-line-types
     self.pat = {0,4,2,3,8}    	# pattern orderings
+    self.alpha = 1				# [0,1]
 
     # output size
     self.height = 480					# height of plot
@@ -123,6 +124,7 @@ function bundle default_opts ()
 
     return self
 end function
+
 
 # helper function
 function strings colpal (string pal)
@@ -158,14 +160,14 @@ function void GnuPlotFun(bundle *self)
     # Set up the bundle
     # override defaults
     self = self + default_opts()
-    
+
 
     # Color check for point and lines
     if inbundle(self, "colors")
         if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> BUG: "string" doesn't work
             tmp = colpal(self.colors)     		# just a trick
             self.colors = tmp					# update
-        endif        
+        endif
     else
         self.colors = self.color			# use default palette
     endif
@@ -175,7 +177,7 @@ function void GnuPlotFun(bundle *self)
         if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> BUG: "string" doesn't work
             tmp = colpal(self.colors)     		# just a trick
             self.colors = tmp					# update
-        endif        
+        endif
     else
         self.colors = self.color			# use default palette
     endif
@@ -187,14 +189,21 @@ function void GnuPlotFun(bundle *self)
     if !inbundle(self, "StrLeg") && self.which != "heatmap"	#TODO: rename to Legend
         funcerr "Provide an array of legend names"
     endif
+    
+    # TODO: add checks:
+    # - if pt is a scalar, fill up a vector
+    # - if ps is a scalar, fill up a vector
+    # - if only a single color entry is passed, fill aup an array
+    # - check no. of all columns passed with length of StrLeg
+    # - alpha is bounded between [0,1]
 
     # Call plot function
-    if self.which == "Standard"
+    if self.which == "standard"
         doStandard(&self)
 
     elif self.which == "stackedbar"
         dostackedbar(&self)
-        #elif which == "Standard"
+        #elif which == "standard"
         #    doStandard(&b)
 
     elif self.which == "heatmap"
@@ -203,6 +212,40 @@ function void GnuPlotFun(bundle *self)
 
 end function
 
+function void print_leg_str (bundle *b)
+
+    if b.legend==0
+        printf "set nokey\n""
+    else
+        if b.posleg == 0
+            printf "set key outside below horizontal\n"
+        elif b.posleg == 1
+            printf  "set key top left\n"
+        elif b.posleg == 2
+            printf "set key top right\n"
+        elif b.posleg == 3
+            printf "set key bottom left\n"
+        elif b.posleg == 4
+            printf "set key bottom right\n"
+        endif
+        printf "set key opaque\n"
+    endif
+end function
+
+
+function void print_term_str (bundle *b)
+    if b.ftype=="png" || b.fname=="display"
+        printf "set term pngcairo size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
+    elif b.ftype=="pdf"
+        printf "set term pdf size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
+    elif b.ftype=="eps"
+        printf "set term eps size %.2f,%.2f font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs	# NOTE: width, height must be in inches!
+    elif b.ftype=="svg"
+        printf "set term svg size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
+    else
+        funcerr "*** Setting resolution is only allowed for png, pdf, eps and svg files. ***"
+    endif
+end function
 
 # helper function
 function void GPFbasics (bundle *b)
@@ -224,48 +267,17 @@ function void GPFbasics (bundle *b)
         # terminal settings
         printf "set encoding utf8\n"
 
-        # Set resolution
+        # Set resolution and terminal
         scalar slong = strlen(b.fname)
-        string ftype = substr(b.fname,(slong-2),slong)	# retrieve last 3 characters-->filetype
+        string b.ftype = substr(b.fname,(slong-2),slong)	# retrieve last 3 characters-->filetype
         # TODO: rather look for the '.' (dot) to make stuff more robust
-        if ftype=="png" || b.fname=="display"
-            sprintf optTERM "set term pngcairo size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
-        elif ftype=="pdf"
-            sprintf optTERM "set term pdf size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
-        elif ftype=="eps"
-            sprintf optTERM "set term eps size %.2f,%.2f font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs	# NOTE: width, height must be in inches!
-        elif ftype=="svg"
-            sprintf optTERM "set term svg size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
-        else
-            funcerr "*** Setting resolution is only allowed for png, pdf, eps and svg files. ***"
-        endif
-        printf "%s", optTERM
+        print_term_str(&b)
 
         # Options
         printf "set datafile missing \"NaN\" \n"			# TODO: is this correctly handled?
-        #sprintf PS "%.2f", b.ps
-        #sprintf LW "%.2f", lw
-        #sprintf FS "%d", b.fs
-        #sprintf PIV "%d", b.lines_pi
 
         # Legend
-        if b.legend==0
-            sprintf strLEG "set nokey"
-        else
-            if b.posleg == 0
-                string strLEG = "set key outside below horizontal"
-            elif b.posleg == 1
-                string strLEG = "set key top left"
-            elif b.posleg == 2
-                string strLEG = "set key top right"
-            elif b.posleg == 3
-                string strLEG = "set key bottom left"
-            elif b.posleg == 4
-                string strLEG = "set key bottom right"
-            endif
-            printf "set key opaque\n"
-        endif
-        printf "%s \n", strLEG
+        print_leg_str(&b)
 
         # GRID
         if b.grid==0
@@ -289,7 +301,7 @@ function void GPFbasics (bundle *b)
         if !inbundle(b, "ynames")
 
             printf "set ytics nomirror border out\n"
-            if inbundle(b, "lines_lhs") || inbundle(b, "impulses_lhs")
+            if inbundle(b, "lines_rhs") || inbundle(b, "impulses_rhs")
                 printf "set y2tics nomirror border out\n"
             endif
             # yrange settings
@@ -379,20 +391,28 @@ function void GPFbasics (bundle *b)
             if inbundle(b,"ymax")
                 scalar y_max = b.ymax
             else
-                loop i=1..5 -q
+                loop i=1..7 -q
                     if i==1 && inbundle(b,"lines")
                         matrix mat = b.lines
                         scalar y_max = max(maxc(mat))
-                    elif i==2 && inbundle(b,"lines_lhs")
-                        mat = b.lines_lhs
+                    elif i==2 && inbundle(b,"lines_rhs")
+                        mat = b.lines_rhs
+                        # TODO: add y2_max = max(maxc(mat))
                     elif i==3 && inbundle(b,"impulses")
                         mat = b.impulses
-                    elif i==4 && inbundle(b,"impulses_lhs")
-                        mat = b.impulses_lhs
+                        scalar y_max = max(maxc(mat))
+                    elif i==4 && inbundle(b,"impulses_rhs")
+                        mat = b.impulses_rhs
                     elif i==5 && inbundle(b,"StackMat")
                         mat = sumr(b.StackMat)	# sum over all columns since we look at stacked values
+                        scalar y_max = max(maxc(mat))
+                    elif i==6 && inbundle(b,"points")
+                        mat = b.points
+                        scalar y_max = max(maxc(mat))
+                    elif i==7 && inbundle(b,"points_rhs")
+                        mat = b.points_rhs
                     endif
-                    if i>1
+                    if i>1 && exists(mat)
                         if max(maxc(mat))>y_max
                             y_max = max(maxc(mat))
                         endif
@@ -424,8 +444,8 @@ function void doheatmap (bundle *b)
     /*
        if inbundle(b, "lines")
        mat ~= b.lines
-       elif inbundle(b, "lines_lhs")
-       mat ~= b.lines_lhs
+       elif inbundle(b, "lines_rhs")
+       mat ~= b.lines_rhs
        endif
     */
 
@@ -465,10 +485,10 @@ function void doheatmap (bundle *b)
         scalar count = 1
         printf "set xtics ("
         loop i=1..cols(mat) -q
-            if count==b.nstep || i==1
+            if count==b.skipx || i==1
                 printf "\"%s\" %d", b.Date[i], $i
                 count = 1
-                if (cols(mat)-$i) > b.nstep
+                if (cols(mat)-$i) > b.skipx
                     printf ", "
                 endif
             endif
@@ -512,8 +532,8 @@ function void dostackedbar (bundle *b)
     endif
     if inbundle(b, "lines")
         mat ~= b.lines
-    elif inbundle(b, "lines_lhs")
-        mat ~= b.lines_lhs
+    elif inbundle(b, "lines_rhs")
+        mat ~= b.lines_rhs
     endif
 
     GPFbasics(&b)	# Run basic settings
@@ -541,7 +561,7 @@ function void dostackedbar (bundle *b)
                 printf "%g ", mat[i,j]
             endloop
             if inbundle(b, "Date")
-                if i==1 || i % b.nstep == 0 #|| i==rows(mat)-15		# put xtics at 1st obs, every nstep obs. and last obs.
+                if i==1 || i % b.skipx == 0 #|| i==rows(mat)-15		# put xtics at 1st obs, every nstep obs. and last obs.
                     printf "%s", b.Date[i]
                 else
                     #printf "-1"		# put major tick for (almost) each  obs.
@@ -593,16 +613,17 @@ function void doStandard (bundle *b)
 
     outfile @tmpfile --append
 
-        if inbundle(b, "lines") || inbundle(b, "impulses")
+        if inbundle(b, "lines") || inbundle(b, "lines_rhs") || inbundle(b, "impulses") \
+            || inbundle(b, "impulses_rhs") || inbundle(b, "points") || inbundle(b, "points_rhs")
         else
-            funcerr "Warning: doStandard() requires at least matrix 'lines' or 'impulses'!"
+            funcerr "Warning: doStandard() requires at least matrix 'lines', 'points', or 'impulses'!"
         endif
 
         #------------
         # Plot CIs
         #------------
         if inbundle(b, "hfilled")
-            printf "set style fill transparent solid 1.0 noborder\n"		# degree of transparency
+            printf "set style fill transparent solid %.2f noborder\n", b.alpha		# degree of transparency
         endif
 
         printf "plot \\\n"
@@ -613,7 +634,7 @@ function void doStandard (bundle *b)
         #-------------
         # Plot Impulse
         #-------------
-        if inbundle(b, "impulses") || inbundle(b, "impulses_lhs")
+        if inbundle(b, "impulses") || inbundle(b, "impulses_rhs")
             matrix IMPMAT = {}
             if inbundle(b, "impulses")
                 crhs = cols(b.impulses)
@@ -621,9 +642,9 @@ function void doStandard (bundle *b)
             else
                 crhs = 0
             endif
-            if inbundle(b, "impulses_lhs")
-                clhs = cols(b.impulses_lhs)
-                matrix IMPMAT ~= b.impulses_lhs
+            if inbundle(b, "impulses_rhs")
+                clhs = cols(b.impulses_rhs)
+                matrix IMPMAT ~= b.impulses_rhs
             endif
             loop j=1..cols(IMPMAT) -q
                 if j==1 && inbundle(b, "Date")
@@ -633,13 +654,13 @@ function void doStandard (bundle *b)
                           t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.StrLeg[j], b.colors[j], b.impulses_lw[j]
                     else
                         printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
-                          t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.StrLeg[j], b.colors[j], b.impulses_lhs_lw[j]
+                          t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.StrLeg[j], b.colors[j], b.impulses_rhs_lw[j]
                     endif
                 else
                     if j<=crhs
                         printf "'-'using 1 t '%s' w impulses lc rgb '%s' lw %.2f", b.StrLeg[j], b.colors[j], b.impulses_lw[j]
                     else
-                        printf "'-'using 1 axes x1y2 t '%s' w impulses lc rgb '%s' lw %.2f", b.StrLeg[j], b.colors[j], b.impulses_lhs_lw[j]
+                        printf "'-'using 1 axes x1y2 t '%s' w impulses lc rgb '%s' lw %.2f", b.StrLeg[j], b.colors[j], b.impulses_rhs_lw[j]
                     endif
                 endif
                 # make sure following line plot works
@@ -647,7 +668,7 @@ function void doStandard (bundle *b)
                     printf(j == cols(IMPMAT) ? "\n" : ", \\\n")
                 elif j==cols(IMPMAT) && inbundle(b, "lines")
                     printf ", \\\n"
-                elif j==cols(IMPMAT) && inbundle(b, "lines_lhs")
+                elif j==cols(IMPMAT) && inbundle(b, "lines_rhs")
                     printf ", \\\n"
                 else
                     printf(j == cols(IMPMAT) ? "\n" : ", \\\n")
@@ -661,7 +682,7 @@ function void doStandard (bundle *b)
         #------------
         # Plot lines
         #------------
-        if inbundle(b, "lines") || inbundle(b, "lines_lhs")
+        if inbundle(b, "lines") || inbundle(b, "lines_rhs")
             matrix MAT = {}
             if inbundle(b, "lines")
                 crhs = cols(b.lines)
@@ -669,9 +690,9 @@ function void doStandard (bundle *b)
             else
                 crhs = 0
             endif
-            if inbundle(b, "lines_lhs")
-                clhs = cols(b.lines_lhs)
-                matrix MAT ~= b.lines_lhs
+            if inbundle(b, "lines_rhs")
+                clhs = cols(b.lines_rhs)
+                matrix MAT ~= b.lines_rhs
             endif
             loop j=1..cols(MAT) -q
                 if j==1 && inbundle(b, "Date")
@@ -700,7 +721,53 @@ function void doStandard (bundle *b)
             endloop
         endif
 
+
+        #------------
+        # Plot points
+        #------------
+        if inbundle(b, "points") || inbundle(b, "points_rhs")
+            matrix PMAT = {}
+            if inbundle(b, "points")
+                crhs = cols(b.points)
+                matrix PMAT = b.points
+            else
+                crhs = 0
+            endif
+            if inbundle(b, "points_rhs")
+                clhs = cols(b.points_rhs)
+                matrix PMAT ~= b.points_rhs
+            endif
+            loop j=1..cols(PMAT) -q
+                if j==1 && inbundle(b, "Date")
+                    k = 2		# date strings are in the 2nd col.
+                    if crhs>0
+                        printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                          t '%s' w points lc rgb '%s' pt %d ps %.2f", \
+                          k, k, b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
+                    else
+                        printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
+                          t '%s' w points lc rgb '%s' pt %d ps %.2f", \
+                          k, k, b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
+                    endif
+                else
+                    if j<=crhs
+                        printf "'-'using 1 t '%s' w points lc \
+                          rgb '%s' pt %d ps %.2f", \
+                          b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
+                    else
+                        printf "'-'using 1 axes x1y2 t '%s' w points lc \
+                          rgb '%s' pt %d ps %.2f", \
+                          b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j]
+                    endif
+                endif
+                printf(j == cols(PMAT) ? "\n" : ", \\\n")
+            endloop
+        endif
+
+
+        #----------------------------------------------------------
         # write data block for horizontal mat2=hfilled shaded area
+        #----------------------------------------------------------
         if inbundle(b, "hfilled")
             loop j=1..rows(b.hfilled) -q		# CI
                 printf "$j %g %g\n", b.hfilled[j,1], b.hfilled[j,2]
@@ -712,11 +779,11 @@ function void doStandard (bundle *b)
         # Plot impulse values
         # write data block
         #-------------------
-        if inbundle(b, "impulses") || inbundle(b, "impulses_lhs")
+        if inbundle(b, "impulses") || inbundle(b, "impulses_rhs")
             loop i=1..cols(IMPMAT) -q
                 loop j=1..rows(IMPMAT) -q
                     if inbundle(b, "Date")
-                        if i==1 && ( j==1 || j % b.nstep == 0)
+                        if i==1 && ( j==1 || j % b.skipx == 0)
                             if ok(IMPMAT[j,i])
                                 printf "%g %s\n", IMPMAT[j,i], b.Date[j]
                             else
@@ -746,11 +813,11 @@ function void doStandard (bundle *b)
         # Plot lines values
         # write data block
         #-------------------
-        if inbundle(b, "lines") || inbundle(b, "lines_lhs")
+        if inbundle(b, "lines") || inbundle(b, "lines_rhs")
             loop i=1..cols(MAT) -q
                 loop j=1..rows(MAT) -q
                     if inbundle(b, "Date")
-                        if i==1 && ( j==1 || j % b.nstep == 0)# || j==rows(b.lines) )		# put xtics at 1st obs, every nstep obs. and last obs.
+                        if i==1 && ( j==1 || j % b.skipx == 0)# || j==rows(b.lines) )		# put xtics at 1st obs, every nstep obs. and last obs.
                             if ok(MAT[j,i])
                                 printf "%g %s\n", MAT[j,i], b.Date[j]
                             else
@@ -770,6 +837,41 @@ function void doStandard (bundle *b)
                             printf "%g \n", MAT[j,i]		# don't put major tick if no label is provided
                         else
                             printf "? \n", MAT[j,i]
+                        endif
+                    endif
+                endloop
+                printf "e\n"
+            endloop
+        endif
+
+        #-------------------
+        # Plot points values
+        # write data block
+        #-------------------
+        if inbundle(b, "points") || inbundle(b, "points_rhs")
+            loop i=1..cols(PMAT) -q
+                loop j=1..rows(PMAT) -q
+                    if inbundle(b, "Date")
+                        if i==1 && ( j==1 || j % b.skipx == 0)
+                            if ok(PMAT[j,i])
+                                printf "%g %s\n", PMAT[j,i], b.Date[j]
+                            else
+                                printf "? %s\n", PMAT[j,i], b.Date[j]
+                            endif
+                        else
+                            if ok(PMAT[j,i])
+                                #printf "%g -1\n", b.lines[j,i]	# put major tick (w.o. label) at each period
+                                printf "%g \n", PMAT[j,i]		# don't put major tick if no label is provided
+                            else
+                                printf "? \n", PMAT[j,i]
+                            endif
+                        endif
+                    else
+                        #printf "%g -1\n", b.lines[j,i]
+                        if ok(PMAT[j,i])
+                            printf "%g \n", PMAT[j,i]		# don't put major tick if no label is provided
+                        else
+                            printf "? \n", PMAT[j,i]
                         endif
                     endif
                 endloop

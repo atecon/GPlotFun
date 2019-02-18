@@ -26,7 +26,7 @@ b.impulses_lw = {3}
 b.dateform = 5
 b.fontsize = 11
 /*
-b.nstep = 12
+b.skipx = 12
 
 b.legend = 1
 b.posleg = 0
@@ -34,21 +34,25 @@ b.posleg = 0
 b.lines_pi = 1
 b.noborder = 1
 */
-b.ps = ones(12,1)
+#b.ps = ones(12,1)
 b.grid = 1
 b.height = 390
 b.width = 640
-#b.ymax = 15			# the same for y2max
-#b.ymin = 0			# the same for y2min
+#b.ymax = 15
+#b.ymin = 0
 
 b.title = "A nice plot..."
 
 # needed for Shaded line plot
 b.obsdate = {$obsdate}				# if no obsdate is passed, x-axis is 1,2,...
 # CI-Shaded Plot +  Line Plot + Vertical shaded area
-b.lines = (point~1.2.*point)	# T by k matrix of line plots, RHS
+b.lines = (point~1.2.*point)	# T by k matrix of line plots
+b.points = (point~1.2.*point)	# T by k matrix of points plots
+#b.pt = seq(1,5)
+b.ps = ones(1,5)
+b.alpha = 0.4					# degree of transparency
 #b.lines[1:10,1] = NA
-b.lines_lhs = point*0.4		# T by k matrix of line plots, LHS
+#b.lines_lhs = point*0.4		# T by k matrix of line plots, LHS
 #b.impulses = muniform(nobs(LRM),1)*10
 #b.impulses_lhs = muniform(nobs(LRM),1)*10
 b.hfilled = low~up				# T by 2 matrix of shaded horizonal area
@@ -57,10 +61,10 @@ b.vlines = {obsnum(1981:1)} ~ {obsnum(1985:4)}	# FIXME: is plotted in white colo
 b.StrLeg = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo")
 
 # Plot + store 
-string fname = sprintf("%s/testplot.png", $dotdir)	# "display"
+#string fname = sprintf("%s/testplot.png", $dotdir)	# "display"
 #b.fname = fname
 GnuPlotFun(&b)
-#stop
+stop
 
 
 # Stacked Bar Plot
@@ -76,7 +80,7 @@ stop
 
 # Heatmap Plot
 bundle b = null
-b.nstep = 5
+b.skipx = 5
 b.dateform = 5
 b.fs = 11
 b.legend = 1
