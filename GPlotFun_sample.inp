@@ -46,17 +46,17 @@ b.title = "A nice plot..."
 # needed for Shaded line plot
 b.obsdate = {$obsdate}				# if no obsdate is passed, x-axis is 1,2,...
 # CI-Shaded Plot +  Line Plot + Vertical shaded area
-#b.lines = (point~1.2.*point)	# T by k matrix of line plots
+b.lines = (point~1.2.*point)	# T by k matrix of line plots
 b.points = (point~1.2.*point)	# T by k matrix of points plots
 # FIXME: points are not compatible with b.lines and b.impulses
 #b.pt = seq(1,5)
 b.ps = ones(1,5)
-b.alpha = 0.5					# degree of transparency
+b.alpha = 0.6					# degree of transparency
 #b.lines[1:10,1] = NA
-#b.lines_lhs = point*0.4		# T by k matrix of line plots, LHS
-#b.impulses = muniform(nobs(LRM),1)*10
-#b.impulses_lhs = muniform(nobs(LRM),1)*10
-#b.hfilled = low~up				# T by 2 matrix of shaded horizonal area
+b.lines_lhs = point*0.4		# T by k matrix of line plots, LHS
+b.impulses = muniform(nobs(LRM),1)*10
+b.impulses_lhs = muniform(nobs(LRM),1)*10
+b.hfilled = low~up				# T by 2 matrix of shaded horizonal area
 b.vfilled = {obsnum(1977:1)} ~ {obsnum(1980:2)}	# n by 2 matrox of shaded area between 2 dates
 b.vlines = {obsnum(1981:1)} ~ {obsnum(1985:4)}	# FIXME: is plotted in white color!
 b.StrLeg = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo")

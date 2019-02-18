@@ -509,7 +509,8 @@ function void doheatmap (bundle *b)
         #printf "set palette defined ( 0 '#000fff', 1 '#90ff70', 2 '#ee0000') \n"
         # MATLAB COLORS:
         if b.mono==0
-            printf "set palette defined (0 0 0 0.5, 1 0 0 1, 2 0 0.5 1, 3 0 1 1, 4 0.5 1 0.5, 5 1 1 0, 6 1 0.5 0, 7 1 0 0, 8 0.5 0 0)\n"
+            printf "set palette defined (0 0 0 0.5, 1 0 0 1, 2 0 0.5 1, 3 0 1 1, \
+              4 0.5 1 0.5, 5 1 1 0, 6 1 0.5 0, 7 1 0 0, 8 0.5 0 0)\n"
             #printf "set palette maxcolors 10 \n"
         else
             #printf "set palette gray negative\n" #gray positive
@@ -589,6 +590,7 @@ function void dostackedbar (bundle *b)
         #    printf "set style fill solid border -1 \n"	# OR border -2 ??
         #    printf "set style fill solid 0.35\n"
         #else
+#        printf "set style fill transparent solid %.2f noborder\n", b.alpha
         printf "set style fill pattern 9 border -2\n"	# you can change pattern 'n'
         # FIXME: For large datesets (many rows) one has to set "border -2"--WHY?
         #endif
@@ -662,7 +664,7 @@ function void doStandard (bundle *b)
         # Plot CIs
         #------------
         if inbundle(b, "hfilled")
-            printf "set style fill transparent solid %.2f noborder\n", b.alpha		# degree of transparency
+            printf "set style fill transparent solid %.2f noborder\n", b.alpha
         endif
 
         printf "plot \\\n"
