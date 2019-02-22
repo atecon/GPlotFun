@@ -189,7 +189,7 @@ function void GnuPlotFun(bundle *self)
     if !inbundle(self, "StrLeg") && self.which != "heatmap"	#TODO: rename to Legend
         funcerr "Provide an array of legend names"
     endif
-    
+
     # TODO: add checks:
     # - if pt is a scalar, fill up a vector
     # - if ps is a scalar, fill up a vector
@@ -200,7 +200,8 @@ function void GnuPlotFun(bundle *self)
     # Call plot function
     if self.which == "standard"
         doStandard(&self)
-
+    elif self.which == "scatter"
+        doScatter(&self)
     elif self.which == "stackedbar"
         dostackedbar(&self)
         #elif which == "standard"
@@ -251,8 +252,11 @@ end function
 function void write_data_block (bundle *b, matrix mat)
 
     # Write data block
+    #-------------------
+    if b.which=="standard" && \
+          ( inbundle(b, "lines") || inbundle(b, "lines_rhs") || inbundle(b, "impulses") \
+          || inbundle(b, "impulses_rhs") || inbundle(b, "points") || inbundle(b, "points_rhs") )
 
-    if inbundle(b, "points") || inbundle(b, "points_rhs")
         loop i=1..cols(mat) -q
             loop j=1..rows(mat) -q
                 if inbundle(b, "Date")
@@ -281,7 +285,22 @@ function void write_data_block (bundle *b, matrix mat)
             endloop
             printf "e\n"
         endloop
+
+    elif b.which=="scatter"
+
+        loop i=1..cols(mat) -q				# "mat" refers to values on the x-axis
+            loop j=1..rows(mat) -q
+
+                if ok(mat[j,i]) && ok(b.xval[j])
+                    printf "%g  %g\n", mat[j,i], b.xval[j]
+                else
+                    printf "? \n", mat[j,i], b.xval[j]
+                endif
+            endloop
+            printf "e\n"
+        endloop
     endif
+
 end function
 
 
@@ -386,11 +405,11 @@ function void GPFbasics (bundle *b)
         endif
 
         # Labels + title
-        if inbundle(b, "xlab")
-            printf "set xlabel '%s' font '%s,%d'\n", b.xlab, b.fstyle, b.fs
+        if inbundle(b, "xlabel")
+            printf "set xlabel '%s' font '%s,%d'\n", b.xlabel, b.fstyle, b.fs
         endif
-        if inbundle(b, "ylab")
-            printf "set ylabel '%s' font '%s,%d'\n", b.ylab, b.fstyle, b.fs
+        if inbundle(b, "ylabel")
+            printf "set ylabel '%s' font '%s,%d'\n", b.ylabel, b.fstyle, b.fs
         endif
         if inbundle(b, "title")
             printf "set title '%s' font '%s,%d'\n", b.title, b.fstyle, b.fs
@@ -426,6 +445,7 @@ function void GPFbasics (bundle *b)
                 printf "set arrow from %d, graph 0 to %d, graph 1 nohead lw %.2f lc rgb '%s' \
                   linetype $i dt %d front \n", b.vlines[i], b.vlines[i], b.vlines_lw[i], b.vcolors[i], b.vlines_dt[i]
             endloop
+
             # Add label to vertical lines
             if inbundle(b,"ymax")
                 scalar y_max = b.ymax
@@ -466,6 +486,7 @@ function void GPFbasics (bundle *b)
         endif
 
     end outfile
+
 end function
 
 
@@ -590,7 +611,7 @@ function void dostackedbar (bundle *b)
         #    printf "set style fill solid border -1 \n"	# OR border -2 ??
         #    printf "set style fill solid 0.35\n"
         #else
-#        printf "set style fill transparent solid %.2f noborder\n", b.alpha
+        #        printf "set style fill transparent solid %.2f noborder\n", b.alpha
         printf "set style fill pattern 9 border -2\n"	# you can change pattern 'n'
         # FIXME: For large datesets (many rows) one has to set "border -2"--WHY?
         #endif
@@ -655,7 +676,7 @@ function void doStandard (bundle *b)
     outfile @tmpfile --append
 
         if inbundle(b, "lines") || inbundle(b, "lines_rhs") || inbundle(b, "impulses") \
-            || inbundle(b, "impulses_rhs") || inbundle(b, "points") || inbundle(b, "points_rhs")
+              || inbundle(b, "impulses_rhs") || inbundle(b, "points") || inbundle(b, "points_rhs")
         else
             funcerr "Warning: doStandard() requires at least matrix 'lines', 'points', or 'impulses'!"
         endif
@@ -819,9 +840,9 @@ function void doStandard (bundle *b)
         #-------------------
         # Plot impulse values
         # write data block
-        #-------------------        
-        if inbundle(b, "impulses") || inbundle(b, "impulses_rhs")            
-           write_data_block (&b, IMPMAT)
+        #-------------------
+        if inbundle(b, "impulses") || inbundle(b, "impulses_rhs")
+            write_data_block(&b, IMPMAT)
         endif
 
 
@@ -830,7 +851,7 @@ function void doStandard (bundle *b)
         # write data block
         #-------------------
         if inbundle(b, "lines") || inbundle(b, "lines_rhs")
-            write_data_block (&b, MAT)
+            write_data_block(&b, MAT)
         endif
 
         #-------------------
@@ -838,7 +859,7 @@ function void doStandard (bundle *b)
         # write data block
         #-------------------
         if inbundle(b, "points") || inbundle(b, "points_rhs")
-            write_data_block (&b, PMAT)
+            write_data_block(&b, PMAT)
         endif
 
     end outfile
@@ -847,3 +868,115 @@ function void doStandard (bundle *b)
 end function
 
 
+function void doScatter (bundle *b)
+
+    GPFbasics(&b)	# Run basic settings
+
+    scalar addcol = 0
+    b.ps = (b.ps.=0) ? 0.5 : b.ps
+
+    set warnings off
+    tmpfile = b.tmpfile
+
+    outfile @tmpfile --append
+
+        if inbundle(b, "lines") || inbundle(b, "lines_rhs") \
+              || inbundle(b, "points") || inbundle(b, "points_rhs")
+        else
+            funcerr "Error: doScatter() requires at least matrix 'lines' and 'points'."
+        endif
+
+
+        # Transparency
+        printf "set style fill transparent solid %.2f noborder\n", b.alpha
+        #printf "set style circle radius 0.08\n"
+
+        # print commands
+        printf "plot \\\n"
+        #------------
+        # Plot lines
+        #------------
+        *** HIER WEITERMACHEN: function fuer plot lines und point schreiben ***
+        if inbundle(b, "lines") || inbundle(b, "lines_rhs")
+            matrix MAT = {}
+            if inbundle(b, "lines")
+                crhs = cols(b.lines)
+                matrix MAT = b.lines
+            else
+                crhs = 0
+            endif
+            if inbundle(b, "lines_rhs")
+                clhs = cols(b.lines_rhs)
+                matrix MAT ~= b.lines_rhs
+            endif
+            loop j=1..cols(MAT) -q
+                if j<=crhs
+                    printf "'-'using 1 t '%s' w lines linetype $j dt %d lc \
+                      rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                      b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
+                else
+                    printf "'-'using 1 axes x1y2 t '%s' w lines linetype $j dt %d lc \
+                      rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                      b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
+                endif
+                printf(j == cols(MAT) ? "\n" : ", \\\n")
+            endloop
+            scalar addcol = cols(MAT)
+        endif
+
+
+        #------------
+        # Plot points
+        #------------
+        if inbundle(b, "points") || inbundle(b, "points_rhs")
+
+            matrix PMAT = {}
+            if inbundle(b, "points")
+                crhs = cols(b.points)
+                matrix PMAT = b.points
+            else
+                crhs = 0
+            endif
+            if inbundle(b, "points_rhs")
+                clhs = cols(b.points_rhs)
+                matrix PMAT ~= b.points_rhs
+            endif
+            matrix b.xval = PMAT[,1]		# first column refers to values on the x-axis
+            PMAT = PMAT[,2:]
+
+            loop j=1..cols(PMAT) -q
+                if j<=crhs
+                    printf "'-'using 1:2 t '%s' w points lc \
+                      rgb '%s' pt %d ps %.2f", \
+                      b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
+                else
+                    printf "'-'using 1:2 axes x1y2 t '%s' w points lc \
+                      rgb '%s' pt %d ps %.2f", \
+                      b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j]
+                endif
+                printf(j == cols(PMAT) ? "\n" : ", \\\n")
+            endloop
+
+        endif
+
+
+        #-------------------
+        # Plot lines values
+        # write data block
+        #-------------------
+        if inbundle(b, "lines") || inbundle(b, "lines_rhs")
+            write_data_block(&b, MAT)
+        endif
+
+        #-------------------
+        # Plot points values
+        # write data block
+        #-------------------
+        if inbundle(b, "points") || inbundle(b, "points_rhs")
+            write_data_block(&b, PMAT)
+        endif
+
+    end outfile
+    string fname = b.fname
+    gnuplot --input="@tmpfile" --output="@fname"
+end function

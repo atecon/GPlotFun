@@ -47,7 +47,7 @@ b.title = "A nice plot..."
 b.obsdate = {$obsdate}				# if no obsdate is passed, x-axis is 1,2,...
 # CI-Shaded Plot +  Line Plot + Vertical shaded area
 b.lines = (point~1.2.*point)	# T by k matrix of line plots
-b.points = (point~1.2.*point)	# T by k matrix of points plots
+#b.points = (point~1.2.*point)	# T by k matrix of points plots
 # FIXME: points are not compatible with b.lines and b.impulses
 #b.pt = seq(1,5)
 b.ps = ones(1,5)
