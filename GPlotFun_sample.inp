@@ -11,6 +11,25 @@ matrix point = {LRM}
 matrix low = point.-0.5
 matrix up = point.+0.5
 
+# Scatter plots
+#===============
+bundle b = null
+b.alpha = 0.6
+b.points = mnormal(100,3)
+#b.lines = (b.points[,2])	# T by k matrix of line plots
+b.StrLeg = defarray("", "")
+b.which = "scatter"
+b.xlabel = "foo"
+matrix b.ps = {1,1}
+b.alpha = 0.1
+#matrix b.pt = 2
+#string fname = sprintf("%s/testscatter.png", $dotdir)	# "display"
+#b.fname = fname
+GnuPlotFun(&b)
+stop
+
+
+
 # Optional information
 #======================
 #b.lines_dt = seq(1,12) 
