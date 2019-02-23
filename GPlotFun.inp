@@ -304,6 +304,46 @@ function void write_data_block (bundle *b, matrix mat)
 end function
 
 
+function void write_scatterplot_cmd (bundle *b, matrix mat, string type "points, lines etc.")
+
+    # Write the "plot using" command
+
+    loop j=1..cols(mat) -q
+        if j<=b.crhs
+
+            if type=="lines"
+                printf "'-'using 1 t '%s' w lines linetype $j dt %d lc \
+                  rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                  b.StrLeg[j+b.addcol], b.lines_dt[j], b.colors[j+b.addcol], \
+                  b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
+
+            elif type=="points"
+                printf "'-'using 1:2 t '%s' w %s lc rgb '%s' pt %d ps %.2f", \
+                  b.StrLeg[j+b.addcol], type, b.colors[j+b.addcol], b.pt[j], b.ps[j]
+            endif
+
+        else
+
+            if type=="lines"
+                printf "'-'using 1 axes x1y2 t '%s' w lines linetype $j dt %d lc \
+                  rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                  b.StrLeg[j+b.addcol], b.lines_dt[j], b.colors[j+b.addcol], \
+                  b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
+
+            elif type=="points"
+                printf "'-'using 1:2 axes x1y2 t '%s' w %s lc \
+                  rgb '%s' pt %d ps %.2f", \
+                  b.StrLeg[j+b.addcol], type, b.lines_dt[j], b.colors[j+b.addcol], b.pt[j], b.ps[j]
+            endif
+
+        endif
+        printf(j == cols(mat) ? "\n" : ", \\\n")
+    endloop
+
+end function
+
+
+
 
 # helper function
 function void GPFbasics (bundle *b)
@@ -872,7 +912,7 @@ function void doScatter (bundle *b)
 
     GPFbasics(&b)	# Run basic settings
 
-    scalar addcol = 0
+    scalar b.addcol = 0
     b.ps = (b.ps.=0) ? 0.5 : b.ps
 
     set warnings off
@@ -896,19 +936,24 @@ function void doScatter (bundle *b)
         #------------
         # Plot lines
         #------------
-        *** HIER WEITERMACHEN: function fuer plot lines und point schreiben ***
         if inbundle(b, "lines") || inbundle(b, "lines_rhs")
             matrix MAT = {}
             if inbundle(b, "lines")
-                crhs = cols(b.lines)
+                b.crhs = cols(b.lines)
                 matrix MAT = b.lines
             else
-                crhs = 0
+                b.crhs = 0
             endif
+            
             if inbundle(b, "lines_rhs")
-                clhs = cols(b.lines_rhs)
+                #clhs = cols(b.lines_rhs)
                 matrix MAT ~= b.lines_rhs
             endif
+            
+            # actual writing
+            write_scatterplot_cmd(&b, MAT, "lines")
+
+            /* deprecated
             loop j=1..cols(MAT) -q
                 if j<=crhs
                     printf "'-'using 1 t '%s' w lines linetype $j dt %d lc \
@@ -921,7 +966,9 @@ function void doScatter (bundle *b)
                 endif
                 printf(j == cols(MAT) ? "\n" : ", \\\n")
             endloop
-            scalar addcol = cols(MAT)
+            */
+            
+            scalar b.addcol = cols(MAT)
         endif
 
 
@@ -932,30 +979,20 @@ function void doScatter (bundle *b)
 
             matrix PMAT = {}
             if inbundle(b, "points")
-                crhs = cols(b.points)
+                b.crhs = cols(b.points)
                 matrix PMAT = b.points
             else
-                crhs = 0
+                b.crhs = 0
             endif
             if inbundle(b, "points_rhs")
-                clhs = cols(b.points_rhs)
+                #clhs = cols(b.points_rhs)
                 matrix PMAT ~= b.points_rhs
             endif
             matrix b.xval = PMAT[,1]		# first column refers to values on the x-axis
             PMAT = PMAT[,2:]
-
-            loop j=1..cols(PMAT) -q
-                if j<=crhs
-                    printf "'-'using 1:2 t '%s' w points lc \
-                      rgb '%s' pt %d ps %.2f", \
-                      b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
-                else
-                    printf "'-'using 1:2 axes x1y2 t '%s' w points lc \
-                      rgb '%s' pt %d ps %.2f", \
-                      b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j]
-                endif
-                printf(j == cols(PMAT) ? "\n" : ", \\\n")
-            endloop
+            
+            # actual writing
+            write_scatterplot_cmd(&b, PMAT, "points")
 
         endif
 
