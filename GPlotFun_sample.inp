@@ -12,21 +12,25 @@ matrix low = point.-0.5
 matrix up = point.+0.5
 
 # Scatter plots
+/*
 #===============
 bundle b = null
 b.alpha = 0.6
-b.points = mnormal(100,3)
-#b.lines = (b.points[,2])	# T by k matrix of line plots
-b.StrLeg = defarray("", "")
+matrix mat = mnormal(100,5)
+b.points = mat[,1:3]							# 1st col. refers to x-axis values
+b.lines = (2*mat[1:50,1] ~ 2*mat[1:50,4:])	# # 1st col. refers to x-axis values
+
+#b.StrLeg = defarray("", "", "", "")
 b.which = "scatter"
 b.xlabel = "foo"
-matrix b.ps = {1,1}
-b.alpha = 0.1
+matrix b.ps = {1,1,1}
+b.alpha = 0.1									# FIXME: has no effects, yet
 #matrix b.pt = 2
 #string fname = sprintf("%s/testscatter.png", $dotdir)	# "display"
 #b.fname = fname
 GnuPlotFun(&b)
 stop
+*/
 
 
 
@@ -66,7 +70,7 @@ b.title = "A nice plot..."
 b.obsdate = {$obsdate}				# if no obsdate is passed, x-axis is 1,2,...
 # CI-Shaded Plot +  Line Plot + Vertical shaded area
 b.lines = (point~1.2.*point)	# T by k matrix of line plots
-#b.points = (point~1.2.*point)	# T by k matrix of points plots
+b.points = (point~1.2.*point)	# T by k matrix of points plots
 # FIXME: points are not compatible with b.lines and b.impulses
 #b.pt = seq(1,5)
 b.ps = ones(1,5)
