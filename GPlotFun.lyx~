@@ -2333,7 +2333,7 @@ alpha
 \begin_inset Text
 
 \begin_layout Plain Layout
-scalar, specify the degree of transparency of lines, points etcs.
+scalar, specify the degree of transparency of lines, points etc.
  [0,1] (default: 1 (no transparency))
 \end_layout
 

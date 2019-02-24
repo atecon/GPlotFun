@@ -335,7 +335,7 @@ function void write_scatterplot_cmd (bundle *b)
 
             endif
 
-            if !inbundle(b,"LMAT")
+            if !inbundle(b,"PMAT")
                 printf(j == cols(b.LMAT) ? "\n" : ", \\\n")
             else
                 printf ", \\\n"
@@ -368,6 +368,150 @@ function void write_scatterplot_cmd (bundle *b)
 
 end function
 
+
+# help function
+function void write_standardplot_cmd (bundle *b)
+
+    # Write the "plot using" command for standardplots
+    #=================================================
+    # 1) check and write cmd for impulses
+    # 2) check and write cmd for lines
+    # 3) check and write cmd for point
+
+    scalar addcol = 0			# counter
+    scalar k = 2		# date strings are in the 2nd col.
+    printf "plot \\\n"
+
+    # Lines
+    if inbundle(b,"IMAT")
+
+        scalar clhs = cols(b.impulses)
+
+        loop j=1..cols(b.IMAT) -q
+
+            if j==1 && inbundle(b, "Date")
+
+                if j<=clhs					# LHS values
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.StrLeg[j], \
+                      b.colors[j], b.impulses_lw[j]
+                else
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      axes x1y2 t '%s' w lines linetype $j dt %d lc rgb '%s' pt %d \
+                      ps %.2f lw %.2f pointinterval %.2f", k, k, b.StrLeg[j+addcol], \
+                      b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], \
+                      b.lines_lw[j], b.lines_pi
+                endif
+
+            else
+                if j<=clhs
+                    printf "'-'using 1 t '%s' w impulses lc rgb '%s' lw %.2f", \
+                      b.StrLeg[j], b.colors[j], b.impulses_lw[j]
+                else
+                    printf "'-'using 1 axes x1y2 t '%s' w impulses lc rgb '%s' lw %.2f", \
+                      b.StrLeg[j], b.colors[j], b.impulses_rhs_lw[j]
+                endif
+            endif
+
+
+            if !inbundle(b,"PMAT") || !inbundle(b,"LMAT")
+                printf(j == cols(b.LMAT) ? "\n" : ", \\\n")
+            else
+                printf ", \\\n"
+            endif
+
+        endloop
+        addcol += cols(b.IMAT)
+    endif
+
+
+    # Lines
+    if inbundle(b,"LMAT")
+
+        scalar clhs = cols(b.lines)
+
+        loop j=1..cols(b.LMAT) -q
+
+            if j==1 && inbundle(b, "Date")
+
+                if j<=clhs					# LHS values
+
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      t '%s' w lines linetype $j dt %d lc rgb '%s' pt %d ps %.2f \
+                      lw %.2f pointinterval %.2f", k, k, b.StrLeg[j+addcol], \
+                      b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], \
+                      b.lines_lw[j], b.lines_pi
+
+                else
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      axes x1y2 t '%s' w lines linetype $j dt %d lc rgb '%s' pt %d \
+                      ps %.2f lw %.2f pointinterval %.2f", k, k, b.StrLeg[j+addcol], \
+                      b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], \
+                      b.lines_lw[j], b.lines_pi
+                endif
+
+            else
+                if j<=clhs					# LHS values
+                    printf "'-'using 1 t '%s' w lines linetype $j dt %d lc \
+                      rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                      b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], \
+                      b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
+                else
+                    printf "'-'using 1 axes x1y2 t '%s' w lines linetype $j dt %d lc \
+                      rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                      b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], \
+                      b.ps[j], b.lines_lw[j], b.lines_pi
+                endif
+
+
+                if !inbundle(b,"PMAT")
+                    printf(j == cols(b.LMAT) ? "\n" : ", \\\n")
+                else
+                    printf ", \\\n"
+                endif
+            endif
+
+        endloop
+        addcol += cols(b.LMAT)
+    endif
+
+    # Points
+    if inbundle(b,"PMAT")
+
+        scalar clhs = (inbundle(b, "points")) ? (cols(b.points)-1) : 0
+
+        loop j=1..cols(b.PMAT) -q
+
+            if j==1 && inbundle(b, "Date")
+                if j<=clhs					# RHS values
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      t '%s' w points lc rgb '%s' pt %d ps %.2f", \
+                      k, k, b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
+                else
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
+                      t '%s' w points lc rgb '%s' pt %d ps %.2f", \
+                      k, k, b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
+                endif
+
+            else
+
+                if j<=clhs					# RHS values
+
+                    printf "'-'using 1:2 t '%s' w points lc rgb '%s' pt %d ps %.2f", \
+                      b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
+                else
+                    printf "'-'using 1:2 axes x1y2 t '%s' w points lc \
+                      rgb '%s' pt %d ps %.2f", \
+                      b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j]
+                endif
+            endif
+
+            printf(j == cols(b.PMAT) ? "\n" : ", \\\n")
+        endloop
+
+    endif
+
+end function
 
 
 
@@ -765,10 +909,10 @@ function void doStandard (bundle *b)
         if inbundle(b, "impulses") || inbundle(b, "impulses_rhs")
             matrix IMPMAT = {}
             if inbundle(b, "impulses")
-                crhs = cols(b.impulses)
+                clhs = cols(b.impulses)
                 IMPMAT = b.impulses
             else
-                crhs = 0
+                clhs = 0
             endif
             if inbundle(b, "impulses_rhs")
                 matrix IMPMAT ~= b.impulses_rhs
@@ -776,7 +920,7 @@ function void doStandard (bundle *b)
             loop j=1..cols(IMPMAT) -q
                 if j==1 && inbundle(b, "Date")
                     k = 2		# date strings are in the 2nd col.
-                    if crhs>0
+                    if clhs>0
                         printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
                           t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.StrLeg[j], b.colors[j], b.impulses_lw[j]
                     else
@@ -784,7 +928,7 @@ function void doStandard (bundle *b)
                           t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.StrLeg[j], b.colors[j], b.impulses_rhs_lw[j]
                     endif
                 else
-                    if j<=crhs
+                    if j<=clhs
                         printf "'-'using 1 t '%s' w impulses lc rgb '%s' lw %.2f", b.StrLeg[j], b.colors[j], b.impulses_lw[j]
                     else
                         printf "'-'using 1 axes x1y2 t '%s' w impulses lc rgb '%s' lw %.2f", b.StrLeg[j], b.colors[j], b.impulses_rhs_lw[j]
@@ -812,10 +956,10 @@ function void doStandard (bundle *b)
         if inbundle(b, "lines") || inbundle(b, "lines_rhs")
             matrix MAT = {}
             if inbundle(b, "lines")
-                crhs = cols(b.lines)
+                clhs = cols(b.lines)
                 matrix MAT = b.lines
             else
-                crhs = 0
+                clhs = 0
             endif
             if inbundle(b, "lines_rhs")
                 matrix MAT ~= b.lines_rhs
@@ -823,7 +967,7 @@ function void doStandard (bundle *b)
             loop j=1..cols(MAT) -q
                 if j==1 && inbundle(b, "Date")
                     k = 2		# date strings are in the 2nd col.
-                    if crhs>0
+                    if clhs>0
                         printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
                           t '%s' w lines linetype $j dt %d lc rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
                           k, k, b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
@@ -833,7 +977,7 @@ function void doStandard (bundle *b)
                           k, k, b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
                     endif
                 else
-                    if j<=crhs
+                    if j<=clhs
                         printf "'-'using 1 t '%s' w lines linetype $j dt %d lc \
                           rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
                           b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
@@ -854,10 +998,10 @@ function void doStandard (bundle *b)
         if inbundle(b, "points") || inbundle(b, "points_rhs")
             matrix PMAT = {}
             if inbundle(b, "points")
-                crhs = cols(b.points)
+                clhs = cols(b.points)
                 matrix PMAT = b.points
             else
-                crhs = 0
+                clhs = 0
             endif
             if inbundle(b, "points_rhs")
                 clhs = cols(b.points_rhs)
@@ -866,7 +1010,7 @@ function void doStandard (bundle *b)
             loop j=1..cols(PMAT) -q
                 if j==1 && inbundle(b, "Date")
                     k = 2		# date strings are in the 2nd col.
-                    if crhs>0
+                    if clhs>0
                         printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
                           t '%s' w points lc rgb '%s' pt %d ps %.2f", \
                           k, k, b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
@@ -876,7 +1020,7 @@ function void doStandard (bundle *b)
                           k, k, b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
                     endif
                 else
-                    if j<=crhs
+                    if j<=clhs
                         printf "'-'using 1 t '%s' w points lc \
                           rgb '%s' pt %d ps %.2f", \
                           b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]

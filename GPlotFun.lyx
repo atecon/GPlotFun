@@ -2872,6 +2872,18 @@ string, specify rhs ylabel (optional)
 
 \family typewriter
 legend_info
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
+Im code umbenennen
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
