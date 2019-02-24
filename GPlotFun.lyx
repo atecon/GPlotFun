@@ -195,9 +195,9 @@ Install and load the package
 \begin_layout Standard
 The 
 \family typewriter
-naiveFC
+GPLotFun
 \family default
- package is publicly available on the Gretl server.
+ package is publicly available on the gretl server.
  The package must be downloaded once, and loaded into memory each time Gretl
  is started.
  
@@ -245,7 +245,7 @@ set verbose off
 
 \begin_layout Plain Layout
 
-pkg install naiveFC
+pkg install GPLotFun
 \end_layout
 
 \begin_layout Plain Layout
@@ -255,7 +255,7 @@ pkg install naiveFC
 
 \begin_layout Plain Layout
 
-include naiveFC.gfn
+include GPLotFun.gfn
 \end_layout
 
 \begin_layout Plain Layout
@@ -265,7 +265,7 @@ include naiveFC.gfn
 
 \begin_layout Plain Layout
 
-help naiveFC
+help GPLotFun
 \end_layout
 
 \end_inset
@@ -283,34 +283,22 @@ Example
 \end_layout
 
 \begin_layout Standard
-For illustration we use the AWM-macroeconomic data set comprising various
- series observed at a quarterly frequency over 28 years.
- The data set ends in 1998Q4.
- The objective is to forecast the output gap (series named 
-\begin_inset Quotes eld
-\end_inset
+For illustration we use a time-series data set comprising some series observed
+ at a quarterly frequency.
+ First, we will show how to draw simple or advanced plots when working with
+ time-series.
+ Second, we will introduce scatter plots.
+ 
+\series bold
+TBF
+\end_layout
 
-YGA
-\begin_inset Quotes erd
-\end_inset
-
-).
- Note, the last valid observation for 
-\begin_inset Quotes eld
-\end_inset
-
-YGA
-\begin_inset Quotes erd
-\end_inset
-
- is for 1998Q2.
- Hence, the 1-step ahead forecast will be computed for period 1998Q3!
+\begin_layout Subsection
+Time-series plot
 \end_layout
 
 \begin_layout Standard
-The sample script opens the data set, computes and plots some forecasts.
- Lastly, an average of forecasts is computed which is an average of the
- (currently) eight forecast methods implemented (for details see below).
+The sample script opens the data set and plots some series.
 \end_layout
 
 \begin_layout Standard
@@ -340,96 +328,27 @@ status open
 
 \begin_layout Plain Layout
 
-open AWM.gdt --quiet
+open hendry_jae.gdt -q
 \end_layout
 
 \begin_layout Plain Layout
 
+bundle b = null
 \end_layout
 
 \begin_layout Plain Layout
 
-series x = YGA		# output gap
+b.obsdate = {$obsdate}		# access timestamp
 \end_layout
 
 \begin_layout Plain Layout
 
-scalar h = 11		# set max.
- forecast horizon
+matrix b.lines = {pgdp} ~ {gdp}
 \end_layout
 
 \begin_layout Plain Layout
 
-\end_layout
-
-\begin_layout Plain Layout
-
-# SMEANF
-\end_layout
-
-\begin_layout Plain Layout
-
-smean = smeanf(x, h) 
-\end_layout
-
-\begin_layout Plain Layout
-
-print smean
-\end_layout
-
-\begin_layout Plain Layout
-
-fcplot(x, smean, "Seasonal Mean Forecast")
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-
-# RW with drift
-\end_layout
-
-\begin_layout Plain Layout
-
-rwd = rwf(x, h, 1)
-\end_layout
-
-\begin_layout Plain Layout
-
-print rwd
-\end_layout
-
-\begin_layout Plain Layout
-
-fcplot(x, rwd, "Random-Walk + Drift Forecast")
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-
-# Average of Forecasts
-\end_layout
-
-\begin_layout Plain Layout
-
-avg_fc = avgfc(x, h)
-\end_layout
-
-\begin_layout Plain Layout
-
-print avg_fc		# 1st col: point forecast, 2nd col: std.
- deviation
-\end_layout
-
-\begin_layout Plain Layout
-
-fcplot(x, avg_fc[,1], "Avg.
- of Forecasts")
+GnuPlotFun(&b)
 \end_layout
 
 \end_inset
@@ -443,62 +362,59 @@ fcplot(x, avg_fc[,1], "Avg.
 \end_layout
 
 \begin_layout Standard
-The estimated 
-\begin_inset Formula $h$
+The output will be the plot on the left-hand in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:time-series-plot"
+plural "false"
+caps "false"
+noprefix "false"
+
 \end_inset
 
--step ahead average of forecasts (named 'average-fc') and the cross-sectional
- standard deviation ('sd') as well as the point forecasts of the separate
- methods are reported in the output below for the first three horizons:
+which will be directly shown on the screen.
 \end_layout
 
 \begin_layout Standard
-\begin_inset Box Doublebox
-position "t"
-hor_pos "c"
-has_inner_box 1
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width "100col%"
-special "none"
-height "1in"
-height_special "totalheight"
-thickness "0.4pt"
-separation "3pt"
-shadowsize "4pt"
-framecolor "black"
-backgroundcolor "none"
+\begin_inset Float figure
+placement h
+wide false
+sideways false
 status open
 
 \begin_layout Plain Layout
-\begin_inset listings
-lstparams "basicstyle={\footnotesize\ttfamily}"
-inline false
-status open
+\align center
+\begin_inset Graphics
+	filename figs/tsplot_simple.png
+	lyxscale 50
+	scale 50
+	groupId figs
 
-\begin_layout Plain Layout
+\end_inset
 
-     average-fc    sd     meanf   medianf    rwf   rwf+drift  AR(1)    smean
-   smedian   snaive
+
+\begin_inset Graphics
+	filename figs/tsplot_adv.png
+	lyxscale 50
+	scale 50
+	groupId figs
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Plain Layout
-
-h=1     0.993    0.001    0.994    0.992    0.992    0.992    0.992    0.995   
- 0.994    0.992
-\end_layout
+\begin_inset Caption Standard
 
 \begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:time-series-plot"
 
-h=2     0.992    0.001    0.994    0.992    0.992    0.991    0.992    0.995   
- 0.992    0.992
-\end_layout
+\end_inset
 
-\begin_layout Plain Layout
-
-h=3     0.992    0.002    0.994    0.992    0.992    0.991    0.992    0.994   
- 0.991    0.987
+Default time-series plot (left) and time-series plot with advanced settings.
 \end_layout
 
 \end_inset
@@ -506,91 +422,7 @@ h=3     0.992    0.002    0.994    0.992    0.992    0.991    0.992    0.994
 
 \end_layout
 
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The NaiveThroughTime() function allows the user to easily compute rolling
- (fixed window length) or recursive (expanding window length) forecasts
- for a specific naive forecast type.
- The following sample script computes the 1- to 4-steps ahead seasonal mean
- (
-\family typewriter
-smeanf
-\family default
-) forecasts over time.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Box Doublebox
-position "t"
-hor_pos "c"
-has_inner_box 1
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width "100col%"
-special "none"
-height "1in"
-height_special "totalheight"
-thickness "0.4pt"
-separation "3pt"
-shadowsize "4pt"
-framecolor "black"
-backgroundcolor "none"
-status open
-
 \begin_layout Plain Layout
-\begin_inset listings
-lstparams "basicstyle={\footnotesize\ttfamily}"
-inline false
-status open
-
-\begin_layout Plain Layout
-
-bundle b = null      # generate an empty bundle
-\end_layout
-
-\begin_layout Plain Layout
-
-b.y = x              # put objetcs into the bundle
-\end_layout
-
-\begin_layout Plain Layout
-
-b.h = 4              # max.
- horizon
-\end_layout
-
-\begin_layout Plain Layout
-
-b.wsize = 33         # window size
-\end_layout
-
-\begin_layout Plain Layout
-
-string which = "smeanf"   # choose a method
-\end_layout
-
-\begin_layout Plain Layout
-
-NaiveThroughTime(&b, which) # Call the function
-\end_layout
-
-\begin_layout Plain Layout
-
-matrix FC = b.FC     # grab matrix of forecasts
-\end_layout
-
-\begin_layout Plain Layout
-
-print FC             # rows: period being forecasted, cols: fc-horizon
-\end_layout
-
-\end_inset
-
 
 \end_layout
 
@@ -600,16 +432,23 @@ print FC             # rows: period being forecasted, cols: fc-horizon
 \end_layout
 
 \begin_layout Standard
-The results are stored in matrix 
-\family typewriter
-FC
-\family default
+We can easily add further information.
+ The following sample script, shows how to add a horizontal shaded area
+ around one of the lines.
+ Furthermore, we will add a vertical line add some specific date, add a
+ recession bar and points as well as impulses.
+ Lastly, we will add some labeling, and change some further details.
+ These commands result in the right-hand side plot in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:time-series-plot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
 .
- Thus, the 1-step ahead forecast for series 
-\begin_inset Formula $x$
-\end_inset
-
- made in 1980Q1 for 1980Q2 is 1.0059.
 \end_layout
 
 \begin_layout Standard
@@ -639,32 +478,164 @@ status open
 
 \begin_layout Plain Layout
 
-                h=1          h=2          h=3          h=4
+bundle b = null
 \end_layout
 
 \begin_layout Plain Layout
 
-1980:2       1.0059          nan          nan          nan
+b.obsdate = {$obsdate}		# access timestamp
 \end_layout
 
 \begin_layout Plain Layout
 
-1980:3       1.0059       1.0045          nan          nan
+matrix b.lines = {pgdp}
 \end_layout
 
 \begin_layout Plain Layout
 
-1980:4       1.0058       1.0051       1.0060          nan
 \end_layout
 
 \begin_layout Plain Layout
 
-1981:1       1.0058       1.0051       1.0060       1.0062
+# shaded area around gdp observations
 \end_layout
 
 \begin_layout Plain Layout
 
-1981:2       1.0043       1.0053       1.0058       1.0073 
+b.hfilled = {gdp-1} ~ {gdp+1}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# recession bar for some period
+\end_layout
+
+\begin_layout Plain Layout
+
+b.vfilled = {obsnum(1900)} ~ {obsnum(1905)}
+\end_layout
+
+\begin_layout Plain Layout
+
+b.vfilled_alpha = 0.3			# set transparency (optional)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# vertical line at two observations
+\end_layout
+
+\begin_layout Plain Layout
+
+b.vlines = {obsnum(1917)} ~ {obsnum(1945)}
+\end_layout
+
+\begin_layout Plain Layout
+
+b.vlines_dt = seq(1,2)			# set line type (solid/ dashed)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# points on rhs-axis
+\end_layout
+
+\begin_layout Plain Layout
+
+b.points_rhs = {diff(pgdp)/pgdp(-1)*100} 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# impulses
+\end_layout
+
+\begin_layout Plain Layout
+
+b.impulses = {diff(gdp)/gdp(-1)*100} 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# restrict range of y-axis
+\end_layout
+
+\begin_layout Plain Layout
+
+b.ymin = -1
+\end_layout
+
+\begin_layout Plain Layout
+
+b.ymax = 18
+\end_layout
+
+\begin_layout Plain Layout
+
+# change dimension of the plot
+\end_layout
+
+\begin_layout Plain Layout
+
+b.width = 800
+\end_layout
+
+\begin_layout Plain Layout
+
+b.height = 420 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# add legend names and set labels + title
+\end_layout
+
+\begin_layout Plain Layout
+
+b.StrLeg = defarray("1", "2", "3 (rhs)")
+\end_layout
+
+\begin_layout Plain Layout
+
+b.title = "This is a nice plot..."
+\end_layout
+
+\begin_layout Plain Layout
+
+b.ylabel = "y-axis" 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+GnuPlotFun(&b)
 \end_layout
 
 \end_inset
@@ -675,6 +646,159 @@ status open
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection
+Scatter plot
+\end_layout
+
+\begin_layout Standard
+The following script creates a scatterplot with points and lines using the
+ 
+\family typewriter
+which=
+\begin_inset Quotes erd
+\end_inset
+
+scatter
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+ option.
+ Two distinguished pairs of points are plotted.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Doublebox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "basicstyle={\footnotesize\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+bundle b = null
+\end_layout
+
+\begin_layout Plain Layout
+
+b.points = {gdp} ~ {pgdp} ~ {pw}		# 1st col.
+ refers to x-axis values
+\end_layout
+
+\begin_layout Plain Layout
+
+b.lines =  {gdp} ~ {pgdp}	# 		 # 1st col.
+ refers to x-axis values 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+b.which = "scatter
+\begin_inset Quotes erd
+\end_inset
+
+					# set scatterplot
+\end_layout
+
+\begin_layout Plain Layout
+
+b.xlabel = ""
+\end_layout
+
+\begin_layout Plain Layout
+
+b.ylabel = "pgdp 
+\backslash
+& pw" 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# style
+\end_layout
+
+\begin_layout Plain Layout
+
+#    b.colors = "jet_pal"
+\end_layout
+
+\begin_layout Plain Layout
+
+b.ps = ones(2,1)						# point size
+\end_layout
+
+\begin_layout Plain Layout
+
+b.StrLeg = defarray("pgdp vs.
+ gdp (line)", "pgdp vs.
+ gdp", "w vs.
+ gdp")
+\end_layout
+
+\begin_layout Plain Layout
+
+b.fs = 14 							# font size
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+GnuPlotFun(&b)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Stacked barplot
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Subsection
+Heatmap
 \end_layout
 
 \begin_layout Section
@@ -2225,7 +2349,7 @@ Overview of line-/ point-types-related options.
 \end_layout
 
 \begin_layout Subsection
-Color format and transparency
+Color format, transparency, grid and borders
 \end_layout
 
 \begin_layout Standard
@@ -2238,7 +2362,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="4" columns="2">
+<lyxtabular version="3" rows="7" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -2318,13 +2442,81 @@ jet_pal
 </cell>
 </row>
 <row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+vfilled_alpha
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+scalar, specify the degree of transparency of vertical shaded areas (default:
+ 0.3)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+hfilled_alpha
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+scalar, specify the degree of transparency of shaded shaded areas (default:
+ 0.9)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+grid
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+bool, plot grid (default: on (1))
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 
 \family typewriter
-alpha
+noborder
 \end_layout
 
 \end_inset
@@ -2333,8 +2525,16 @@ alpha
 \begin_inset Text
 
 \begin_layout Plain Layout
-scalar, specify the degree of transparency of lines, points etc.
- [0,1] (default: 1 (no transparency))
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+???
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
