@@ -539,6 +539,21 @@ function void write_standardplot_cmd (bundle *b)
 
 end function
 
+function void print_range ( bundle *b, string axis "Either 'y' or 'x' or so")
+    # print x/y-range settings
+    #------------------------
+    if inbundle(b,"@axismin") && inbundle(b,"@axismax")
+        printf "set @axisrange[%.5f:%.5f] \n", b.@axismin, b.@axismax
+    elif inbundle(b,"@axismin") && !inbundle(b,"@axismax")
+        printf "set @axisrange[%.5f:] \n", b.@axismin
+    elif !inbundle(b,"@axismin") && inbundle(b,"@axismax")
+        printf "set @axisrange[:%.5f] \n", b.@axismax
+    else
+        #printf "set @axisrange[:] \n"
+    endif
+end function
+
+
 
 # helper function
 function void GPFbasics (bundle *b)
@@ -588,7 +603,9 @@ function void GPFbasics (bundle *b)
         #printf "set xtics 500 border in scale 1,0 rotate by -90 \n"
         string str = (inbundle(b, "Date")) ? "rotate by -90" : ""
         printf "set xtics border out scale 1,0.5 nomirror %s\n", str	#autojustify
-
+        # print x-range settings
+        print_range(&b, "x")
+        
         # MXTICS
         printf "unset mxtics\n"		# don't print minor xtics
 
@@ -600,7 +617,9 @@ function void GPFbasics (bundle *b)
                   || inbundle(b, "points_rhs")
                 printf "set y2tics nomirror border out\n"
             endif
-            # yrange settings
+            # print y-range settings
+            print_range(&b, "y")
+            /* deprecated
             if inbundle(b,"ymin") && inbundle(b,"ymax")
                 printf "set yrange[%.5f:%.5f] \n", b.ymin, b.ymax
             elif inbundle(b,"ymin") && !inbundle(b,"ymax")
@@ -610,6 +629,7 @@ function void GPFbasics (bundle *b)
             else
                 #printf "set yrange[:] \n"
             endif
+            */
 
         else	# case when ylabels are provided (currently only for heatmap)
             ynames = b.ynames
