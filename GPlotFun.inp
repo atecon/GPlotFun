@@ -398,7 +398,7 @@ function void write_standardplot_cmd (bundle *b)
         printf "'-' using 1:2:3 t '' lc rgb '#dddddd' w filledcurve"
 
         if inbundle(b,"IMAT") || inbundle(b,"PMAT") || inbundle(b,"LMAT")
-            printf ", \\\n"            
+            printf ", \\\n"
             #printf(j == cols(b.LMAT) ? "\n" : ", \\\n")
         else
             printf "\n"
@@ -439,7 +439,7 @@ function void write_standardplot_cmd (bundle *b)
             if inbundle(b,"PMAT") || inbundle(b,"LMAT")
                 printf ", \\\n"
             else
-                printf(j == cols(b.LMAT) ? "\n" : ", \\\n")                
+                printf(j == cols(b.LMAT) ? "\n" : ", \\\n")
             endif
 
         endloop
@@ -597,7 +597,7 @@ function void GPFbasics (bundle *b)
 
             printf "set ytics nomirror border out\n"
             if inbundle(b, "lines_rhs") || inbundle(b, "impulses_rhs") \
-                || inbundle(b, "points_rhs")
+                  || inbundle(b, "points_rhs")
                 printf "set y2tics nomirror border out\n"
             endif
             # yrange settings
@@ -656,7 +656,7 @@ function void GPFbasics (bundle *b)
         # Make graph nicer
         #2) put the border more to the background by applying it
         # only on the left and bottom part and put it and the tics in gray
-#        printf "set style line 11 lc rgb 'black' lt 1 \n"	# #808080
+        #        printf "set style line 11 lc rgb 'black' lt 1 \n"	# #808080
         if inbundle(b, "noborder")
             #printf "set border 3 back ls 11 \n"			# get rid of upper + left border
             printf "set style line 101 lc rgb '#808080' lt 1 lw 1 \n"
@@ -676,7 +676,7 @@ function void GPFbasics (bundle *b)
             printf "set style rect fc lt -1 fs transparent solid %.2f noborder\n", b.vfilled_alpha
             loop i=1..rows(b.vfilled) -q
                 printf "set obj rect from %d, graph 0 to %d, graph 1\n", \
-                b.vfilled[i,1], b.vfilled[i,2]
+                  b.vfilled[i,1], b.vfilled[i,2]
             endloop
         endif
 
@@ -691,41 +691,41 @@ function void GPFbasics (bundle *b)
             endloop
 
 
-            /* 
-            # Add label to vertical lines
-            if inbundle(b,"ymax")
-                scalar y_max = b.ymax
-            else
-                loop i=1..7 -q
-                    if i==1 && inbundle(b,"lines")
-                        matrix mat = b.lines
-                        scalar y_max = max(maxc(mat))
-                    elif i==2 && inbundle(b,"lines_rhs")
-                        mat = b.lines_rhs
-                        # TODO: add y2_max = max(maxc(mat))
-                    elif i==3 && inbundle(b,"impulses")
-                        mat = b.impulses
-                        scalar y_max = max(maxc(mat))
-                    elif i==4 && inbundle(b,"impulses_rhs")
-                        mat = b.impulses_rhs
-                    elif i==5 && inbundle(b,"StackMat")
-                        mat = sumr(b.StackMat)	# sum over all columns since we look at stacked values
-                        scalar y_max = max(maxc(mat))
-                    elif i==6 && inbundle(b,"points")
-                        mat = b.points
-                        scalar y_max = max(maxc(mat))
-                    elif i==7 && inbundle(b,"points_rhs")
-                        mat = b.points_rhs
-                    endif
-                    if i>1 && exists(mat)
-                        if max(maxc(mat))>y_max
-                            y_max = max(maxc(mat))
-                        endif
-                    endif
-                endloop
-            endif
+            /*
+               # Add label to vertical lines
+               if inbundle(b,"ymax")
+               scalar y_max = b.ymax
+               else
+               loop i=1..7 -q
+               if i==1 && inbundle(b,"lines")
+               matrix mat = b.lines
+               scalar y_max = max(maxc(mat))
+               elif i==2 && inbundle(b,"lines_rhs")
+               mat = b.lines_rhs
+               # TODO: add y2_max = max(maxc(mat))
+               elif i==3 && inbundle(b,"impulses")
+               mat = b.impulses
+               scalar y_max = max(maxc(mat))
+               elif i==4 && inbundle(b,"impulses_rhs")
+               mat = b.impulses_rhs
+               elif i==5 && inbundle(b,"StackMat")
+               mat = sumr(b.StackMat)	# sum over all columns since we look at stacked values
+               scalar y_max = max(maxc(mat))
+               elif i==6 && inbundle(b,"points")
+               mat = b.points
+               scalar y_max = max(maxc(mat))
+               elif i==7 && inbundle(b,"points_rhs")
+               mat = b.points_rhs
+               endif
+               if i>1 && exists(mat)
+               if max(maxc(mat))>y_max
+               y_max = max(maxc(mat))
+               endif
+               endif
+               endloop
+               endif
             */
-            
+
             # TODO: Add option to number vertical lines of better indetification
             /*
                scalar incr = y_max*0.2	# move label a bit higher (2% above max. value)
@@ -749,16 +749,9 @@ function void doheatmap (bundle *b)
     else
         funcerr "Warning: doHeatmap() requires at least matrix 'heat'!"
     endif
-    # TODO: add line plot
-    /*
-       if inbundle(b, "lines")
-       mat ~= b.lines
-       elif inbundle(b, "lines_rhs")
-       mat ~= b.lines_rhs
-       endif
-    */
 
-    GPFbasics(&b)	# Run basic settings
+    # Run basic settings
+    GPFbasics(&b)
 
     set warnings off  # omit warning for NAs
     tmpfile = b.tmpfile
@@ -768,8 +761,8 @@ function void doheatmap (bundle *b)
         # only on the left and bottom part and put it and the tics in gray
         #printf "set style line 11 lc rgb \"#808080\" lt 1 \n"
         #printf "set border 3 back ls 11\n"			# get rid of upper + left border
-#        printf "set tics nomirror \n"
-#        printf "set datafile missing \"NA\" \n"
+        #        printf "set tics nomirror \n"
+        #        printf "set datafile missing \"NA\" \n"
         if inbundle(b, ymin) && inbundle(b, ymax)
             printf "set cbrange[%.5f:%.5f] \n", b.ymin, b.ymax # set the value-range for legend
         endif
@@ -792,16 +785,18 @@ function void doheatmap (bundle *b)
         endif
 
         # Write xtics (date strings)
-        scalar count = 1
-        printf "set xtics ("
-        loop i=1..cols(mat) -q
-            if count==b.skipx || i==1
-                printf "\"%s\" %d, ", b.Date[i], $i
-                count=1						# reset counter
-            endif
-            count++
-        endloop
-        printf " ) out \n"
+        if inbundle(b, "Date")
+            scalar count = 1
+            printf "set xtics ("
+            loop i=1..cols(mat) -q
+                if count==b.skipx || i==1
+                    printf "\"%s\" %d, ", b.Date[i], $i
+                    count=1
+                endif
+                count++
+            endloop
+            printf " ) out \n"
+        endif
 
         # write plot specification
         printf "plot '-' using 1:2:3 matrix with image t ''\n"
@@ -1038,7 +1033,7 @@ function void doScatter (bundle *b)
         endif
 
         # Transparency
-#        printf "set style fill transparent solid %.2f noborder\n", b.alpha		# FIXME: doesn't work yet
+        #        printf "set style fill transparent solid %.2f noborder\n", b.alpha		# FIXME: doesn't work yet
         #printf "set style circle radius 0.08\n"
 
 

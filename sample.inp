@@ -102,13 +102,12 @@ elif runEX==6
 #    b.legend_show = 1
 #    b.legend_pos = 0
 #    b.mono = 1
-    b.skipx = 5
+b.xmin = 0
 #    b.dateform = 5
-    b.obsdate = {$obsdate}
+#    b.obsdate = {$obsdate}
     b.heat = mnormal(3,20)
     b.which = "heatmap"
-#    b..skipx = 4
-    b.ynames = defarray("L1", "L2", "L3")
+#    b.ynames = defarray("L1", "L2", "L3")
     string fname = sprintf("%s/heatmap.png", $dotdir)	# "display"
     b.fname = fname
     GnuPlotFun(&b)
