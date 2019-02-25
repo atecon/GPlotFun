@@ -789,12 +789,51 @@ GnuPlotFun(&b)
 
 \end_layout
 
-\begin_layout Subsection
-Stacked barplot
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figs/scatterplot.png
+	lyxscale 50
+	scale 50
+	groupId figs
+
+\end_inset
+
+
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
+\begin_inset Caption Standard
 
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:time-series-plot-1"
+
+\end_inset
+
+Default time-series plot (left) and time-series plot with advanced settings.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Stacked barplot
 \end_layout
 
 \begin_layout Subsection
@@ -2916,7 +2955,7 @@ Option
 \begin_layout Plain Layout
 
 \family typewriter
-legend
+legend_show
 \end_layout
 
 \end_inset
@@ -2938,7 +2977,7 @@ bool, show legend/ key (default: true(=1))
 \begin_layout Plain Layout
 
 \family typewriter
-poslegend
+legend_pos
 \end_layout
 
 \end_inset
@@ -2948,6 +2987,40 @@ poslegend
 
 \begin_layout Plain Layout
 integer, choose where to put legend (default: 1=outside below horizontal)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+legend_named
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
+Im code umbenennen
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+string array, set label for each object (lines, points, etc.) (default: empty)
 \end_layout
 
 \end_inset
@@ -3043,7 +3116,7 @@ string, specify lhs ylabel (optional)
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -3054,45 +3127,11 @@ ylabel_rhs
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-string, specify rhs ylabel (optional)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\family typewriter
-legend_info
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-
-\family typewriter
-Im code umbenennen
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-string array, set label for each object (lines, points, etc.) (default: empty)
+string, specify rhs ylabel (optional)
 \end_layout
 
 \end_inset

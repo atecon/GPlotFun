@@ -69,9 +69,9 @@ function bundle default_opts ()
     self.skipx = 10					# put xticks every n-th unit
 
     # legend
-    self.legend = 1					# show legend (default: true)
-    self.posleg = 0					# default pos. of legend
-    strings self.StrLeg = array(12)
+    self.legend_show = 1					# show legend (default: true)
+    self.legend_pos = 0					# default pos. of legend
+    strings self.legend_str = array(12)
 
     # style
     self.grid = 1					# draw no grid
@@ -189,8 +189,8 @@ function void GnuPlotFun(bundle *self)
 
 
     # CHECKS
-    # FIXME: maybe StrLeg is not needed being specified
-    if !inbundle(self, "StrLeg") && self.which != "heatmap"	#TODO: rename to Legend
+    # FIXME: maybe legend_str is not needed being specified
+    if !inbundle(self, "legend_str") && self.which != "heatmap"	#TODO: rename to Legend
         funcerr "Provide an array of legend names"
     endif
 
@@ -198,7 +198,7 @@ function void GnuPlotFun(bundle *self)
     # - if pt is a scalar, fill up a vector
     # - if ps is a scalar, fill up a vector
     # - if only a single color entry is passed, fill aup an array
-    # - check no. of all columns passed with length of StrLeg
+    # - check no. of all columns passed with length of legend_str
     # - alpha is bounded between [0,1]
 
     # Call plot function
@@ -219,18 +219,18 @@ end function
 
 function void print_leg_str (bundle *b)
 
-    if b.legend==0
+    if b.legend_show==0
         printf "set nokey\n""
     else
-        if b.posleg == 0
+        if b.legend_pos == 0
             printf "set key outside below horizontal\n"
-        elif b.posleg == 1
+        elif b.legend_pos == 1
             printf  "set key top left\n"
-        elif b.posleg == 2
+        elif b.legend_pos == 2
             printf "set key top right\n"
-        elif b.posleg == 3
+        elif b.legend_pos == 3
             printf "set key bottom left\n"
-        elif b.posleg == 4
+        elif b.legend_pos == 4
             printf "set key bottom right\n"
         endif
         printf "set key opaque\n"
@@ -333,13 +333,13 @@ function void write_scatterplot_cmd (bundle *b)
 
                 printf "'-'using 1:2 t '%s' w lines linetype $j dt %d lc \
                   rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
-                  b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], \
+                  b.legend_str[j+addcol], b.lines_dt[j], b.colors[j+addcol], \
                   b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
 
             else
                 printf "'-'using 1:2 axes x1y2 t '%s' w lines linetype $j dt %d lc \
                   rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
-                  b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], \
+                  b.legend_str[j+addcol], b.lines_dt[j], b.colors[j+addcol], \
                   b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
 
             endif
@@ -363,11 +363,11 @@ function void write_scatterplot_cmd (bundle *b)
             if j<=clhs					# RHS values
 
                 printf "'-'using 1:2 t '%s' w points lc rgb '%s' pt %d ps %.2f", \
-                  b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
+                  b.legend_str[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
             else
                 printf "'-'using 1:2 axes x1y2 t '%s' w points lc \
                   rgb '%s' pt %d ps %.2f", \
-                  b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j]
+                  b.legend_str[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j]
             endif
             printf(j == cols(b.PMAT) ? "\n" : ", \\\n")
         endloop
@@ -415,21 +415,21 @@ function void write_standardplot_cmd (bundle *b)
 
                 if j<=clhs					# LHS values
                     printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
-                      axes x1y1 t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.StrLeg[j], \
+                      axes x1y1 t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.legend_str[j], \
                       b.colors[j], b.impulses_lw[j]
                 else
                     printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
                       axes x1y2 t '%s' w impulses rgb '%s' lw %.2f", k, k, \
-                      b.StrLeg[j+addcol], b.colors[j+addcol], b.lines_lw[j]
+                      b.legend_str[j+addcol], b.colors[j+addcol], b.lines_lw[j]
                 endif
 
             else
                 if j<=clhs
                     printf "'-'using 1 axes x1y1 t '%s' w impulses lc rgb '%s' lw %.2f", \
-                      b.StrLeg[j], b.colors[j], b.impulses_lw[j]
+                      b.legend_str[j], b.colors[j], b.impulses_lw[j]
                 else
                     printf "'-'using 1 axes x1y2 t '%s' w impulses lc rgb '%s' lw %.2f", \
-                      b.StrLeg[j], b.colors[j], b.impulses_rhs_lw[j]
+                      b.legend_str[j], b.colors[j], b.impulses_rhs_lw[j]
                 endif
             endif
 
@@ -458,14 +458,14 @@ function void write_standardplot_cmd (bundle *b)
 
                     printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
                       axes x1y1 t '%s' w lines linetype $j dt %d lc rgb '%s' pt %d ps %.2f \
-                      lw %.2f pointinterval %.2f", k, k, b.StrLeg[j+addcol], \
+                      lw %.2f pointinterval %.2f", k, k, b.legend_str[j+addcol], \
                       b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], \
                       b.lines_lw[j], b.lines_pi
 
                 else
                     printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
                       axes x1y2 t '%s' w lines linetype $j dt %d lc rgb '%s' pt %d \
-                      ps %.2f lw %.2f pointinterval %.2f", k, k, b.StrLeg[j+addcol], \
+                      ps %.2f lw %.2f pointinterval %.2f", k, k, b.legend_str[j+addcol], \
                       b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], \
                       b.lines_lw[j], b.lines_pi
                 endif
@@ -474,12 +474,12 @@ function void write_standardplot_cmd (bundle *b)
                 if j<=clhs					# LHS values
                     printf "'-'using 1 axes x1y1 t '%s' w lines linetype $j dt %d lc \
                       rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
-                      b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], \
+                      b.legend_str[j+addcol], b.lines_dt[j], b.colors[j+addcol], \
                       b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
                 else
                     printf "'-'using 1 axes x1y2 t '%s' w lines linetype $j dt %d lc \
                       rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
-                      b.StrLeg[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], \
+                      b.legend_str[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], \
                       b.ps[j], b.lines_lw[j], b.lines_pi
                 endif
             endif
@@ -511,22 +511,22 @@ function void write_standardplot_cmd (bundle *b)
                 if j<=clhs					# RHS values
                     printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y1 \
                       t '%s' w points lc rgb '%s' pt %d ps %.2f", \
-                      k, k, b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
+                      k, k, b.legend_str[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
                 else
                     printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
                       t '%s' w points lc rgb '%s' pt %d ps %.2f", \
-                      k, k, b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
+                      k, k, b.legend_str[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
                 endif
 
             else
 
                 if j<=clhs					# RHS values
                     printf "'-'using 1:2 axes x1y1 t '%s' w points lc rgb '%s' pt %d ps %.2f", \
-                      b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
+                      b.legend_str[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
                 else
                     printf "'-'using 1:2 axes x1y2 t '%s' w points lc \
                       rgb '%s' pt %d ps %.2f", \
-                      b.StrLeg[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
+                      b.legend_str[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
                 endif
             endif
 
@@ -887,18 +887,18 @@ function void dostackedbar (bundle *b)
         loop j=1..cols(mat) -q
             if j == 1 && inbundle(b, "Date")  # first date entry
                 k = cols(mat)+1
-                #printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle pattern %d ", k, k, StrLeg[j], pat[j]
-                printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5 lc rgb '%s'", k, k, b.StrLeg[j], b.colors[j]
-                #printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5", k, k, b.StrLeg[j]
+                #printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle pattern %d ", k, k, legend_str[j], pat[j]
+                printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5 lc rgb '%s'", k, k, b.legend_str[j], b.colors[j]
+                #printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5", k, k, b.legend_str[j]
                 #elif j == cols(mat) #&& exists(obsdate)	# last date entry
-                #    printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5", k, k, StrLeg[j]
+                #    printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5", k, k, legend_str[j]
             else
                 if j>1 && j<=nstack	# stacked barplot
-                    printf "$data using %d t '%s' fillstyle pattern %d lc rgb '%s'", j, b.StrLeg[j], b.pat[j], b.colors[j]
-                    #printf "$data using %d t '%s' fillstyle pattern %d", j, b.StrLeg[j], b.pat[j]
+                    printf "$data using %d t '%s' fillstyle pattern %d lc rgb '%s'", j, b.legend_str[j], b.pat[j], b.colors[j]
+                    #printf "$data using %d t '%s' fillstyle pattern %d", j, b.legend_str[j], b.pat[j]
                 elif j>nstack
                     printf "$data using $j axes x1y2 t '%s' w lines linetype %d dt %d lc rgb '%s' \
-                      pt %d ps %.2f lw %.2f pointinterval %.2f", b.StrLeg[j], ($j-nstack), b.lines_dt[j-nstack], \
+                      pt %d ps %.2f lw %.2f pointinterval %.2f", b.legend_str[j], ($j-nstack), b.lines_dt[j-nstack], \
                       b.colors[j], b.pt[j-nstack], b.ps[j-nstack], b.lines_lw[j-nstack], b.lines_pi
                 endif
 

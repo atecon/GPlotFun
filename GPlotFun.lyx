@@ -2955,7 +2955,7 @@ Option
 \begin_layout Plain Layout
 
 \family typewriter
-legend
+legend_show
 \end_layout
 
 \end_inset
@@ -2977,7 +2977,7 @@ bool, show legend/ key (default: true(=1))
 \begin_layout Plain Layout
 
 \family typewriter
-poslegend
+legend_pos
 \end_layout
 
 \end_inset
@@ -2987,6 +2987,40 @@ poslegend
 
 \begin_layout Plain Layout
 integer, choose where to put legend (default: 1=outside below horizontal)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+legend_str
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
+Im code umbenennen
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+string array, set label for each object (lines, points, etc.) (default: empty)
 \end_layout
 
 \end_inset
@@ -3082,7 +3116,7 @@ string, specify lhs ylabel (optional)
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -3093,45 +3127,11 @@ ylabel_rhs
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-string, specify rhs ylabel (optional)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\family typewriter
-legend_info
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-
-\family typewriter
-Im code umbenennen
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-string array, set label for each object (lines, points, etc.) (default: empty)
+string, specify rhs ylabel (optional)
 \end_layout
 
 \end_inset

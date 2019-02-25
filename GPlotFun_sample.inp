@@ -20,7 +20,7 @@ matrix mat = mnormal(100,5)
 b.points = mat[,1:3]							# 1st col. refers to x-axis values
 b.lines = (2*mat[1:50,1] ~ 2*mat[1:50,4:])	# # 1st col. refers to x-axis values
 
-#b.StrLeg = defarray("", "", "", "")
+#b.legend_str = defarray("", "", "", "")
 b.which = "scatter"
 b.xlabel = "foo"
 matrix b.ps = {1,1,1}
@@ -51,8 +51,8 @@ b.fontsize = 11
 /*
 b.skipx = 12
 
-b.legend = 1
-b.posleg = 0
+b.legend_show = 1
+b.legend_pos = 0
 
 b.lines_pi = 1
 b.noborder = 1
@@ -82,7 +82,7 @@ b.impulses_lhs = muniform(nobs(LRM),1)*10
 b.hfilled = low~up				# T by 2 matrix of shaded horizonal area
 b.vfilled = {obsnum(1977:1)} ~ {obsnum(1980:2)}	# n by 2 matrox of shaded area between 2 dates
 b.vlines = {obsnum(1981:1)} ~ {obsnum(1985:4)}	# FIXME: is plotted in white color!
-#b.StrLeg = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo")
+#b.legend_str = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo")
 
 # Plot + store 
 #string fname = sprintf("%s/testplot.png", $dotdir)	# "display"
@@ -95,7 +95,7 @@ stop
 b.StackMat = b.lines
 b.lines = ones(55,1) #(point/2)
 #delete b.vfilled
-b.StrLeg = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo", "foo", "foo")
+b.legend_str = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo", "foo", "foo")
 string fname = "display" #sprintf("%s/StackBar.png", $dotdir)	# "display"
 b.fname = fname
 b.which = "stackedbar"
@@ -107,8 +107,8 @@ bundle b = null
 b.skipx = 5
 b.dateform = 5
 b.fs = 11
-b.legend = 1
-b.posleg = 0
+b.legend_show = 1
+b.legend_pos = 0
 b.grid = 0
 b.ps = 0
 b.lines_pi = 1
