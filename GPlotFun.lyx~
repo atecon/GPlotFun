@@ -789,11 +789,15 @@ GnuPlotFun(&b)
 
 \end_layout
 
-\begin_layout Standard
+\begin_layout Subsection
 Stacked barplot
 \end_layout
 
 \begin_layout Standard
+
+\end_layout
+
+\begin_layout Subsection
 Heatmap
 \end_layout
 
