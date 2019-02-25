@@ -3,7 +3,7 @@ open hendry_jae.gdt -q
 string WD = "/home/at/git/GPlotFun"
 include "@WD/GPlotFun.inp"
 
-runEX = 4
+runEX = 6
 
 if runEX==1
     # setup the bundle
@@ -70,7 +70,7 @@ elif runEX==3
 
     GnuPlotFun(&b)
 
-elif runEX==4
+elif runEX==4		# scatterplot
     
     bundle b = null
     b.points = {gdp} ~ {pgdp} ~ {pw}							# 1st col. refers to x-axis values
@@ -99,9 +99,18 @@ elif runEX==5
 elif runEX==6
     # Heatmap Plot
     bundle b = null
+#    b.legend_show = 1
+#    b.legend_pos = 0
+#    b.mono = 1
+    b.skipx = 5
+#    b.dateform = 5
     b.obsdate = {$obsdate}
     b.heat = mnormal(3,20)
     b.which = "heatmap"
+#    b..skipx = 4
+    b.ynames = defarray("L1", "L2", "L3")
+    string fname = sprintf("%s/heatmap.png", $dotdir)	# "display"
+    b.fname = fname
     GnuPlotFun(&b)
 
 endif

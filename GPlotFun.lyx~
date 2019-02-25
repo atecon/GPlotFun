@@ -2637,19 +2637,19 @@ https://github.com/Gnuplotting/gnuplot-palettes/
 \begin_layout Enumerate
 
 \family typewriter
-dark2_pal
+dark2
 \end_layout
 
 \begin_layout Enumerate
 
 \family typewriter
-greys_pal
+greys
 \end_layout
 
 \begin_layout Enumerate
 
 \family typewriter
-jet_pal
+jet
 \end_layout
 
 \begin_layout Standard
@@ -2999,19 +2999,7 @@ integer, choose where to put legend (default: 1=outside below horizontal)
 \begin_layout Plain Layout
 
 \family typewriter
-legend_named
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-
-\family typewriter
-Im code umbenennen
-\end_layout
-
-\end_inset
-
-
+legend_str
 \end_layout
 
 \end_inset

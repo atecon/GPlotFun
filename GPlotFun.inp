@@ -101,7 +101,7 @@ function bundle default_opts ()
        endloop
        self.colors = lc
     */
-    self.color = colpal("dark2_pal") 	# greys_pal(), jet_pal(), dark2_pal()
+    self.color = colpal("dark2") 	# greys(), jet(), dark2()
 
     # line colors for vertical lines
     /*
@@ -111,7 +111,7 @@ function bundle default_opts ()
        endloop
        self.vcolors = lc
     */
-    self.vcolors =  colpal("jet_pal") 	# greys_pal(), jet_pal(), dark2_pal()
+    self.vcolors =  colpal("jet") 	# greys(), jet(), dark2()
 
     # colorbox for heatmap
     self.nocolorbox = 0
@@ -133,18 +133,20 @@ end function
 # helper function
 function strings colpal (string pal)
 
-    if pal=="dark2_pal"
+    # Definition of color pallets
+
+    if pal=="dark2"
         # https://github.com/Gnuplotting/gnuplot-palettes/blob/master/dark2.pal
         return defarray("#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D","#666666", \
         "#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D","#666666")
 
-    elif pal=="jet_pal"
+    elif pal=="jet"
         # https://github.com/Gnuplotting/gnuplot-palettes/blob/master/jet.pal
         return defarray("#000080", "#0000ff", "#0080ff", "#00ffff", "#80ff80", "#ffff00", \
         "#ff8000", "#ff0000", "#800000", "#0000ff", "#007f00", "#ff0000", "#00bfbf", \
         "#bf00bf", "#bfbf00", "#3f3f3f")
 
-    elif pal=="greys_pal"
+    elif pal=="greys"
         # https://github.com/Gnuplotting/gnuplot-palettes/blob/master/jet.pal
         return defarray("#FFFFFF", "#F0F0F0", "#D9D9D9", "#BDBDBD", "#969696", \
         "#737373", "#525252", "#252525", "#FFFFFF", "#F0F0F0", "#D9D9D9", \
@@ -741,7 +743,6 @@ end function
 function void doheatmap (bundle *b)
     # heat = k by T matrix, k=cross-sectional dim., T=time dim.
     # lines = draw horizonal lines
-    # NOTE: Stacked Bar is not allowed for this type of plot
 
     if b.which=="heatmap"
         matrix mat = b.heat
@@ -767,8 +768,8 @@ function void doheatmap (bundle *b)
         # only on the left and bottom part and put it and the tics in gray
         #printf "set style line 11 lc rgb \"#808080\" lt 1 \n"
         #printf "set border 3 back ls 11\n"			# get rid of upper + left border
-        printf "set tics nomirror \n"
-        printf "set datafile missing \"NA\" \n"
+#        printf "set tics nomirror \n"
+#        printf "set datafile missing \"NA\" \n"
         if inbundle(b, ymin) && inbundle(b, ymax)
             printf "set cbrange[%.5f:%.5f] \n", b.ymin, b.ymax # set the value-range for legend
         endif
@@ -795,11 +796,8 @@ function void doheatmap (bundle *b)
         printf "set xtics ("
         loop i=1..cols(mat) -q
             if count==b.skipx || i==1
-                printf "\"%s\" %d", b.Date[i], $i
-                count = 1
-                if (cols(mat)-$i) > b.skipx
-                    printf ", "
-                endif
+                printf "\"%s\" %d, ", b.Date[i], $i
+                count=1						# reset counter
             endif
             count++
         endloop
@@ -810,10 +808,10 @@ function void doheatmap (bundle *b)
         # HEATMAP data block
         loop i=1..rows(mat) -q
             loop j=1..cols(mat) -q
-                if mat[i,j]<0 || mat[i,j]>=0
+                if ok(mat[i,j])
                     printf "%g", mat[i,j]
                 else
-                    printf "NaN"
+                    printf "NaN "
                 endif
                 if j<cols(mat)
                     printf ", "
