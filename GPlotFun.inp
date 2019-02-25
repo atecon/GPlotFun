@@ -118,7 +118,7 @@ function bundle default_opts ()
 
     # define pattern and transparency style
     # https://stackoverflow.com/questions/19412382/gnuplot-line-types
-    self.pat = {0,4,2,3,8}    	# pattern orderings
+    self.pat = {1,4,2,3,8}    	# pattern orderings
     self.vfilled_alpha = 0.3				# [0,1]
     self.hfilled_alpha = 0.9				# [0,1]
 
@@ -157,7 +157,7 @@ end function
 
 
 #private
-function void GnuPlotFun(bundle *self)
+function void GPlotFun(bundle *self)
 
     #--------------
     # MAIN FUNCTION
@@ -619,17 +619,6 @@ function void GPFbasics (bundle *b)
             endif
             # print y-range settings
             print_range(&b, "y")
-            /* deprecated
-            if inbundle(b,"ymin") && inbundle(b,"ymax")
-                printf "set yrange[%.5f:%.5f] \n", b.ymin, b.ymax
-            elif inbundle(b,"ymin") && !inbundle(b,"ymax")
-                printf "set yrange[%.5f:] \n", b.ymin
-            elif !inbundle(b,"ymin") && inbundle(b,"ymax")
-                printf "set yrange[:%.5f] \n", b.ymax
-            else
-                #printf "set yrange[:] \n"
-            endif
-            */
 
         else	# case when ylabels are provided (currently only for heatmap)
             ynames = b.ynames
@@ -728,8 +717,8 @@ function void GPFbasics (bundle *b)
                scalar y_max = max(maxc(mat))
                elif i==4 && inbundle(b,"impulses_rhs")
                mat = b.impulses_rhs
-               elif i==5 && inbundle(b,"StackMat")
-               mat = sumr(b.StackMat)	# sum over all columns since we look at stacked values
+               elif i==5 && inbundle(b,"barstacked")
+               mat = sumr(b.barstacked)	# sum over all columns since we look at stacked values
                scalar y_max = max(maxc(mat))
                elif i==6 && inbundle(b,"points")
                mat = b.points
@@ -844,13 +833,13 @@ end function
 
 
 function void dostackedbar (bundle *b)
-    # StackMat = T by k matrix, k=separate bar plot (x1,...,xk), T=time dim.
-    # lines = draw horizonal lines
+    # barstacked = T by k matrix, k=separate bar plot (x1,...,xk), T=time dim.
+    # lines = draw horizonal lines -- only LHS at the moment
 
-    if inbundle(b, "StackMat")
-        matrix mat = b.StackMat
+    if inbundle(b, "barstacked")
+        matrix mat = b.barstacked
     else
-        funcerr "Warning: dostandard() requires at least matrix 'StackMat'!"
+        funcerr "Warning: dostackedbar() requires at least matrix 'barstacked'!"
     endif
     if inbundle(b, "lines")
         mat ~= b.lines
@@ -895,22 +884,19 @@ function void dostackedbar (bundle *b)
         printf "EOF\n"
 
         # write plot specification
-        nstack = cols(b.StackMat)
+        nstack = cols(b.barstacked)
         printf "plot \\\n"
         loop j=1..cols(mat) -q
             if j == 1 && inbundle(b, "Date")  # first date entry
                 k = cols(mat)+1
-                #printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle pattern %d ", k, k, legend_str[j], pat[j]
-                printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5 lc rgb '%s'", k, k, b.legend_str[j], b.colors[j]
-                #printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5", k, k, b.legend_str[j]
-                #elif j == cols(mat) #&& exists(obsdate)	# last date entry
-                #    printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5", k, k, legend_str[j]
+                printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5 lc rgb '%s'", \
+                k, k, b.legend_str[j], b.colors[j]
             else
-                if j>1 && j<=nstack	# stacked barplot
+                if j>=1 && j<=nstack	# stacked barplot
                     printf "$data using %d t '%s' fillstyle pattern %d lc rgb '%s'", j, b.legend_str[j], b.pat[j], b.colors[j]
-                    #printf "$data using %d t '%s' fillstyle pattern %d", j, b.legend_str[j], b.pat[j]
-                elif j>nstack
-                    printf "$data using $j axes x1y2 t '%s' w lines linetype %d dt %d lc rgb '%s' \
+                    
+                else		# TODO: only lhs-lines allowed at the moment
+                    printf "$data using $j t '%s' w lines linetype %d dt %d lc rgb '%s' \
                       pt %d ps %.2f lw %.2f pointinterval %.2f", b.legend_str[j], ($j-nstack), b.lines_dt[j-nstack], \
                       b.colors[j], b.pt[j-nstack], b.ps[j-nstack], b.lines_lw[j-nstack], b.lines_pi
                 endif

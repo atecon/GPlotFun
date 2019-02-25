@@ -1,20 +1,12 @@
 author = Artur Tarassow
 email = atecon@cryptolab.net
 version = 0.1
-date = 2019-02-17
+date = 2019-02-25
 description = Plotting Library
 tags = C12 C52 C53
-min-version = 2017a
+min-version = 2018a
 data-requirement = no-data-ok
-public = doKS doEKTtest_series doHPtest applyFCtests doDLtest \
-  getLoss doDMtest doGWtest doMZtest doPTtest \
-  doCGtest \
-  doPS probscore \
-  DrawLoss DrawLoss2 \
-  GUI_FEP_print GUI_FEP \
-  doCGWILCtest doCGRANKtest \
-  doKStest doEKTtest doKGtest \
-  CamDufStats
+public = GPlotFun
   
 help = GPlotFun.pdf
 sample-script = GPlotFun_sample.inp

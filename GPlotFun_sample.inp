@@ -1,124 +1,151 @@
+clear
 set verbose off
 
-string WD = "/home/at/git/GPlotFun"
+open hendry_jae.gdt -q
 
+string WD = "/home/at/git/GPlotFun"			# adjust path
 include "@WD/GPlotFun.inp"
 
-# EXAMPLE
-open denmark.gdt -q
-bundle b = null
-matrix point = {LRM}
-matrix low = point.-0.5
-matrix up = point.+0.5
+scalar runEX = 5			# Select an example
 
-# Scatter plots
-/*
-#===============
-bundle b = null
-b.alpha = 0.6
-matrix mat = mnormal(100,5)
-b.points = mat[,1:3]							# 1st col. refers to x-axis values
-b.lines = (2*mat[1:50,1] ~ 2*mat[1:50,4:])	# # 1st col. refers to x-axis values
-
-#b.legend_str = defarray("", "", "", "")
-b.which = "scatter"
-b.xlabel = "foo"
-matrix b.ps = {1,1,1}
-b.alpha = 0.1									# FIXME: has no effects, yet
-#matrix b.pt = 2
-#string fname = sprintf("%s/testscatter.png", $dotdir)	# "display"
-#b.fname = fname
-GnuPlotFun(&b)
-stop
-*/
+if runEX==1
+    # setup the bundle
+    bundle b = null
+    matrix b.lines = {pgdp} ~ {gdp}
+    matrix b.obsdate = {$obsdate}
+    GPlotFun(&b)
 
 
+elif runEX==2
+    bundle b = null
+    b.obsdate = {$obsdate}		# access timestamp
+    matrix b.lines = {pgdp} ~ {gdp}
 
-# Optional information
-#======================
-#b.lines_dt = seq(1,12) 
-#b.vlines_dt = {1,2,3}		# for vertical lines
-#b.lines_lw = {2,2.5,5,1,1,1,1}
-#b.impulses_lw = {3}
-# select color -- either array of rgb colors or a palette
-#---------------------------------------------------------
-#b.colors = defarray("black", "black", "black", "grey", \
-  #  "grey", "grey", "grey", "black", "black", "black", "black", "black")	# color string
-#string b.colors = "greys_pal"
+    # shaded area around LRM's observations
+    b.hfilled = {gdp-1} ~ {gdp+1}
 
-b.dateform = 5
-b.fontsize = 11
-/*
-b.skipx = 12
+    # recession bar for some period
+    b.vfilled = {obsnum(1900)} ~ {obsnum(1905)}
+    b.vfilled_alpha = 0.3
 
-b.legend_show = 1
-b.legend_pos = 0
+    # vertical line at two observations
+    b.vlines = {obsnum(1917)} ~ {obsnum(1945)}
+    b.vlines_dt = seq(1,2)
 
-b.lines_pi = 1
-b.noborder = 1
-*/
-#b.ps = ones(12,1)
-b.grid = 1
-b.height = 390
-b.width = 640
-#b.ymax = 15
-#b.ymin = 0
+    GPlotFun(&b)
 
-b.title = "A nice plot..."
+elif runEX==3
 
-# needed for Shaded line plot
-b.obsdate = {$obsdate}				# if no obsdate is passed, x-axis is 1,2,.. --> #FIXME: doesn't work, yet
+    bundle b = null
+    b.obsdate = {$obsdate}		# access timestamp
+    matrix b.lines = {gdp}
 
-# CI-Shaded Plot +  Line Plot + Vertical shaded area
-b.lines = (point~1.2.*point)	# T by k matrix of line plots
-b.points = (1.2.*point)	# T by k matrix of points plots
-#b.pt = seq(1,5)
-#b.ps = ones(1,12)
-b.alpha = 0.4					# degree of transparency
-#b.lines[1:10,1] = NA
-b.lines_lhs = point*0.4		# T by k matrix of line plots, LHS
-b.impulses = muniform(nobs(LRM),1)*10
-b.impulses_lhs = muniform(nobs(LRM),1)*10
-b.hfilled = low~up				# T by 2 matrix of shaded horizonal area
-b.vfilled = {obsnum(1977:1)} ~ {obsnum(1980:2)}	# n by 2 matrox of shaded area between 2 dates
-b.vlines = {obsnum(1981:1)} ~ {obsnum(1985:4)}	# FIXME: is plotted in white color!
-#b.legend_str = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo")
+    # shaded area around LRM's observations
+    b.hfilled = {gdp-1} ~ {gdp+1}
 
-# Plot + store 
-#string fname = sprintf("%s/testplot.png", $dotdir)	# "display"
-#b.fname = fname
-GnuPlotFun(&b)
-stop
+    # recession bar for some period
+    b.vfilled = {obsnum(1900)} ~ {obsnum(1905)}
+    b.vfilled_alpha = 0.3
+
+    # vertical line at two observations
+    b.vlines = {obsnum(1917)} ~ {obsnum(1945)}
+    b.vlines_dt = seq(1,2)
+
+    # points
+    b.points_rhs = {diff(pgdp)/pgdp(-1)*100}
+
+    # impulses
+    b.impulses = {diff(gdp)/gdp(-1)*100}
+
+    # restrict range of y-axis
+    b.ymin = -1
+    b.ymax = 18
+
+    # make plot wider
+    b.width = 800
+    b.height = 420
+
+    # add legend names
+    b.StrLeg = defarray("1", "2", "3 (rhs)")
+    # set labels + title
+    b.title = "This is a nice plot..."
+    b.ylabel = "y-axis"
+
+    GPlotFun(&b)
+
+elif runEX==4		# scatterplot
+
+    bundle b = null
+    b.points = {gdp} ~ {pgdp} ~ {pw}							# 1st col. refers to x-axis values
+    b.lines =  {gdp} ~ {pgdp}	# # 1st col. refers to x-axis values
+
+    #b.StrLeg = defarray("", "", "", "")
+    b.which = "scatter"
+    b.xlabel = ""
+    b.ylabel = "pgdp \& pw"
+
+    # style
+    #    b.colors = "jet_pal"
+    b.ps = ones(2,1)
+    b.StrLeg = defarray("pgdp vs. gdp (line)", "pgdp vs. gdp", "w vs. gdp")
+    b.fs = 14
+    GPlotFun(&b)
 
 
-# Stacked Bar Plot
-b.StackMat = b.lines
-b.lines = ones(55,1) #(point/2)
-#delete b.vfilled
-b.legend_str = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo", "foo", "foo")
-string fname = "display" #sprintf("%s/StackBar.png", $dotdir)	# "display"
-b.fname = fname
-b.which = "stackedbar"
-GnuPlotFun(&b)
-stop
+elif runEX==5		 # stacked barplot
 
-# Heatmap Plot
-bundle b = null
-b.skipx = 5
-b.dateform = 5
-b.fs = 11
-b.legend_show = 1
-b.legend_pos = 0
-b.grid = 0
-b.ps = 0
-b.lines_pi = 1
-b.height = 320
-b.width = 540
-b.mono = 1
-b.obsdate = {$obsdate}
-b.heat = mnormal(3,20)
-b.ynames = defarray("L1", "L2", "L3")
-string fname = sprintf("%s/heatmap.png", $dotdir)	# "display"
-b.fname = fname
-b.which = "heatmap"
-GnuPlotFun(&b)
+    bundle b = null
+    b.barstacked = {gdp} ~ {pgdp} ~ {pw}
+    b.obsdate = {$obsdate}
+    b.lines =  {m}
+    b.xmin = 0					# staring value at x-axis
+    
+    # legend
+    b.legend_str = defarray("gdp", "pgdp", "pw", "m (line)")
+    
+    # control output    
+    b.width = 800
+    b.height = 420
+#    string fname = sprintf("%s/figs/stackedbar.png", WD)	# "display"
+#    b.fname = fname    
+    b.which = "stackedbar"    
+    GPlotFun(&b)
+
+
+elif runEX==6
+    # Heatmap Plot
+    bundle b = null
+    b.which = "heatmap"
+
+    #    b.legend_show = 1
+    #    b.legend_pos = 0
+    #    b.mono = 1
+    b.xmin = 0
+    b.ymin = 0
+    #    b.dateform = 5
+    b.obsdate = {$obsdate}
+    list L = 1 2 3 4 5 6 7 8 9	10 11 12 # list of series
+    b.heat = {L}' 		#alternatively: mnormal(30,100)
+
+    # make plot wider
+    b.width = 800
+    b.height = 420
+    b.title = "This is a heatmap"
+
+    # store as png-file
+    string fname = sprintf("%s/figs/heatmap.png", WD)	# "display"
+    b.fname = fname
+    GPlotFun(&b)
+
+endif
+
+
+
+
+
+
+
+
+
+
+

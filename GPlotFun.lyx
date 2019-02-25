@@ -132,12 +132,12 @@ Changelog
 \end_layout
 
 \begin_layout Itemize
-Version 0.2 (Feb, 2019)
+Version 0.1 (Feb, 2019)
 \end_layout
 
 \begin_deeper
 \begin_layout Itemize
-TBW
+initial version
 \end_layout
 
 \end_deeper
@@ -163,8 +163,12 @@ GPlotFun
 \family default
  package is a collection of gretl scripts and functions for advanced plotting
  methods.
- Gretl plotting facility makes heavy use of the well-known open-source graphing
- utility named Gnuplot (URL: 
+ Gretl's built-in plotting facility makes heavy use of the well-known open-sourc
+e graphing utility 
+\emph on
+Gnuplot
+\emph default
+ (URL: 
 \begin_inset CommandInset href
 LatexCommand href
 name "http://www.gnuplot.info/"
@@ -174,22 +178,64 @@ literal "false"
 \end_inset
 
 ).
+ Gretl already offers a plotting facility, as described in Ch.
+ 8 in the manual.
+ However, some types of plots are either hard to realize using the current
+ state or not supported at all.
+ This package is an attempt to bridge the gap between Gretl's current state
+ of employing gnuplot and gnuplot's huge capability to draw very different
+ and advanced plots.
 \end_layout
 
 \begin_layout Standard
 The 
 \family typewriter
-naiveFC
+GPlotFun
 \family default
- function package comprises currently the following features:
+ package makes heavily use of gretl's support of bundles which offer a highly
+ flexible way of programming.
+ This initial package version is a suggestion, and the author is looking
+ forward to collaborate with interested people to continue its development.
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+GPlotFun
+\family default
+ package comprises the following features:
 \end_layout
 
 \begin_layout Itemize
-TBW
+Time-series plots with vertical and horizontal lines, with vertical and
+ horizontal shaded areas, and impulse as well as point plots.
+\end_layout
+
+\begin_layout Itemize
+Scatter plots supporting classes of points and lines.
+\end_layout
+
+\begin_layout Itemize
+Stacked barplots combined with line plots.
+\end_layout
+
+\begin_layout Itemize
+Heatmaps
+\end_layout
+
+\begin_layout Itemize
+Many parameters can be controlled for obtaining high-quality graphs.
+\end_layout
+
+\begin_layout Standard
+In the following sections, we will inform the interested user or potential
+ supporter where to download the package.
+ Next, we will introduce some examples and show how to control the output
+ before a more detailed overview about the various options will be shown.
 \end_layout
 
 \begin_layout Section
-Install and load the package
+Get the package
 \end_layout
 
 \begin_layout Standard
@@ -197,13 +243,29 @@ The
 \family typewriter
 GPLotFun
 \family default
- package is publicly available on the gretl server.
- The package must be downloaded once, and loaded into memory each time Gretl
- is started.
+ package is currently only available on the author's github repository:
  
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+https://github.com/atecon/GPlotFun
 \end_layout
 
-\begin_layout Standard
+\end_inset
+
+.
+ Interested people can find the functions and the manual in Lyx- and pdf-format
+ there.
+ The author seeks to collaborate on this project with other people.
+ Github provides a professional environment for joint developments by means
+ of branches and pull requests.
+ 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
 \begin_inset Box Doublebox
 position "t"
 hor_pos "c"
@@ -278,27 +340,70 @@ help GPLotFun
 
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
-Example
+Examples
 \end_layout
 
 \begin_layout Standard
-For illustration we use a time-series data set comprising some series observed
- at a quarterly frequency.
- First, we will show how to draw simple or advanced plots when working with
- time-series.
- Second, we will introduce scatter plots.
- 
-\series bold
-TBF
+For illustration we use a time-series data set comprising annual macroeconomic
+ data of the UK between 1873 and 1991.
+ We will show how to draw simple as well as more advanced different types
+ of plots using the package.
 \end_layout
 
 \begin_layout Subsection
 Time-series plot
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Time-series-plot"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-The sample script opens the data set and plots some series.
+The sample script opens the sample data set and plots two series of interest
+ over time.
+ The package's functions are accessed through bundles which are initially
+ filled with some minimum information before passed to the main function
+ GPlotFun
+\family typewriter
+()
+\family default
+.
+ In the example, we set up an empty bundle 
+\family typewriter
+b 
+\family default
+and define a 
+\begin_inset Formula $T\times2$
+\end_inset
+
+ matrix named 
+\family typewriter
+lines 
+\family default
+with two series.
+ Furthermore, we pass a matrix named 
+\family typewriter
+obsdate
+\family default
+.
+ A matrix named like this is assumed holding timestamps which will be converted
+ into date strings and which are printed at the x-axis of the graph.
+ If no such a matrix is passed, the x-axis will be a sequence of integers
+ starting at '1'.
+\end_layout
+
+\begin_layout Standard
+Per default, the graph will be immediately depicted on the screen but of
+ course the user can store it in various formats as shown below.
 \end_layout
 
 \begin_layout Standard
@@ -348,7 +453,7 @@ matrix b.lines = {pgdp} ~ {gdp}
 
 \begin_layout Plain Layout
 
-GnuPlotFun(&b)
+GPlotFun(&b)
 \end_layout
 
 \end_inset
@@ -387,7 +492,7 @@ status open
 \begin_inset Graphics
 	filename figs/tsplot_simple.png
 	lyxscale 50
-	scale 50
+	scale 45
 	groupId figs
 
 \end_inset
@@ -396,7 +501,7 @@ status open
 \begin_inset Graphics
 	filename figs/tsplot_adv.png
 	lyxscale 50
-	scale 50
+	scale 45
 	groupId figs
 
 \end_inset
@@ -432,13 +537,23 @@ Default time-series plot (left) and time-series plot with advanced settings.
 \end_layout
 
 \begin_layout Standard
-We can easily add further information.
- The following sample script, shows how to add a horizontal shaded area
- around one of the lines.
- Furthermore, we will add a vertical line add some specific date, add a
- recession bar and points as well as impulses.
- Lastly, we will add some labeling, and change some further details.
- These commands result in the right-hand side plot in Figure 
+We can easily add further features to the plot.
+ The following script shows how to add a horizontal shaded area around one
+ of the lines.
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+At the moment only a single horizontal shaded area can be drawn.
+\end_layout
+
+\end_inset
+
+ Furthermore, we will add a vertical line at some specific dates, add a
+ recession bar (vertical shaded area) and some point as well as impulse
+ plot.
+ Lastly, we will control some of the labels and change some further details.
+ These commands result in the right-hand side plot of Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "fig:time-series-plot"
@@ -602,7 +717,7 @@ b.width = 800
 
 \begin_layout Plain Layout
 
-b.height = 420 
+b.height = 420
 \end_layout
 
 \begin_layout Plain Layout
@@ -635,7 +750,7 @@ b.ylabel = "y-axis"
 
 \begin_layout Plain Layout
 
-GnuPlotFun(&b)
+GPlotFun(&b)
 \end_layout
 
 \end_inset
@@ -650,6 +765,13 @@ GnuPlotFun(&b)
 
 \begin_layout Subsection
 Scatter plot
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Scatter-plot"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -667,8 +789,95 @@ scatter
 
 \family default
  option.
- Two distinguished pairs of points are plotted.
+ The default 
+\family typewriter
+which
+\family default
+-Parameter
+\family typewriter
  
+\family default
+is 
+\family typewriter
+which=
+\begin_inset Quotes erd
+\end_inset
+
+standard
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+ which calls the type of plot as presented in the previous section.
+\end_layout
+
+\begin_layout Standard
+In the example, we will plot two distinguished pairs of points.
+ First, we plot the 
+\family typewriter
+pgdp
+\family default
+ vs.
+ the 
+\family typewriter
+gdp
+\family default
+ series and also the 
+\family typewriter
+pw
+\family default
+ vs.
+ 
+\family typewriter
+gdp
+\family default
+ series, respectively by passing the 
+\family typewriter
+points
+\family default
+ matrix.
+ This matrix holds the values for the x-axis (this is only the case for
+ 
+\begin_inset Quotes eld
+\end_inset
+
+scatter
+\begin_inset Quotes erd
+\end_inset
+
+-plots) in the first column while the remaining columns refer to variables
+ which are mapped onto the y-axis.
+ Similarly, the 
+\family typewriter
+lines
+\family default
+ matrix also holds in the first column the values plotted on the x-axis
+ followed by the series mapped onto the y-axis.
+\end_layout
+
+\begin_layout Standard
+We also add a y-label and control the point size by setting the entries
+ in vector 
+\family typewriter
+ps
+\family default
+ setting the point size for each of the 
+\begin_inset Formula $k-1$
+\end_inset
+
+ columns of matrix 
+\family typewriter
+points
+\family default
+.
+ The specific name 
+\family typewriter
+legend_str
+\family default
+ refers to a string array holding a description of the separate lines followed
+ by the description of the points (exactly in this order).
+ Per default, this string array is empty.
 \end_layout
 
 \begin_layout Standard
@@ -703,13 +912,13 @@ bundle b = null
 
 \begin_layout Plain Layout
 
-b.points = {gdp} ~ {pgdp} ~ {pw}		# 1st col.
+b.points = {gdp} ~ {pgdp} ~ {pw}	# 1st col.
  refers to x-axis values
 \end_layout
 
 \begin_layout Plain Layout
 
-b.lines =  {gdp} ~ {pgdp}	# 		 # 1st col.
+b.lines =  {gdp} ~ {pgdp}	 	# 1st col.
  refers to x-axis values 
 \end_layout
 
@@ -723,7 +932,7 @@ b.which = "scatter
 \begin_inset Quotes erd
 \end_inset
 
-					# set scatterplot
+			# set scatterplot
 \end_layout
 
 \begin_layout Plain Layout
@@ -749,17 +958,17 @@ b.ylabel = "pgdp
 
 \begin_layout Plain Layout
 
-#    b.colors = "jet_pal"
+#    b.colors = "jet"		# set different color scheme.
 \end_layout
 
 \begin_layout Plain Layout
 
-b.ps = ones(2,1)						# point size
+b.ps = ones(2,1)			# point size
 \end_layout
 
 \begin_layout Plain Layout
 
-b.StrLeg = defarray("pgdp vs.
+b.legend_str = defarray("pgdp vs.
  gdp (line)", "pgdp vs.
  gdp", "w vs.
  gdp")
@@ -767,7 +976,7 @@ b.StrLeg = defarray("pgdp vs.
 
 \begin_layout Plain Layout
 
-b.fs = 14 							# font size
+b.fs = 14 				# font size
 \end_layout
 
 \begin_layout Plain Layout
@@ -776,7 +985,7 @@ b.fs = 14 							# font size
 
 \begin_layout Plain Layout
 
-GnuPlotFun(&b)
+GPlotFun(&b)
 \end_layout
 
 \end_inset
@@ -787,6 +996,20 @@ GnuPlotFun(&b)
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The resulting plot is depicted in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:scatter-plot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
@@ -801,7 +1024,7 @@ status open
 \begin_inset Graphics
 	filename figs/scatterplot.png
 	lyxscale 50
-	scale 50
+	scale 45
 	groupId figs
 
 \end_inset
@@ -815,11 +1038,11 @@ status open
 \begin_layout Plain Layout
 \begin_inset CommandInset label
 LatexCommand label
-name "fig:time-series-plot-1"
+name "fig:scatter-plot"
 
 \end_inset
 
-Default time-series plot (left) and time-series plot with advanced settings.
+Scatter plot with points and lines.
 \end_layout
 
 \end_inset
@@ -834,24 +1057,444 @@ Default time-series plot (left) and time-series plot with advanced settings.
 
 \begin_layout Subsection
 Stacked barplot
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Stacked-barplot"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The stacked barplot is another type of plot.
+ This kind of graph can be combined with horizontal lines and is called
+ by the 
+\family typewriter
+which=
+\begin_inset Quotes erd
+\end_inset
+
+stackedbar
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
+ parameter.
+ The following sample script shows how to setup such a graph.
+ We define a matrix named 
+\family typewriter
+barstacked
+\family default
+ holding each series as a column vector before passing another matrix named
+ 
+\family typewriter
+lines
+\family default
+ holding series which are plotted as horizontal lines.
+ Again the user can plot the values against time if the 
+\family typewriter
+obsdate 
+\family default
+matrix is passed to the bundle
+\family typewriter
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Doublebox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "basicstyle={\footnotesize\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+bundle b = null
+\end_layout
+
+\begin_layout Plain Layout
+
+b.barstacked = {gdp} ~ {pgdp} ~ {pw}	# rows: x-axis; cols: y-axis
+\end_layout
+
+\begin_layout Plain Layout
+
+b.obsdate = {$obsdate}
+\end_layout
+
+\begin_layout Plain Layout
+
+b.lines =  {m}								
+\end_layout
+
+\begin_layout Plain Layout
+
+b.xmin = 0					# starting value at x-axis
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# add legend
+\end_layout
+
+\begin_layout Plain Layout
+
+b.legend_str = defarray("gdp", "pgdp", "pw", "m (line)")
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# control output
+\end_layout
+
+\begin_layout Plain Layout
+
+b.width = 800
+\end_layout
+
+\begin_layout Plain Layout
+
+b.height = 420
+\end_layout
+
+\begin_layout Plain Layout
+
+b.which = "stackedbar"
+\end_layout
+
+\begin_layout Plain Layout
+
+GPlotFun(&b) 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The resulting plot is depicted in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:stackedbar-plot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The pattern of the stacked bars cannot be controlled by the user at the
+ moment.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figs/stackedbar.png
+	lyxscale 50
+	scale 45
+	groupId figs
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:stackedbar-plot"
+
+\end_inset
+
+Stacked barplot with horizontal line
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
 Heatmap
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Heatmap"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The following example shows how to plot a heatmap which can be a useful
+ tool for visualizing complex information.
+ Heatmaps are set by the 
+\family typewriter
+which=
+\begin_inset Quotes erd
+\end_inset
+
+heatmap
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+ parameter.
+ We show in the following script how to store the output as a png-file.
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Unfortunately, the user has to save the plot as the direct output on the
+ screen using the 
+\begin_inset Quotes eld
+\end_inset
+
+display
+\begin_inset Quotes erd
+\end_inset
+
+ option does not work for this kind of plot.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Doublebox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "basicstyle={\footnotesize\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+bundle b = null
+\end_layout
+
+\begin_layout Plain Layout
+
+b.xmin = 0					# minimum x-value, optional
+\end_layout
+
+\begin_layout Plain Layout
+
+b.ymin = 0					# minimum y-value, optional
+\end_layout
+
+\begin_layout Plain Layout
+
+b.width = 800
+\end_layout
+
+\begin_layout Plain Layout
+
+b.height = 420
+\end_layout
+
+\begin_layout Plain Layout
+
+b.title = "This is a heatmap"
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+list L = 1 2 3 4 5 6 7 8 9 10 11 12  # list of series
+\end_layout
+
+\begin_layout Plain Layout
+
+b.heat = {L}' 		#alternatively: mnormal(30,100)
+\end_layout
+
+\begin_layout Plain Layout
+
+b.obsdate = {$obsdate}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+b.which = "heatmap" 
+\end_layout
+
+\begin_layout Plain Layout
+
+string fname = sprintf("%s/heatmap.png", $dotdir) 	# "display" doesn't work,
+ yet
+\end_layout
+
+\begin_layout Plain Layout
+
+b.fname = fname						# store plot
+\end_layout
+
+\begin_layout Plain Layout
+
+GPlotFun(&b)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We pass a list of 12 series to a matrix named 
+\family typewriter
+heat
+\family default
+.
+ Row values of the 
+\family typewriter
+heat
+\family default
+ matrix are plotted on the y-axis and column values at the y-axis.
+ Optionally, we also pass the 
+\family typewriter
+obsdate
+\family default
+ matrix for printing date strings at the x-axis.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figs/heatmap.png
+	lyxscale 50
+	scale 45
+	groupId figs
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:heatmap-plot"
+
+\end_inset
+
+Heatmap plot.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
-The 
+The GPlotFun
 \family typewriter
-GnuPlotFun()
+()
 \family default
  function and plotting types
 \end_layout
 
 \begin_layout Standard
-The main vehicle is the 
+The main vehicle is the GPlotFun
 \family typewriter
-GnuPlotFun()
+()
 \family default
  function through which the user can set and modify various plots.
 \end_layout
@@ -876,9 +1519,9 @@ backgroundcolor "none"
 status open
 
 \begin_layout Plain Layout
-
+GPlotFun
 \family typewriter
-GnuPlotFun(bundle &b)
+(bundle *b)
 \end_layout
 
 \end_inset
@@ -918,13 +1561,23 @@ standard
 \begin_inset Quotes erd
 \end_inset
 
- option.
- This option covers various styles such as (i) lines, (ii) linesplots, (iii)
+ option — illustrated in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Time-series-plot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ This option covers various styles such as (i) lines, (ii) lineplots, (iii)
  impulses, (iv) vertical bars and (v) horizontally shaded areas.
 \end_layout
 
 \begin_layout Standard
-In order to plot numerical values in a specific style, the user has to pass
+In order to plot numerical values in a certain style, the user has to pass
  specifically named matrices to 
 \family typewriter
 GPlotFun()
@@ -941,20 +1594,11 @@ noprefix "false"
 
 .
  This is a flexible framework which could be easily extended in future.
-\begin_inset Note Note
-status collapsed
-
-\begin_layout Plain Layout
-vlines, hfilled and vfilled could also have the LHS-option.
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
 \begin_inset Float table
+placement h
 wide false
 sideways false
 status open
@@ -962,7 +1606,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="4" columns="6">
+<lyxtabular version="3" rows="6" columns="6">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -986,7 +1630,7 @@ Style
 \begin_inset Text
 
 \begin_layout Plain Layout
-Lines(-plots) (rhs)
+Lines(-plots) (lhs)
 \end_layout
 
 \end_inset
@@ -1106,6 +1750,79 @@ impulses_rhs
 \begin_layout Plain Layout
 
 \series bold
+Dimension
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times k$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times k$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $1\times k$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times k$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times k$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
 Style
 \end_layout
 
@@ -1160,7 +1877,7 @@ Vert.
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1173,7 +1890,7 @@ Matrix name
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1184,13 +1901,77 @@ hfilled
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 
 \family typewriter
 vfilled
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Dimension
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times2$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k\times2$
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1262,8 +2043,80 @@ standard
 \end_layout
 
 \begin_layout Standard
-Each column of the respective matrix specifies another series/ variable
- to plot while rows specify a series' observation(s).
+As can be seen, currently only horizontal lines and impulses can be drawn
+ on the right-hand side y-axis.
+\end_layout
+
+\begin_layout Itemize
+The matrices 
+\family typewriter
+lines
+\family default
+, 
+\family typewriter
+lines_rhs
+\family default
+, 
+\family typewriter
+impulses
+\family default
+ and 
+\family typewriter
+impulses_rhs
+\family default
+ are of dimension 
+\begin_inset Formula $T\times k$
+\end_inset
+
+ holding x-axis values as rows and y-axis values as columns.
+\end_layout
+
+\begin_layout Itemize
+Information for drawing vertical lines are put into a 
+\begin_inset Formula $1\times k$
+\end_inset
+
+ vector named 
+\family typewriter
+vlines 
+\family default
+where each element refers to a specific observation number, e.g.
+ if 'year' 1971 is the 51th observation one writes the value '51' into one
+ of the 
+\begin_inset Formula $k$
+\end_inset
+
+ columns.
+\end_layout
+
+\begin_layout Itemize
+At the moment one can only draw a single horizontal shaded area.
+ Matrix 
+\family typewriter
+hfilled
+\family default
+ holds on the first (second) column the lower (upper) bound of the shaded
+ area while the rows refer to some x-axis value.
+\end_layout
+
+\begin_layout Itemize
+Matrix 
+\family typewriter
+vfilled
+\family default
+ is a 
+\begin_inset Formula $k\times2$
+\end_inset
+
+ matrix holding the starting and end point for each of the 
+\begin_inset Formula $k$
+\end_inset
+
+ vertically shaded areas in the column 1 and 2, respectively.
+ Again, if one wants to draw a shaded area between the 10th amd 15th observation
+ (drawn at on x-axis), one constructs a matrix such as 
+\family typewriter
+b.vfilled = {10,15}.
 \end_layout
 
 \begin_layout Subsection
@@ -1307,7 +2160,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="2" columns="5">
+<lyxtabular version="3" rows="3" columns="5">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -1364,7 +2217,7 @@ Points (rhs)
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1377,7 +2230,7 @@ Matrix name
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1388,7 +2241,7 @@ lines
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1399,7 +2252,7 @@ lines_rhs
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1410,13 +2263,74 @@ points
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 
 \family typewriter
 points_rhs
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Dimension
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times(1+k)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times(1+k)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times(1+k)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times(1+k)$
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1462,7 +2376,16 @@ scatter
 
 \begin_layout Standard
 For each of these matrices, the first column is always assumed to hold the
- x-axis values.
+ x-axis values such that drawing 
+\begin_inset Formula $k=2$
+\end_inset
+
+ lines or distinguished point plots, the respective matrix must be of size
+ 
+\begin_inset Formula $T\times(1+2)$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
@@ -1486,9 +2409,8 @@ stackedbar
 \begin_inset Quotes erd
 \end_inset
 
- option currently covers two types of styles: (i) horizontal lines, (ii)
- horizontal linesplots and (iii) stacked bars (in gnuplot terms these are
- 'row-stacked histograms').
+ option currently covers two types of plots: (i) horizontal lines and (ii)
+ stacked bars (in gnuplot terms these are 'row-stacked histograms').
  Again the naming convention of the matrices one has to pass is as shown
  in Table 
 \begin_inset CommandInset ref
@@ -1523,7 +2445,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="2" columns="4">
+<lyxtabular version="3" rows="3" columns="4">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -1570,7 +2492,7 @@ Stacked bars (rhs)
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1583,7 +2505,7 @@ Matrix name
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1594,7 +2516,7 @@ lines
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1605,13 +2527,62 @@ lines_rhs
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 
 \family typewriter
 vstacked
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Dimension
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times k$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times k$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times k$
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1657,13 +2628,21 @@ stackedbar
 
 \begin_layout Standard
 Each column of the respective matrix specifies another series/ variable
- to plot while rows specify a series' observation(s).
+ drawn for each of the 
+\begin_inset Formula $T$
+\end_inset
+
+ rows.
  For the 
 \family typewriter
 vstacked
 \family default
- matrix, the first column specifies the 'base'-bar, the second column is
- put on top of the first one, and so on...
+ matrix, the first column specifies the 'base'-bar while the remaining series
+ are stacked on top of the first series for each of the 
+\begin_inset Formula $T$
+\end_inset
+
+ observations.
 \end_layout
 
 \begin_layout Subsection
@@ -1712,7 +2691,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="2" columns="2">
+<lyxtabular version="3" rows="3" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -1739,7 +2718,7 @@ heatmap
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1752,13 +2731,38 @@ Matrix name
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 
 \family typewriter
 heat
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Dimension
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k\times T$
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1804,7 +2808,7 @@ heatmap
 
 \begin_layout Standard
 Values of the 
-\begin_inset Formula $r\times c$
+\begin_inset Formula $k\times T$
 \end_inset
 
  
@@ -1902,7 +2906,11 @@ fstyle
 \begin_inset Text
 
 \begin_layout Plain Layout
-string, font style applied to whole plot (default: serif)
+string, font style applied to whole plot (default: 
+\emph on
+serif
+\emph default
+)
 \end_layout
 
 \end_inset
@@ -1924,7 +2932,7 @@ fs
 \begin_inset Text
 
 \begin_layout Plain Layout
-scalar, font size applied to whole plot (default: 12)
+scalar, font size applied to all elements of the plot (default: 12)
 \end_layout
 
 \end_inset
@@ -1987,7 +2995,28 @@ linetype and linewidth
 \end_layout
 
 \begin_layout Standard
-TBW
+Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:linewidth-options"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ reports the options for controlling the linewidth for different styles.
+ Further control parameters are shown in Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:linetype-options"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
@@ -2351,7 +3380,7 @@ pat
 \begin_inset Text
 
 \begin_layout Plain Layout
-matrix, pattern styles for stacked bars (default {0,4,2,3,8})
+matrix, pattern styles for stacked bars (default {1,4,2,3,8})
 \end_layout
 
 \end_inset
@@ -2389,6 +3418,21 @@ Overview of line-/ point-types-related options.
 
 \begin_layout Subsection
 Color format, transparency, grid and borders
+\end_layout
+
+\begin_layout Standard
+Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:color-options"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the various control parameters for specifying color for lines, point
+ etc., controlling transparency of some of the elements and so on.
 \end_layout
 
 \begin_layout Standard
@@ -2555,7 +3599,18 @@ bool, plot grid (default: on (1))
 \begin_layout Plain Layout
 
 \family typewriter
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
 noborder
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -2631,7 +3686,7 @@ https://github.com/Gnuplotting/gnuplot-palettes/
 
 \end_inset
 
-
+ (not for heatmaps though!)
 \end_layout
 
 \begin_layout Enumerate
@@ -2653,7 +3708,24 @@ jet
 \end_layout
 
 \begin_layout Standard
-or set a string array as for instance by 
+by setting the color
+\family typewriter
+ 
+\family default
+parameter e.g.
+ to 
+\family typewriter
+b.color = 
+\begin_inset Quotes eld
+\end_inset
+
+jet
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+, or set a string array as for instance by 
 \family typewriter
 b.colors = defarray(
 \begin_inset Quotes eld
@@ -2678,6 +3750,21 @@ blue
 
 \begin_layout Subsection
 Date format, scales and xticks
+\end_layout
+
+\begin_layout Standard
+Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:date-options"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the various parameter for controlling date strings, scales and the
+ axis.
 \end_layout
 
 \begin_layout Standard
@@ -2867,7 +3954,11 @@ Once the user has passed an
 obsdate
 \family default
  vector to the bundle, one can select between the following 5 different
- formats for showing date strings on the x-axis:
+ formats for showing date strings on the x-axis by setting 
+\family typewriter
+dateform
+\family default
+:
 \end_layout
 
 \begin_layout Itemize
@@ -3030,8 +4121,8 @@ nocolorbox
 \begin_inset Text
 
 \begin_layout Plain Layout
-integer, select whether to show the colorbox for a heatmap or not (default:
- 0 don't show)
+integer, select whether to show the colorbox of a heatmap or not (default:
+ 1 show)
 \end_layout
 
 \end_inset
@@ -3158,38 +4249,73 @@ Overview of legend-/label-related options.
 \begin_layout Standard
 The legend can be put at four different positions through the 
 \family typewriter
-poslegend
+legend_pos
 \family default
  option:
 \end_layout
 
-\begin_layout Enumerate
+\begin_layout Itemize
 \noindent
+\begin_inset Quotes eld
+\end_inset
+
 outside below horizontal
+\begin_inset Quotes erd
+\end_inset
+
+ = 1
 \end_layout
 
-\begin_layout Enumerate
+\begin_layout Itemize
 \noindent
+\begin_inset Quotes eld
+\end_inset
+
 top left
+\begin_inset Quotes erd
+\end_inset
+
+ = 2
 \end_layout
 
-\begin_layout Enumerate
+\begin_layout Itemize
 \noindent
+\begin_inset Quotes eld
+\end_inset
+
 top right
+\begin_inset Quotes erd
+\end_inset
+
+ = 3
 \end_layout
 
-\begin_layout Enumerate
+\begin_layout Itemize
 \noindent
+\begin_inset Quotes eld
+\end_inset
+
 bottom left
+\begin_inset Quotes erd
+\end_inset
+
+ = 4
 \end_layout
 
-\begin_layout Enumerate
+\begin_layout Itemize
 \noindent
+\begin_inset Quotes eld
+\end_inset
+
 bottom right
+\begin_inset Quotes erd
+\end_inset
+
+ = 5
 \end_layout
 
 \begin_layout Subsection
-output format
+Output format
 \end_layout
 
 \begin_layout Standard
@@ -3203,8 +4329,8 @@ noprefix "false"
 
 \end_inset
 
- shows the options for specifying the size of the plot and file name plus
- format.
+ shows the options for specifying the size of the plot and the file name
+ plus format.
  Per default, the option 
 \family typewriter
 fname
@@ -3217,7 +4343,7 @@ display
 \begin_inset Quotes erd
 \end_inset
 
- which shows immediately the plot on the screen.
+ which immediately shows the plot on the screen.
 \end_layout
 
 \begin_layout Standard
@@ -3355,6 +4481,58 @@ Overview of output-related options.
 
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Figures can be stored on various formats such as:
+\end_layout
+
+\begin_layout Enumerate
+png: 
+\begin_inset Quotes eld
+\end_inset
+
+*.png
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+pdf: 
+\begin_inset Quotes eld
+\end_inset
+
+*.pdf
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+eps: 
+\begin_inset Quotes eld
+\end_inset
+
+*.eps
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+svg: 
+\begin_inset Quotes eld
+\end_inset
+
+*-svg
+\begin_inset Quotes erd
 \end_inset
 
 
