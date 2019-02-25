@@ -1,0 +1,123 @@
+set verbose off
+
+string WD = "/home/at/git/GPlotFun"
+
+include "@WD/GPlotFun.inp"
+
+# EXAMPLE
+open denmark.gdt -q
+bundle b = null
+matrix point = {LRM}
+matrix low = point.-0.5
+matrix up = point.+0.5
+
+# Scatter plots
+/*
+#===============
+bundle b = null
+b.alpha = 0.6
+matrix mat = mnormal(100,5)
+b.points = mat[,1:3]							# 1st col. refers to x-axis values
+b.lines = (2*mat[1:50,1] ~ 2*mat[1:50,4:])	# # 1st col. refers to x-axis values
+
+#b.legend_str = defarray("", "", "", "")
+b.which = "scatter"
+b.xlabel = "foo"
+matrix b.ps = {1,1,1}
+b.alpha = 0.1									# FIXME: has no effects, yet
+#matrix b.pt = 2
+#string fname = sprintf("%s/testscatter.png", $dotdir)	# "display"
+#b.fname = fname
+GPlotFun(&b)
+stop
+*/
+
+
+
+# Optional information
+#======================
+#b.lines_dt = seq(1,12) 
+#b.vlines_dt = {1,2,3}		# for vertical lines
+#b.lines_lw = {2,2.5,5,1,1,1,1}
+#b.impulses_lw = {3}
+# select color -- either array of rgb colors or a palette
+#---------------------------------------------------------
+#b.colors = defarray("black", "black", "black", "grey", \
+  #  "grey", "grey", "grey", "black", "black", "black", "black", "black")	# color string
+#string b.colors = "greys_pal"
+
+b.dateform = 5
+b.fontsize = 11
+/*
+b.skipx = 12
+
+b.legend_show = 1
+b.legend_pos = 0
+
+b.lines_pi = 1
+b.noborder = 1
+*/
+#b.ps = ones(12,1)
+b.grid = 1
+b.height = 390
+b.width = 640
+#b.ymax = 15
+#b.ymin = 0
+
+b.title = "A nice plot..."
+
+# needed for Shaded line plot
+b.obsdate = {$obsdate}				# if no obsdate is passed, x-axis is 1,2,.. --> #FIXME: doesn't work, yet
+
+# CI-Shaded Plot +  Line Plot + Vertical shaded area
+b.lines = (point~1.2.*point)	# T by k matrix of line plots
+b.points = (1.2.*point)	# T by k matrix of points plots
+#b.pt = seq(1,5)
+#b.ps = ones(1,12)
+b.alpha = 0.4					# degree of transparency
+#b.lines[1:10,1] = NA
+b.lines_lhs = point*0.4		# T by k matrix of line plots, LHS
+b.impulses = muniform(nobs(LRM),1)*10
+b.impulses_lhs = muniform(nobs(LRM),1)*10
+b.hfilled = low~up				# T by 2 matrix of shaded horizonal area
+b.vfilled = {obsnum(1977:1)} ~ {obsnum(1980:2)}	# n by 2 matrox of shaded area between 2 dates
+b.vlines = {obsnum(1981:1)} ~ {obsnum(1985:4)}	# FIXME: is plotted in white color!
+#b.legend_str = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo")
+
+# Plot + store 
+#string fname = sprintf("%s/testplot.png", $dotdir)	# "display"
+#b.fname = fname
+GPlotFun(&b)
+
+
+# Stacked Bar Plot
+b.barstacked = b.lines
+b.lines = ones(55,1) #(point/2)
+#delete b.vfilled
+b.legend_str = defarray("LRM", "1.2*LRM", "0.4*LRM", "Impulse", "foo", "foo", "foo")
+string fname = "display" #sprintf("%s/StackBar.png", $dotdir)	# "display"
+b.fname = fname
+b.which = "stackedbar"
+GPlotFun(&b)
+stop
+
+# Heatmap Plot
+bundle b = null
+b.skipx = 5
+b.dateform = 5
+b.fs = 11
+b.legend_show = 1
+b.legend_pos = 0
+b.grid = 0
+b.ps = 0
+b.lines_pi = 1
+b.height = 320
+b.width = 540
+b.mono = 1
+b.obsdate = {$obsdate}
+b.heat = mnormal(3,20)
+b.ynames = defarray("L1", "L2", "L3")
+string fname = sprintf("%s/heatmap.png", $dotdir)	# "display"
+b.fname = fname
+b.which = "heatmap"
+GPlotFun(&b)
