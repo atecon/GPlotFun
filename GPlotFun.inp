@@ -222,7 +222,7 @@ end function
 function void print_leg_str (bundle *b)
 
     if b.legend_show==0
-        printf "set nokey\n""
+        printf "set nokey\n"
     else
         if b.legend_pos == 0
             printf "set key outside below horizontal\n"
@@ -583,11 +583,11 @@ function void GPFbasics (bundle *b)
         print_term_str(&b)
 
         # Options
-        printf "set datafile missing \"NaN\" \n"			# TODO: is this correctly handled?
+        printf "set datafile missing \"NA\" \n"			# TODO: is this correctly handled?
 
         # Legend
         print_leg_str(&b)
-
+        
         # GRID
         if b.grid==0
             printf "unset grid\n"
@@ -746,6 +746,7 @@ function void GPFbasics (bundle *b)
         endif
 
     end outfile
+        
 end function
 
 
