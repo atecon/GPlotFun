@@ -122,6 +122,11 @@ function bundle default_opts ()
     self.vfilled_alpha = 0.3				# [0,1]
     self.hfilled_alpha = 0.9				# [0,1]
 
+    # Add labels (conscutive numbering) on top of vlines
+    self.add_vline_label = 1
+    # Shift parameter for IDs numbering vertical lines (negative: DOWN, positive: UP)
+    self.vlines_shift_fraction = 0.05			# 0.05-> add 5 pct. on y_max value
+
     # output size
     self.height = 480					# height of plot
     self.width = 640					# width of plot
@@ -587,7 +592,7 @@ function void GPFbasics (bundle *b)
 
         # Legend
         print_leg_str(&b)
-        
+
         # GRID
         if b.grid==0
             printf "unset grid\n"
@@ -605,7 +610,7 @@ function void GPFbasics (bundle *b)
         printf "set xtics border out scale 1,0.5 nomirror %s\n", str	#autojustify
         # print x-range settings
         print_range(&b, "x")
-        
+
         # MXTICS
         printf "unset mxtics\n"		# don't print minor xtics
 
@@ -698,55 +703,55 @@ function void GPFbasics (bundle *b)
                 printf "set arrow from %d, graph 0 to %d, graph 1 nohead lw %.2f lc rgb '%s' \
                   linetype $i dt %d front \n", b.vlines[i], b.vlines[i], b.vlines_lw[i], b.vcolors[i], b.vlines_dt[i]
             endloop
+        endif
 
+      
+        if inbundle(b, "vlines") && b.add_vline_label				# Add label to vertical lines
+            # TODO: needs further testing except for 'barstacked' case  
+            
+            if inbundle(b, "ymax")
+                scalar y_max = b.ymax
+            else
+                loop i=1..7 -q
+                    if i==1 && inbundle(b,"lines")
+                        matrix mat = b.lines
+                        scalar y_max = max(maxc(mat))
+                    elif i==2 && inbundle(b,"lines_rhs")
+                        mat = b.lines_rhs
+                        # TODO: add y2_max = max(maxc(mat))
+                    elif i==3 && inbundle(b,"impulses")
+                        mat = b.impulses
+                        scalar y_max = max(maxc(mat))
+                    elif i==4 && inbundle(b,"impulses_rhs")
+                        mat = b.impulses_rhs
+                    elif i==5 && inbundle(b,"barstacked")
+                        mat = sumr(b.barstacked)	# sum over all columns since we look at stacked values
+                        scalar y_max = max(maxc(mat))
+                    elif i==6 && inbundle(b,"points")
+                        mat = b.points
+                        scalar y_max = max(maxc(mat))
+                    elif i==7 && inbundle(b,"points_rhs")
+                        mat = b.points_rhs
+                    endif
+                    if i>1 && exists(mat)
+                        if max(maxc(mat))>y_max
+                            y_max = max(maxc(mat))
+                        endif
+                    endif
+                endloop
+            endif
 
-            /*
-               # Add label to vertical lines
-               if inbundle(b,"ymax")
-               scalar y_max = b.ymax
-               else
-               loop i=1..7 -q
-               if i==1 && inbundle(b,"lines")
-               matrix mat = b.lines
-               scalar y_max = max(maxc(mat))
-               elif i==2 && inbundle(b,"lines_rhs")
-               mat = b.lines_rhs
-               # TODO: add y2_max = max(maxc(mat))
-               elif i==3 && inbundle(b,"impulses")
-               mat = b.impulses
-               scalar y_max = max(maxc(mat))
-               elif i==4 && inbundle(b,"impulses_rhs")
-               mat = b.impulses_rhs
-               elif i==5 && inbundle(b,"barstacked")
-               mat = sumr(b.barstacked)	# sum over all columns since we look at stacked values
-               scalar y_max = max(maxc(mat))
-               elif i==6 && inbundle(b,"points")
-               mat = b.points
-               scalar y_max = max(maxc(mat))
-               elif i==7 && inbundle(b,"points_rhs")
-               mat = b.points_rhs
-               endif
-               if i>1 && exists(mat)
-               if max(maxc(mat))>y_max
-               y_max = max(maxc(mat))
-               endif
-               endif
-               endloop
-               endif
-            */
+            scalar incr = y_max * b.vlines_shift_fraction	# move label a bit higher 
+            matrix mat = vec(b.vlines)
+            loop i=1..rows(mat) -q
+                printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',%d'\n", \
+                  b.vlines[i], y_max, incr, b.vlines_fs[i]
+            endloop
 
-            # TODO: Add option to number vertical lines of better indetification
-            /*
-               scalar incr = y_max*0.2	# move label a bit higher (2% above max. value)
-               # TODO: value 0.2 should be another option
-               loop i=1..rows(b.vlines) -q
-               printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',%d'\n", b.vlines[i],y_max,incr, b.vlines_fs
-               endloop
-            */
         endif
 
     end outfile
-        
+
 end function
 
 
@@ -891,11 +896,11 @@ function void dostackedbar (bundle *b)
             if j == 1 && inbundle(b, "Date")  # first date entry
                 k = cols(mat)+1
                 printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5 lc rgb '%s'", \
-                k, k, b.legend_str[j], b.colors[j]
+                  k, k, b.legend_str[j], b.colors[j]
             else
                 if j>=1 && j<=nstack	# stacked barplot
                     printf "$data using %d t '%s' fillstyle pattern %d lc rgb '%s'", j, b.legend_str[j], b.pat[j], b.colors[j]
-                    
+
                 else		# TODO: only lhs-lines allowed at the moment
                     printf "$data using $j t '%s' w lines linetype %d dt %d lc rgb '%s' \
                       pt %d ps %.2f lw %.2f pointinterval %.2f", b.legend_str[j], ($j-nstack), b.lines_dt[j-nstack], \
