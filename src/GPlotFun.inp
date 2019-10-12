@@ -1,15 +1,14 @@
-/* Gnu GRETL + PLOT LIBRARY */
-
 # helper function
-function strings vector_to_strings (matrix y)
+function strings vector_to_strings (const matrix X)
     /* Put numerical values of a matrix into an array of strings */
     
     return strsplit(sprintf("%d", vec(X)),"\n") 
 end function
 
+
 # helper
-function strings asdate (strings S "stringified $obsdate array",
-                         int dform[0:5:1] "0=Y/M/D, 1=y/M/D, 2=Y/M, 3=y/M, 4=M/D, 5=M/y")
+function strings obsdate_to_dateformat (const strings S "stringified $obsdate array",
+                                        const int dform[0:5:1] "0=Y/M/D, 1=y/M/D, 2=Y/M, 3=y/M, 4=M/D, 5=M/y")
 
     # TODO: make format $pd-specific
 
@@ -96,7 +95,7 @@ function bundle default_opts ()
        endloop
        self.colors = lc
     */
-    self.color = colpal("dark2") 	# greys(), jet(), dark2()
+    self.color = get_color_pallet("dark2") 	# greys(), jet(), dark2()
 
     # line colors for vertical lines
     /*
@@ -106,7 +105,7 @@ function bundle default_opts ()
        endloop
        self.vcolors = lc
     */
-    self.vcolors =  colpal("jet") 	# greys(), jet(), dark2()
+    self.vcolors =  get_color_pallet("jet") 	# greys(), jet(), dark2()
 
     # colorbox for heatmap
     self.nocolorbox = 0
@@ -131,9 +130,8 @@ end function
 
 
 # helper function
-function strings colpal (string pal)
-
-    # Definition of color pallets
+function strings get_color_pallet (const string pal)
+    /* Return definition of color pallets */
 
     if pal=="dark2"
         # https://github.com/Gnuplotting/gnuplot-palettes/blob/master/dark2.pal
@@ -157,8 +155,7 @@ end function
 
 
 #private
-function void GPlotFun(bundle *self)
-
+function void GPlotFun (bundle *self)
     #--------------
     # MAIN FUNCTION
     #--------------
@@ -171,7 +168,7 @@ function void GPlotFun(bundle *self)
     # Color check for point and lines
     if inbundle(self, "colors")
         if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> BUG: "string" doesn't work
-            tmp = colpal(self.colors)     		# just a trick
+            tmp = get_color_pallet(self.colors)     		# just a trick
             self.colors = tmp					# update
         endif
     else
@@ -181,13 +178,12 @@ function void GPlotFun(bundle *self)
     # Color check for vertical lines
     if inbundle(self, "colors")
         if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> BUG: "string" doesn't work
-            tmp = colpal(self.colors)     		# just a trick
+            tmp = get_color_pallet(self.colors)     		# just a trick
             self.colors = tmp					# update
         endif
     else
         self.colors = self.color			# use default palette
     endif
-
 
 
     # CHECKS
@@ -205,21 +201,22 @@ function void GPlotFun(bundle *self)
 
     # Call plot function
     if self.which == "standard"
-        dostandard(&self)
+        do_standard_plot(&self)
     elif self.which == "scatter"
-        doScatter(&self)
+        do_scatter_plot(&self)
     elif self.which == "stackedbar"
-        dostackedbar(&self)
+        do_stacked_bar(&self)
         #elif which == "standard"
-        #    dostandard(&b)
+        #    do_standard_plot(&b)
 
     elif self.which == "heatmap"
-        doheatmap(&self)
+        do_heatmap(&self)
     endif
 
 end function
 
-function void print_leg_str (bundle *b)
+
+function void print_legend_str (bundle *b)
 
     if b.legend_show==0
         printf "set nokey\n"
@@ -239,8 +236,10 @@ function void print_leg_str (bundle *b)
     endif
 end function
 
+
 # helper function
 function void print_term_str (bundle *b)
+    
     if b.ftype=="png" || b.fname=="display"
         printf "set term pngcairo size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
     elif b.ftype=="pdf"
@@ -255,10 +254,9 @@ function void print_term_str (bundle *b)
 end function
 
 
-function void write_data_block (bundle *b, matrix mat)
-
-    # Write data block
-    #-------------------
+function void write_data_block (bundle *b, const matrix mat)
+    /* Write data block */
+    
     if b.which=="standard" && \
           ( inbundle(b, "lines") || inbundle(b, "lines_rhs") || inbundle(b, "impulses") \
           || inbundle(b, "impulses_rhs") || inbundle(b, "points") || inbundle(b, "points_rhs") )
@@ -317,8 +315,7 @@ end function
 
 
 function void write_scatterplot_cmd (bundle *b)
-
-    # Write the "plot using" command for scatterplots
+    /* Write the "plot using" command for scatterplots */
 
     scalar addcol = 0
 
@@ -376,18 +373,15 @@ function void write_scatterplot_cmd (bundle *b)
 
     endif
 
-
 end function
 
 
 # help function
 function void write_standardplot_cmd (bundle *b)
-
-    # Write the "plot using" command for standardplots
-    #=================================================
-    # 1) check and write cmd for impulses
-    # 2) check and write cmd for lines
-    # 3) check and write cmd for point
+    /* Write the "plot using" command for standardplots:
+    1) check and write cmd for impulses
+    2) check and write cmd for lines
+    3) check and write cmd for point */
 
     scalar addcol = 0			# counter
     scalar k = 2				# date strings are in the 2nd col.
@@ -539,9 +533,11 @@ function void write_standardplot_cmd (bundle *b)
 
 end function
 
-function void print_range ( bundle *b, string axis "Either 'y' or 'x' or so")
-    # print x/y-range settings
-    #------------------------
+
+function void print_range (bundle *b,
+                           const string axis "Either 'y' or 'x' or so")
+    /* Print x/y-range settings */
+
     if inbundle(b,"@axismin") && inbundle(b,"@axismax")
         printf "set @axisrange[%.5f:%.5f] \n", b.@axismin, b.@axismax
     elif inbundle(b,"@axismin") && !inbundle(b,"@axismax")
@@ -554,7 +550,6 @@ function void print_range ( bundle *b, string axis "Either 'y' or 'x' or so")
 end function
 
 
-
 # helper function
 function void GPFbasics (bundle *b)
 
@@ -565,7 +560,7 @@ function void GPFbasics (bundle *b)
         # re-define obsdate as array of strings
         # TODO Is there any gretl built-in function to do this?
         strings S = vector_to_strings(b.obsdate)
-        strings b.Date = asdate(S,b.dateform)
+        strings b.Date = obsdate_to_dateformat(S,b.dateform)
     endif
 
     tmpfile = sprintf("%s/gplotfun_tmp_%g.gp", $dotdir, int(randgen1(u,1,10^6)))
@@ -586,7 +581,7 @@ function void GPFbasics (bundle *b)
         printf "set datafile missing \"NA\" \n"			# TODO: is this correctly handled?
 
         # Legend
-        print_leg_str(&b)
+        print_legend_str(&b)
 
         # GRID
         if b.grid==0
@@ -740,7 +735,7 @@ function void GPFbasics (bundle *b)
             matrix mat = vec(b.vlines)
             loop i=1..rows(mat) -q
                 printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',%d'\n", \
-                  b.vlines[i], y_max, incr, b.vlines_fs[i]
+                  b.vlines[i], y_max, incr, b.vlines_fs
             endloop
 
         endif
@@ -750,9 +745,9 @@ function void GPFbasics (bundle *b)
 end function
 
 
-function void doheatmap (bundle *b)
-    # heat = k by T matrix, k=cross-sectional dim., T=time dim.
-    # lines = draw horizonal lines
+function void do_heatmap (bundle *b)
+    /* heat = k by T matrix, k=cross-sectional dim., T=time dim.
+    lines = draw horizonal lines */
 
     if b.which=="heatmap"
         matrix mat = b.heat
@@ -833,14 +828,14 @@ function void doheatmap (bundle *b)
 end function
 
 
-function void dostackedbar (bundle *b)
-    # barstacked = T by k matrix, k=separate bar plot (x1,...,xk), T=time dim.
-    # lines = draw horizonal lines -- only LHS at the moment
+function void do_stacked_bar (bundle *b)
+    /* barstacked = T by k matrix, k=separate bar plot (x1,...,xk), T=time dim.
+    lines = draw horizonal lines -- only LHS at the moment */
 
     if inbundle(b, "barstacked")
         matrix mat = b.barstacked
     else
-        funcerr "Warning: dostackedbar() requires at least matrix 'barstacked'!"
+        funcerr "Warning: do_stacked_bar() requires at least matrix 'barstacked'!"
     endif
     if inbundle(b, "lines")
         mat ~= b.lines
@@ -912,9 +907,9 @@ function void dostackedbar (bundle *b)
 end function
 
 
-function void dostandard (bundle *b)
-    # lines = draw horizonal lines
-    # hfilled = draw horizonal shaded areas
+function void do_standard_plot (bundle *b)
+    /* lines = draw horizonal lines
+     hfilled = draw horizonal shaded areas */
 
     GPFbasics(&b)	# Run basic settings
 
@@ -926,7 +921,7 @@ function void dostandard (bundle *b)
         if inbundle(b, "lines") || inbundle(b, "lines_rhs") || inbundle(b, "impulses") \
               || inbundle(b, "impulses_rhs") || inbundle(b, "points") || inbundle(b, "points_rhs")
         else
-            funcerr "Warning: dostandard() requires at least matrix 'lines', 'points', or 'impulses'!"
+            funcerr "Warning: do_standard_plot() requires at least matrix 'lines', 'points', or 'impulses'!"
         endif
 
         #------------
@@ -1022,7 +1017,7 @@ function void dostandard (bundle *b)
 end function
 
 
-function void doScatter (bundle *b)
+function void do_scatter_plot (bundle *b)
 
     GPFbasics(&b)						# call basic settings
 
@@ -1036,7 +1031,7 @@ function void doScatter (bundle *b)
         if inbundle(b, "lines") || inbundle(b, "lines_rhs") \
               || inbundle(b, "points") || inbundle(b, "points_rhs")
         else
-            funcerr "Error: doScatter() requires at least matrix 'lines' and 'points'."
+            funcerr "Error: do_scatter_plot() requires at least matrix 'lines' and 'points'."
         endif
 
         # Transparency
