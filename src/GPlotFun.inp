@@ -1,15 +1,10 @@
 /* Gnu GRETL + PLOT LIBRARY */
 
-# helper
+# helper function
 function strings s2a (matrix y)
-    # put numerical values of a matrix into an array of strings
-    n = rows(y)
-    strings S = array(n)
-    loop i=1..n -q
-        sprintf s "%d", y[i]
-        S[i] = "@s"
-    endloop
-    return S
+    /* Put numerical values of a matrix into an array of strings */
+    
+    return strsplit(sprintf("%d", vec(X)),"\n") 
 end function
 
 # helper
