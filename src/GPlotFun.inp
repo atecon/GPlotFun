@@ -551,7 +551,7 @@ end function
 
 
 # helper function
-function void GPFbasics (bundle *b)
+function void write_gp_settings (bundle *b)
 
     # Write basic settings which hold for all figure types
     set warnings off
@@ -756,7 +756,7 @@ function void do_heatmap (bundle *b)
     endif
 
     # Run basic settings
-    GPFbasics(&b)
+    write_gp_settings(&b)
 
     set warnings off  # omit warning for NAs
     tmpfile = b.tmpfile
@@ -843,7 +843,7 @@ function void do_stacked_bar (bundle *b)
         mat ~= b.lines_rhs
     endif
 
-    GPFbasics(&b)	# Run basic settings
+    write_gp_settings(&b)	# Run basic settings
 
     set warnings off  # omit warning for NAs
     tmpfile = b.tmpfile
@@ -911,7 +911,7 @@ function void do_standard_plot (bundle *b)
     /* lines = draw horizonal lines
      hfilled = draw horizonal shaded areas */
 
-    GPFbasics(&b)	# Run basic settings
+    write_gp_settings(&b)	# Run basic settings
 
     set warnings off
     tmpfile = b.tmpfile
@@ -1019,7 +1019,7 @@ end function
 
 function void do_scatter_plot (bundle *b)
 
-    GPFbasics(&b)						# call basic settings
+    write_gp_settings(&b)						# call basic settings
 
     b.ps = (b.ps.=0) ? 0.5 : b.ps		# make sure points are plotted
 
