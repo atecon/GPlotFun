@@ -1,7 +1,7 @@
 /* Gnu GRETL + PLOT LIBRARY */
 
 # helper function
-function strings s2a (matrix y)
+function strings vector_to_strings (matrix y)
     /* Put numerical values of a matrix into an array of strings */
     
     return strsplit(sprintf("%d", vec(X)),"\n") 
@@ -564,7 +564,7 @@ function void GPFbasics (bundle *b)
     if inbundle(b, "obsdate")
         # re-define obsdate as array of strings
         # TODO Is there any gretl built-in function to do this?
-        strings S = s2a(b.obsdate)
+        strings S = vector_to_strings(b.obsdate)
         strings b.Date = asdate(S,b.dateform)
     endif
 
