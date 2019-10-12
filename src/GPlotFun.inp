@@ -1,4 +1,22 @@
 # helper function
+function scalar key_isnot_in_bundle (bundle *b, const strings s)
+    /* Searches for all elements of 's' in b'. Returns 0 if
+    all elents are part of b, else 1. */
+    
+    scalar ret = 0
+    loop i = 1..nelem(s) --quiet
+        ret
+        ret = ret || inbundle(b, s[i])
+        ret
+        if ret
+            break
+        endif
+    endloop
+    return ret
+end function 
+
+
+# helper function
 function strings vector_to_strings (const matrix X)
     /* Put numerical values of a matrix into an array of strings */
     
@@ -923,16 +941,6 @@ function void do_standard_plot (bundle *b)
         else
             funcerr "Warning: do_standard_plot() requires at least matrix 'lines', 'points', or 'impulses'!"
         endif
-
-        #------------
-        # Plot CIs
-        #------------
-        /* deprecated
-           printf "plot \\\n"
-           if inbundle(b, "hfilled")	# Plot CI
-           printf "'-' using 1:2:3 t '' lc rgb '#dddddd' w filledcurve, \\\n"
-           endif
-        */
 
         #-------------
         # Plot Impulse
