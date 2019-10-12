@@ -4,14 +4,14 @@ set verbose off
 open hendry_jae.gdt -q
 
 string WD = "/home/at/git/GPlotFun"			# adjust path
-include "@WD/GPlotFun.inp"
+include "@WD/src/GPlotFun.inp"
 
-scalar runEX = 5			# Select an example
+scalar runEX = 1			# Select an example
 
 if runEX==1
     # setup the bundle
     bundle b = null
-    matrix b.lines = {pgdp} ~ {gdp}
+    matrix b.lines = {pgdp, gdp}
     matrix b.obsdate = {$obsdate}
     GPlotFun(&b)
 
@@ -19,7 +19,7 @@ if runEX==1
 elif runEX==2
     bundle b = null
     b.obsdate = {$obsdate}		# access timestamp
-    matrix b.lines = {pgdp} ~ {gdp}
+    matrix b.lines = {pgdp, gdp}
 
     # shaded area around LRM's observations
     b.hfilled = {gdp-1} ~ {gdp+1}
@@ -76,8 +76,8 @@ elif runEX==3
 elif runEX==4		# scatterplot
 
     bundle b = null
-    b.points = {gdp} ~ {pgdp} ~ {pw}							# 1st col. refers to x-axis values
-    b.lines =  {gdp} ~ {pgdp}	# # 1st col. refers to x-axis values
+    b.points = {gdp, pgdp, pw}							# 1st col. refers to x-axis values
+    b.lines =  {gdp, pgdp}	# # 1st col. refers to x-axis values
 
     #b.StrLeg = defarray("", "", "", "")
     b.which = "scatter"
@@ -95,7 +95,7 @@ elif runEX==4		# scatterplot
 elif runEX==5		 # stacked barplot
 
     bundle b = null
-    b.barstacked = {gdp} ~ {pgdp} ~ {pw}
+    b.barstacked = {gdp, pgdp, pw}
     b.obsdate = {$obsdate}
     b.lines =  {m}
     b.xmin = 0					# staring value at x-axis
