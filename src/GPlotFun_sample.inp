@@ -6,7 +6,7 @@ open hendry_jae.gdt -q
 string WD = "/home/at/git/GPlotFun"			# adjust path
 include "@WD/src/GPlotFun.inp"
 
-scalar runEX = 5			# Select an example
+scalar runEX = 1			# Select an example
 
 if runEX==1
     # setup the bundle
