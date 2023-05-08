@@ -103,7 +103,7 @@ literal "false"
 \end_layout
 
 \begin_layout Date
-Version 0.1
+Version 0.2
 \end_layout
 
 \begin_layout Standard
@@ -131,6 +131,16 @@ status open
 Changelog
 \end_layout
 
+\begin_layout Itemize
+Version 0.2 (May 2023)
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Add support for frequency plot
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
 Version 0.1 (Feb, 2019)
 \end_layout
@@ -221,6 +231,10 @@ Stacked barplots combined with line plots.
 
 \begin_layout Itemize
 Heatmaps
+\end_layout
+
+\begin_layout Itemize
+Frequency plot
 \end_layout
 
 \begin_layout Itemize
@@ -1471,6 +1485,110 @@ name "fig:heatmap-plot"
 \end_inset
 
 Heatmap plot.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Frequency plot
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Frequency"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The following example shows how to plot a frequency plot.
+ While gretl has the built-in command 
+\family typewriter
+freq
+\family default
+ for drawing a frequency plot, it cannot really be tweaked at the moment.
+ The plot can be called by the 
+\family typewriter
+which=
+\begin_inset Quotes erd
+\end_inset
+
+frequency
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+ parameter.
+ We show in the following script how to store the output as a png-file.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Doublebox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "basicstyle={\footnotesize\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+bundle b = null
+\end_layout
+
+\begin_layout Plain Layout
+
+b.which = "frequency"
+\end_layout
+
+\begin_layout Plain Layout
+
+b.data = {pgdp} # single column vector
+\end_layout
+
+\begin_layout Plain Layout
+
+b.data[2,1] = NA
+\end_layout
+
+\begin_layout Plain Layout
+
+b.title = "This is a frequency plot"
+\end_layout
+
+\begin_layout Plain Layout
+
+string b.fname = sprintf("frequency_plot.png")
+\end_layout
+
+\begin_layout Plain Layout
+
+GPlotFun(&b)
 \end_layout
 
 \end_inset
@@ -2861,6 +2979,169 @@ heat
 \family default
  matrix are plotted exactly in this dimension meaning that rows are put
  on the y-axis and columns on the x-axis.
+\end_layout
+
+\begin_layout Subsection
+The 
+\begin_inset Quotes eld
+\end_inset
+
+frequency
+\begin_inset Quotes erd
+\end_inset
+
+ plotting option
+\end_layout
+
+\begin_layout Standard
+Called by the 
+\family typewriter
+which 
+\family default
+parameter 
+\begin_inset Quotes eld
+\end_inset
+
+frequency
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Again the naming convention of the matrices one has to pass is as shown
+ in Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:style-options-frequency"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Style
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+frequency
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Matrix name
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+data
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Dimension
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $T\times1$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:style-options-frequency"
+
+\end_inset
+
+Overview style options and name of respective matrices for the 
+\begin_inset Quotes eld
+\end_inset
+
+frequency
+\begin_inset Quotes erd
+\end_inset
+
+ plotting option.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
