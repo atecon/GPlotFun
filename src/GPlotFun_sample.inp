@@ -1,0 +1,151 @@
+clear
+set verbose off
+
+open hendry_jae.gdt -q
+
+string WD = "/home/at/git/GPlotFun"			# adjust path
+include "@WD/src/GPlotFun.inp"
+
+scalar runEX = 1			# Select an example
+
+if runEX==1
+    # setup the bundle
+    bundle b = null
+    matrix b.lines = {pgdp, gdp}
+    matrix b.obsdate = {$obsdate}
+    GPlotFun(&b)
+
+
+elif runEX==2
+    bundle b = null
+    b.obsdate = {$obsdate}		# access timestamp
+    matrix b.lines = {pgdp, gdp}
+
+    # shaded area around LRM's observations
+    b.hfilled = {gdp-1} ~ {gdp+1}
+
+    # recession bar for some period
+    b.vfilled = {obsnum(1900)} ~ {obsnum(1905)}
+    b.vfilled_alpha = 0.3
+
+    # vertical line at two observations
+    b.vlines = {obsnum(1917)} ~ {obsnum(1945)}
+    b.vlines_dt = seq(1,2)
+
+    GPlotFun(&b)
+
+elif runEX==3
+
+    bundle b = null
+    b.obsdate = {$obsdate}		# access timestamp
+    matrix b.lines = {gdp}
+
+    # shaded area around LRM's observations
+    b.hfilled = {gdp-1} ~ {gdp+1}
+
+    # recession bar for some period
+    b.vfilled = {obsnum(1900)} ~ {obsnum(1905)}
+    b.vfilled_alpha = 0.3
+
+    # vertical line at two observations
+    b.vlines = {obsnum(1917)} ~ {obsnum(1945)}
+    b.vlines_dt = seq(1,2)
+
+    # points
+    b.points_rhs = {diff(pgdp)/pgdp(-1)*100}
+
+    # impulses
+    b.impulses = {diff(gdp)/gdp(-1)*100}
+
+    # restrict range of y-axis
+    b.ymin = -1
+    b.ymax = 18
+
+    # make plot wider
+    b.width = 800
+    b.height = 420
+
+    # add legend names
+    b.StrLeg = defarray("1", "2", "3 (rhs)")
+    # set labels + title
+    b.title = "This is a nice plot..."
+    b.ylabel = "y-axis"
+
+    GPlotFun(&b)
+
+elif runEX==4		# scatterplot
+
+    bundle b = null
+    b.points = {gdp, pgdp, pw}							# 1st col. refers to x-axis values
+    b.lines =  {gdp, pgdp}	# # 1st col. refers to x-axis values
+
+    #b.StrLeg = defarray("", "", "", "")
+    b.which = "scatter"
+    b.xlabel = ""
+    b.ylabel = "pgdp \& pw"
+
+    # style
+    #    b.colors = "jet_pal"
+    b.ps = ones(2,1)
+    b.StrLeg = defarray("pgdp vs. gdp (line)", "pgdp vs. gdp", "w vs. gdp")
+    b.fs = 14
+    GPlotFun(&b)
+
+
+elif runEX==5		 # stacked barplot
+
+    bundle b = null
+    b.barstacked = {gdp, pgdp, pw}
+    b.obsdate = {$obsdate}
+    b.lines =  {m}
+    b.xmin = 0					# staring value at x-axis
+    
+    # legend
+    b.legend_str = defarray("gdp", "pgdp", "pw", "m (line)")
+    
+    # control output    
+    b.width = 800
+    b.height = 420
+#    string fname = sprintf("%s/figs/stackedbar.png", WD)	# "display"
+#    b.fname = fname    
+    b.which = "stackedbar"    
+    GPlotFun(&b)
+
+
+elif runEX==6
+    # Heatmap Plot
+    bundle b = null
+    b.which = "heatmap"
+
+    #    b.legend_show = 1
+    #    b.legend_pos = 0
+    #    b.mono = 1
+    b.xmin = 0
+    b.ymin = 0
+    #    b.dateform = 5
+    b.obsdate = {$obsdate}
+    list L = 1 2 3 4 5 6 7 8 9	10 11 12 # list of series
+    b.heat = {L}' 		#alternatively: mnormal(30,100)
+
+    # make plot wider
+    b.width = 800
+    b.height = 420
+    b.title = "This is a heatmap"
+
+    # store as png-file
+    string fname = sprintf("%s/figs/heatmap.png", WD)	# "display"
+    b.fname = fname
+    GPlotFun(&b)
+
+endif
+
+
+
+
+
+
+
+
+
+
+

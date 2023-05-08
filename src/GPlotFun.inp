@@ -1,0 +1,1094 @@
+# helper function
+function scalar single_key_in_bundle (bundle *b, const strings keys)
+/* Searches for all elements of 's' in b'. Returns 1 if
+    at least one elements is part of b, else 0. */
+
+    scalar ret = 0
+    loop i = 1..nelem(keys) --quiet
+        ret = ret || inbundle(b, keys[i])
+        if ret
+            break
+        endif
+    endloop
+
+    return ret
+end function
+
+
+# helper function
+function strings vector_to_strings (const matrix X)
+    /* Put numerical values of a matrix into an array of strings */
+
+    return strsplit(sprintf("%d", vec(X)),"\n")
+end function
+
+
+# helper
+function strings obsdate_to_dateformat (const strings S "stringified $obsdate array",
+                                        const int dform[0:5:1] "0=Y/M/D, 1=y/M/D, 2=Y/M, 3=y/M, 4=M/D, 5=M/y")
+
+    # TODO: make format $pd-specific
+
+    # Bring obsdate stored in S to some format
+    n=nelem(S)
+    strings D = array(n)
+    loop i=1..n -q
+        string s = S[i]
+        string y = substr(s,1,4)			# year
+        string m = substr(s,5,6)			# month
+        string d = substr(s,7,8)			# day
+        if dform==0
+            D[i] = sprintf("%s/%s/%s",y,m,d)
+        elif dform==1
+            y = substr(y,3,4)
+            D[i] = sprintf("%s/%s/%s",y,m,d)
+        elif dform==2
+            D[i] = sprintf("%s/%s",y,m)
+        elif dform==3
+            y = substr(y,3,4)
+            D[i] = sprintf("%s/%s",y,m)
+        elif dform==4
+            D[i] = sprintf("%s/%s",m,d)
+        elif dform==5
+            y = substr(y,3,4)
+            D[i] = sprintf("%s/%s",m,y)
+        endif
+    endloop
+    return D
+end function
+
+
+# helper function
+function bundle default_opts ()
+
+    bundle self
+
+    # Define default values
+    #-----------------------
+
+    string self.which = "standard"	# standard plot incl. lines, CIs around lines, impulses, vertical shaded areas
+
+    string self.fname = "display"	# output file
+
+    # font related
+    self.fstyle = "serif"
+    self.fs = 12					# font size for TODO ???
+    self.vlines_fs = 10				# labels for vertical lines
+
+    # date format
+    self.dateform = 1				# date format
+    self.skipx = 10					# put xticks every n-th unit
+
+    # legend
+    self.legend_show = 1					# show legend (default: true)
+    self.legend_pos = 0					# default pos. of legend
+    strings self.legend_str = array(12)
+
+    # style
+    self.grid = 1					# draw no grid
+    self.noborder = 0				# draw no border = draw top and rhs axis
+
+    # linetype
+    self.ps = 0*ones(12,1)				# point size
+    self.pt = {6,7,4,5} ~ seq(8,20)		# point type
+    self.lines_pi = 4					# point interval
+    self.lines_dt = ones(12,1)			# dash type (default: solid lines) [1:10]: http://gnuplot.sourceforge.net/demo_5.1/dts.html
+    #    self.lines_rhs_dt = ones(12,1)			# dash type (default: solid lines) [1:10]: http://gnuplot.sourceforge.net/demo_5.1/dts.html
+    self.vlines_dt = ones(12,1)			# dash type for vertical lines
+
+    # lines_lw
+    self.lines_lw = 1.5*ones(12,1)		#	 for rhs lines
+    self.lines_rhs_lw = 1.5*ones(12,1)		# for lhs lines
+    self.impulses_lw = ones(12,1)		# for rhs impulses
+    self.impulses_rhs_lw = ones(12,1)	# for lhs impulses
+    self.vlines_lw = ones(12,1)			# for vertical lines
+
+    # line colors
+    self.mono = 0					# monochrome off
+    /*
+       strings lc = array(12)
+       loop i=1..nelem(lc) -q
+       lc[i] = "black"
+       endloop
+       self.colors = lc
+    */
+    self.color = get_color_pallet("dark2") 	# greys(), jet(), dark2()
+
+    # line colors for vertical lines
+    /*
+       strings lc = array(12)
+       loop i=1..nelem(lc) -q
+       lc[i] = "black"
+       endloop
+       self.vcolors = lc
+    */
+    self.vcolors =  get_color_pallet("jet") 	# greys(), jet(), dark2()
+
+    # colorbox for heatmap
+    self.nocolorbox = 0
+
+    # define pattern and transparency style
+    # https://stackoverflow.com/questions/19412382/gnuplot-line-types
+    self.pat = {1,4,2,3,8}    	# pattern orderings
+    self.vfilled_alpha = 0.3				# [0,1]
+    self.hfilled_alpha = 0.9				# [0,1]
+
+    # Add labels (conscutive numbering) on top of vlines
+    self.add_vline_label = 1
+    # Shift parameter for IDs numbering vertical lines (negative: DOWN, positive: UP)
+    self.vlines_shift_fraction = 0.05			# 0.05-> add 5 pct. on y_max value
+
+    # output size
+    self.height = 480					# height of plot
+    self.width = 640					# width of plot
+
+    return self
+end function
+
+
+# helper function
+function strings get_color_pallet (const string pal)
+    /* Return definition of color pallets */
+
+    if pal=="dark2"
+        # https://github.com/Gnuplotting/gnuplot-palettes/blob/master/dark2.pal
+        return defarray("#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D","#666666", \
+        "#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D","#666666")
+
+    elif pal=="jet"
+        # https://github.com/Gnuplotting/gnuplot-palettes/blob/master/jet.pal
+        return defarray("#000080", "#0000ff", "#0080ff", "#00ffff", "#80ff80", "#ffff00", \
+        "#ff8000", "#ff0000", "#800000", "#0000ff", "#007f00", "#ff0000", "#00bfbf", \
+        "#bf00bf", "#bfbf00", "#3f3f3f")
+
+    elif pal=="greys"
+        # https://github.com/Gnuplotting/gnuplot-palettes/blob/master/jet.pal
+        return defarray("#FFFFFF", "#F0F0F0", "#D9D9D9", "#BDBDBD", "#969696", \
+        "#737373", "#525252", "#252525", "#FFFFFF", "#F0F0F0", "#D9D9D9", \
+        "#BDBDBD", "#969696", "#737373", "#525252", "#252525")
+    endif
+
+end function
+
+
+#private
+function void GPlotFun (bundle *self)
+    #--------------
+    # MAIN FUNCTION
+    #--------------
+
+    # Set up the bundle
+    # override defaults
+    self = self + default_opts()
+
+
+    # Color check for point and lines
+    if inbundle(self, "colors")
+        if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> BUG: "string" doesn't work
+            tmp = get_color_pallet(self.colors)     		# just a trick
+            self.colors = tmp					# update
+        endif
+    else
+        self.colors = self.color			# use default palette
+    endif
+
+    # Color check for vertical lines
+    if inbundle(self, "colors")
+        if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> BUG: "string" doesn't work
+            tmp = get_color_pallet(self.colors)     		# just a trick
+            self.colors = tmp					# update
+        endif
+    else
+        self.colors = self.color			# use default palette
+    endif
+
+
+    # CHECKS
+    # FIXME: maybe legend_str is not needed being specified
+    if !inbundle(self, "legend_str") && self.which != "heatmap"	#TODO: rename to Legend
+        funcerr "Provide an array of legend names"
+    endif
+
+    # TODO: add checks:
+    # - if pt is a scalar, fill up a vector
+    # - if ps is a scalar, fill up a vector
+    # - if only a single color entry is passed, fill aup an array
+    # - check no. of all columns passed with length of legend_str
+    # - alpha is bounded between [0,1]
+
+    # Call plot function
+    if self.which == "standard"
+        do_standard_plot(&self)
+    elif self.which == "scatter"
+        do_scatter_plot(&self)
+    elif self.which == "stackedbar"
+        do_stacked_bar(&self)
+        #elif which == "standard"
+        #    do_standard_plot(&b)
+
+    elif self.which == "heatmap"
+        do_heatmap(&self)
+    endif
+
+end function
+
+
+function void print_legend_str (bundle *b)
+
+    if b.legend_show==0
+        printf "set nokey\n"
+    else
+        if b.legend_pos == 0
+            printf "set key outside below horizontal\n"
+        elif b.legend_pos == 1
+            printf  "set key top left\n"
+        elif b.legend_pos == 2
+            printf "set key top right\n"
+        elif b.legend_pos == 3
+            printf "set key bottom left\n"
+        elif b.legend_pos == 4
+            printf "set key bottom right\n"
+        endif
+        printf "set key opaque\n"
+    endif
+end function
+
+
+# helper function
+function void print_term_str (bundle *b)
+
+    if b.ftype=="png" || b.fname=="display"
+        printf "set term pngcairo size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
+    elif b.ftype=="pdf"
+        printf "set term pdf size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
+    elif b.ftype=="eps"
+        printf "set term eps size %.2f,%.2f font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs	# NOTE: width, height must be in inches!
+    elif b.ftype=="svg"
+        printf "set term svg size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
+    else
+        funcerr "*** Setting resolution is only allowed for png, pdf, eps and svg files. ***"
+    endif
+end function
+
+
+function void write_data_block (bundle *b, const matrix mat)
+    /* Write data block */
+
+    if b.which=="standard" && single_key_in_bundle(&b, defarray("lines", "lines_rhs", \
+      "points", "points_rhs", "impulses", "impulses_rhs"))
+
+        loop i=1..cols(mat) -q
+
+            loop j=1..rows(mat) -q
+
+                if inbundle(b, "Date")
+                    if i==1 && ( j==1 || j % b.skipx == 0)
+                        if ok(mat[j,i])
+                            printf "%g %s\n", mat[j,i], b.Date[j]
+                        else
+                            printf "? %s\n", mat[j,i], b.Date[j]		# TODO: '?' for 'NaN' for missings?
+                        endif
+                    else
+                        if ok(mat[j,i])
+                            #printf "%g -1\n", b.lines[j,i]	# put major tick (w.o. label) at each period
+                            printf "%g \n", mat[j,i]		# don't put major tick if no label is provided
+                        else
+                            printf "? \n", mat[j,i]
+                        endif
+                    endif
+
+                else
+                    #printf "%g -1\n", b.lines[j,i]
+                    if ok(mat[j,i])
+                        printf "%g \n", mat[j,i]		# don't put major tick if no label is provided
+                    else
+                        printf "? \n", mat[j,i]
+                    endif
+                endif
+
+            endloop
+
+            printf "e\n"
+        endloop
+
+
+    elif b.which=="scatter"
+
+        loop i=1..cols(mat) -q				# "mat" refers to values on the x-axis
+            loop j=1..rows(mat) -q
+
+                if ok(mat[j,i]) && ok(b.xval[j])
+                    printf "%g  %g\n", b.xval[j], mat[j,i]
+                else
+                    printf "? ? \n"#, mat[j,i], b.xval[j]
+                endif
+            endloop
+            printf "e\n"
+        endloop
+    endif
+
+end function
+
+
+function void write_scatterplot_cmd (bundle *b)
+    /* Write the "plot using" command for scatterplots */
+
+    scalar addcol = 0
+
+    printf "plot \\\n"
+
+    if inbundle(b,"LMAT")
+
+        scalar clhs = (inbundle(b, "lines")) ? (cols(b.lines)-1) : 0
+        #scalar clhs = cols(b.lines)-1		# '-1' as first col. of b.lines refers to x-axis values
+
+        loop j=1..cols(b.LMAT) -q		# Lines
+
+            if j<=clhs					# LHS values
+
+                printf "'-'using 1:2 t '%s' w lines linetype $j dt %d lc \
+                  rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                  b.legend_str[j+addcol], b.lines_dt[j], b.colors[j+addcol], \
+                  b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
+
+            else
+                printf "'-'using 1:2 axes x1y2 t '%s' w lines linetype $j dt %d lc \
+                  rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                  b.legend_str[j+addcol], b.lines_dt[j], b.colors[j+addcol], \
+                  b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
+
+            endif
+
+            if !inbundle(b,"PMAT")
+                printf(j == cols(b.LMAT) ? "\n" : ", \\\n")
+            else
+                printf ", \\\n"
+            endif
+
+        endloop
+        scalar addcol = cols(b.LMAT)		# FIXME: -1??
+    endif
+
+    if inbundle(b,"PMAT")			# Points
+
+        scalar clhs = (inbundle(b, "points")) ? (cols(b.points)-1) : 0
+
+        loop j=1..cols(b.PMAT) -q
+
+            if j<=clhs					# RHS values
+
+                printf "'-'using 1:2 t '%s' w points lc rgb '%s' pt %d ps %.2f", \
+                  b.legend_str[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
+            else
+                printf "'-'using 1:2 axes x1y2 t '%s' w points lc \
+                  rgb '%s' pt %d ps %.2f", \
+                  b.legend_str[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j]
+            endif
+            printf(j == cols(b.PMAT) ? "\n" : ", \\\n")
+        endloop
+
+    endif
+
+end function
+
+
+# help function
+function void write_standardplot_cmd (bundle *b)
+/* Write the "plot using" command for standardplots:
+   1) check and write cmd for impulses
+   2) check and write cmd for lines
+    3) check and write cmd for point */
+
+    scalar addcol = 0			# counter
+    scalar k = 2				# date strings are in the 2nd col.
+    printf "plot \\\n"
+
+    # horizontally filled lines
+    if inbundle(b, "hfilled")	# Plot CI
+        printf "'-' using 1:2:3 t '' lc rgb '#dddddd' w filledcurve"
+
+        if single_key_in_bundle(&b, defarray("IMAT", "PMAT", "LMAT"))
+            printf ", \\\n"
+            #printf(j == cols(b.LMAT) ? "\n" : ", \\\n")
+        else
+            printf "\n"
+        endif
+    endif
+
+
+    # impulses
+    if inbundle(b,"IMAT")
+
+        scalar clhs = (inbundle(b, "impulses")) ? cols(b.impulses) : 0
+
+        loop j=1..cols(b.IMAT) -q
+
+            if j==1 && inbundle(b, "Date")
+
+                if j<=clhs					# LHS values
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      axes x1y1 t '%s' w impulses lc rgb '%s' lw %.2f ", k, k, b.legend_str[j], \
+                      b.colors[j], b.impulses_lw[j]
+                else
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      axes x1y2 t '%s' w impulses rgb '%s' lw %.2f", k, k, \
+                      b.legend_str[j+addcol], b.colors[j+addcol], b.lines_lw[j]
+                endif
+
+            else
+                if j<=clhs
+                    printf "'-'using 1 axes x1y1 t '%s' w impulses lc rgb '%s' lw %.2f", \
+                      b.legend_str[j], b.colors[j], b.impulses_lw[j]
+                else
+                    printf "'-'using 1 axes x1y2 t '%s' w impulses lc rgb '%s' lw %.2f", \
+                      b.legend_str[j], b.colors[j], b.impulses_rhs_lw[j]
+                endif
+            endif
+
+
+            if single_key_in_bundle(&b, defarray("PMAT", "LMAT"))
+                printf ", \\\n"
+            else
+                printf(j == cols(b.LMAT) ? "\n" : ", \\\n")
+            endif
+
+        endloop
+        addcol += cols(b.IMAT)
+    endif
+
+
+    # Lines
+    if inbundle(b,"LMAT")
+
+        scalar clhs = (inbundle(b, "lines")) ? cols(b.lines) : 0
+
+        loop j=1..cols(b.LMAT) -q
+
+            if j==1 && inbundle(b, "Date")
+
+                if j<=clhs					# LHS values
+
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      axes x1y1 t '%s' w lines linetype $j dt %d lc rgb '%s' pt %d ps %.2f \
+                      lw %.2f pointinterval %.2f", k, k, b.legend_str[j+addcol], \
+                      b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], \
+                      b.lines_lw[j], b.lines_pi
+
+                else
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) \
+                      axes x1y2 t '%s' w lines linetype $j dt %d lc rgb '%s' pt %d \
+                      ps %.2f lw %.2f pointinterval %.2f", k, k, b.legend_str[j+addcol], \
+                      b.lines_dt[j], b.colors[j+addcol], b.pt[j], b.ps[j], \
+                      b.lines_lw[j], b.lines_pi
+                endif
+
+            else
+                if j<=clhs					# LHS values
+                    printf "'-'using 1 axes x1y1 t '%s' w lines linetype $j dt %d lc \
+                      rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                      b.legend_str[j+addcol], b.lines_dt[j], b.colors[j+addcol], \
+                      b.pt[j], b.ps[j], b.lines_lw[j], b.lines_pi
+                else
+                    printf "'-'using 1 axes x1y2 t '%s' w lines linetype $j dt %d lc \
+                      rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
+                      b.legend_str[j+addcol], b.lines_dt[j], b.colors[j+addcol], b.pt[j], \
+                      b.ps[j], b.lines_lw[j], b.lines_pi
+                endif
+            endif
+
+            if !inbundle(b,"PMAT")
+                printf(j == cols(b.LMAT) ? "\n" : ", \\\n")
+            else
+                printf ", \\\n"
+            endif
+
+
+        endloop
+        addcol += cols(b.LMAT)
+    endif
+
+    # Points
+    if inbundle(b,"PMAT")
+
+        scalar clhs = (inbundle(b, "points")) ? cols(b.points) : 0
+
+        # check point size for points -- should be >0
+        loop j=1..cols(b.PMAT) -q
+            b.ps[j+addcol] = (b.ps[j+addcol]==0) ? 0.5 : b.ps[j+addcol]
+        endloop
+
+        loop j=1..cols(b.PMAT) -q
+
+            if j==1 && inbundle(b, "Date")
+                if j<=clhs					# RHS values
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y1 \
+                      t '%s' w points lc rgb '%s' pt %d ps %.2f", \
+                      k, k, b.legend_str[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
+                else
+                    printf " '-'using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) axes x1y2 \
+                      t '%s' w points lc rgb '%s' pt %d ps %.2f", \
+                      k, k, b.legend_str[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
+                endif
+
+            else
+
+                if j<=clhs					# RHS values
+                    printf "'-'using 1:2 axes x1y1 t '%s' w points lc rgb '%s' pt %d ps %.2f", \
+                      b.legend_str[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
+                else
+                    printf "'-'using 1:2 axes x1y2 t '%s' w points lc \
+                      rgb '%s' pt %d ps %.2f", \
+                      b.legend_str[j+addcol], b.colors[j+addcol], b.pt[j+addcol], b.ps[j+addcol]
+                endif
+            endif
+
+            printf(j == cols(b.PMAT) ? "\n" : ", \\\n")
+        endloop
+
+    endif
+
+end function
+
+
+function void print_range (bundle *b,
+                           const string axis "Either 'y' or 'x' or so")
+    /* Print x/y-range settings */
+
+    if inbundle(b,"@axismin") && inbundle(b,"@axismax")
+        printf "set @axisrange[%.5f:%.5f] \n", b.@axismin, b.@axismax
+    elif inbundle(b,"@axismin") && !inbundle(b,"@axismax")
+        printf "set @axisrange[%.5f:] \n", b.@axismin
+    elif !inbundle(b,"@axismin") && inbundle(b,"@axismax")
+        printf "set @axisrange[:%.5f] \n", b.@axismax
+    else
+        #printf "set @axisrange[:] \n"
+    endif
+end function
+
+
+# helper function
+function void write_gp_settings (bundle *b)
+
+    # Write basic settings which hold for all figure types
+    set warnings off
+
+    if inbundle(b, "obsdate")
+        # re-define obsdate as array of strings
+        # TODO Is there any gretl built-in function to do this?
+        strings S = vector_to_strings(b.obsdate)
+        strings b.Date = obsdate_to_dateformat(S,b.dateform)
+    endif
+
+    tmpfile = sprintf("%s/gplotfun_tmp_%g.gp", $dotdir, int(randgen1(u,1,10^6)))
+    b.tmpfile = tmpfile
+
+    outfile @tmpfile --quiet
+
+        # terminal settings
+        printf "set encoding utf8\n"
+
+        # Set resolution and terminal
+        scalar slong = strlen(b.fname)
+        string b.ftype = substr(b.fname,(slong-2),slong)	# retrieve last 3 characters-->filetype
+        # TODO: rather or additionally search the '.' (dot) before file-type to make stuff more robust
+        print_term_str(&b)
+
+        # Options
+        printf "set datafile missing \"NA\" \n"			# TODO: is this correctly handled?
+
+        # Legend
+        print_legend_str(&b)
+
+        # GRID
+        if b.grid==0
+            printf "unset grid\n"
+        else
+            #add a slight grid to make it easier to follow the exact position of the curves
+            printf "set style line 12 lc rgb 'black' lt 0 lw 1 \n"	# light grey color (#808080)
+            printf "set grid back ls 12 \n"
+            #            printf "set style line 102 lc rgb '#d6d7d9' lt 0 lw 1 \n"
+            #            printf "set grid back ls 102 \n"
+        endif
+
+        # XTICS
+        #printf "set xtics 500 border in scale 1,0 rotate by -90 \n"
+        string str = (inbundle(b, "Date")) ? "rotate by -90" : ""
+        printf "set xtics border out scale 1,0.5 nomirror %s\n", str	#autojustify
+        # print x-range settings
+        print_range(&b, "x")
+
+        # MXTICS
+        printf "unset mxtics\n"		# don't print minor xtics
+
+        # Y tics
+        if !inbundle(b, "ynames")
+
+            printf "set ytics nomirror border out\n"
+            if single_key_in_bundle(&b, defarray("lines_rhs", "impulses_rhs", "points_rhs"))
+                printf "set y2tics nomirror border out\n"
+            endif
+            # print y-range settings
+            print_range(&b, "y")
+
+        else	# case when ylabels are provided (currently only for heatmap)
+            ynames = b.ynames
+            matrix printlab = zeros(nelem(ynames),1)
+            loop i=2..nelem(ynames) -q
+                scalar nval = strlen(ynames[$i-1])
+                string S1 = ynames[$i-1]
+                #S1 = substr(S1,1,(nval-3))
+                string S2 = ynames[$i]
+                #S2 = substr(S2,1,(nval-3))
+                if S1!=S2
+                    printlab[i] = 1
+                endif
+            endloop
+            printf "set ytics ("
+            string vname = ynames[1]
+            vname = strsub(vname, "_", "-")		# substitute certain strings
+            printf "\"%s\" %d, ", vname, 0
+            loop i=2..rows(printlab) -q
+                if printlab[$i]==1
+                    string vname = ynames[$i]
+                    vname = strsub(vname, "_", "-")
+                    printf "\"%s\" %d ", vname,($i-1)
+                    if i<rows(printlab)
+                        printf ", "
+                    endif
+                endif
+            endloop
+            printf " ) font 'serif,%.1f' out\n", b.fs #rotate by 45
+
+        endif
+
+        # Labels + title
+        if inbundle(b, "xlabel")
+            printf "set xlabel '%s' font '%s,%d'\n", b.xlabel, b.fstyle, b.fs
+        endif
+        if inbundle(b, "ylabel")
+            printf "set ylabel '%s' font '%s,%d'\n", b.ylabel, b.fstyle, b.fs
+        endif
+        if inbundle(b, "title")
+            printf "set title '%s' font '%s,%d'\n", b.title, b.fstyle, b.fs
+        endif
+
+        # Make graph nicer
+        #2) put the border more to the background by applying it
+        # only on the left and bottom part and put it and the tics in gray
+        #        printf "set style line 11 lc rgb 'black' lt 1 \n"	# #808080
+        if inbundle(b, "noborder")
+            #printf "set border 3 back ls 11 \n"			# get rid of upper + left border
+            printf "set style line 101 lc rgb '#808080' lt 1 lw 1 \n"
+            printf "set border 3 ls 101 \n"
+            #            printf "set tics nomirror out scale 0.75 \n"
+        endif
+
+        # hfilled: horizontally shaded area(s)
+        if inbundle(b, "hfilled")
+            printf "set style fill transparent solid %.2f noborder\n", b.hfilled_alpha
+        endif
+
+        # vfilled: Vertical, grey shaded areas
+        # pairs of starting/ending dates are put into a n by 2 matrix where
+        # col. refer to start/ending and rows to specific events
+        if inbundle(b, "vfilled")
+            printf "set style rect fc lt -1 fs transparent solid %.2f noborder\n", b.vfilled_alpha
+            loop i=1..rows(b.vfilled) -q
+                printf "set obj rect from %d, graph 0 to %d, graph 1\n", \
+                  b.vfilled[i,1], b.vfilled[i,2]
+            endloop
+        endif
+
+        # vlines: Vertical (dashed) lines + LABELS
+        # provide a vector of dates (obsdate format) by a n by 1 matrix where
+        # rows refer to specific events
+        if inbundle(b, "vlines")
+            b.vlines = vec(b.vlines)
+            loop i=1..rows(b.vlines) -q
+                printf "set arrow from %d, graph 0 to %d, graph 1 nohead lw %.2f lc rgb '%s' \
+                  linetype $i dt %d front \n", b.vlines[i], b.vlines[i], b.vlines_lw[i], b.vcolors[i], b.vlines_dt[i]
+            endloop
+        endif
+
+
+        if inbundle(b, "vlines") && b.add_vline_label				# Add label to vertical lines
+            # TODO: needs further testing except for 'barstacked' case
+
+            if inbundle(b, "y_max")
+                scalar y_max = b.y_max
+            else
+                loop i=1..7 -q
+                    if i==1 && inbundle(b,"lines")
+                        matrix mat = b.lines
+                        scalar y_max = max(maxc(mat))
+                    elif i==2 && inbundle(b,"lines_rhs")
+                        mat = b.lines_rhs
+                        # TODO: add y2_max = max(maxc(mat))
+                    elif i==3 && inbundle(b,"impulses")
+                        mat = b.impulses
+                        scalar y_max = max(maxc(mat))
+                    elif i==4 && inbundle(b,"impulses_rhs")
+                        mat = b.impulses_rhs
+                    elif i==5 && inbundle(b,"barstacked")
+                        mat = sumr(b.barstacked)	# sum over all columns since we look at stacked values
+                        scalar y_max = max(maxc(mat))
+                    elif i==6 && inbundle(b,"points")
+                        mat = b.points
+                        scalar y_max = max(maxc(mat))
+                    elif i==7 && inbundle(b,"points_rhs")
+                        mat = b.points_rhs
+                    endif
+                    if i>1 && exists(mat)
+                        if max(maxc(mat))>y_max
+                            y_max = max(maxc(mat))
+                        endif
+                    endif
+                endloop
+            endif
+
+            scalar incr = y_max * b.vlines_shift_fraction	# move label a bit higher
+            matrix mat = vec(b.vlines)
+            loop i=1..rows(mat) -q
+                printf "set label '$i' at %d,%g point lt 0 center offset -0.5,%g font ',%d'\n", \
+                  b.vlines[i], y_max, incr, b.vlines_fs
+            endloop
+
+        endif
+
+    end outfile
+
+end function
+
+
+function void do_heatmap (bundle *b)
+/* heat = k by T matrix, k=cross-sectional dim., T=time dim.
+    lines = draw horizonal lines */
+
+    if b.which=="heatmap"
+        matrix mat = b.heat
+    else
+        funcerr "Warning: doHeatmap() requires at least matrix 'heat'!"
+    endif
+
+    # Run basic settings
+    write_gp_settings(&b)
+
+    set warnings off  # omit warning for NAs
+    tmpfile = b.tmpfile
+    outfile @tmpfile --append
+
+        # Put the border more to the background by applying it
+        # only on the left and bottom part and put it and the tics in gray
+        #printf "set style line 11 lc rgb \"#808080\" lt 1 \n"
+        #printf "set border 3 back ls 11\n"			# get rid of upper + left border
+        #        printf "set tics nomirror \n"
+        #        printf "set datafile missing \"NA\" \n"
+        if inbundle(b, ymin) && inbundle(b, y_max)
+            printf "set cbrange[%.5f:%.5f] \n", b.ymin, b.y_max # set the value-range for legend
+        endif
+
+        # SET palette color
+        # Defining a palette with discrete colors
+        #printf "set palette defined ( 0 '#000fff', 1 '#90ff70', 2 '#ee0000') \n"
+        # MATLAB COLORS:
+        if b.mono==0
+            printf "set palette defined (0 0 0 0.5, 1 0 0 1, 2 0 0.5 1, 3 0 1 1, \
+              4 0.5 1 0.5, 5 1 1 0, 6 1 0.5 0, 7 1 0 0, 8 0.5 0 0)\n"
+            #printf "set palette maxcolors 10 \n"
+        else
+            #printf "set palette gray negative\n" #gray positive
+            printf "set palette gray negative gamma 1.5\n"
+        endif
+        # REMOVE COLORBOX
+        if b.nocolorbox==1
+            printf "unset colorbox\n"
+        endif
+
+        # Write xtics (date strings)
+        if inbundle(b, "Date")
+            scalar count = 1
+            printf "set xtics ("
+            loop i=1..cols(mat) -q
+                if count==b.skipx || i==1
+                    printf "\"%s\" %d, ", b.Date[i], $i
+                    count=1
+                endif
+                count++
+            endloop
+            printf " ) out \n"
+        endif
+
+        # write plot specification
+        printf "plot '-' using 1:2:3 matrix with image t ''\n"
+        # HEATMAP data block
+        loop i=1..rows(mat) -q
+            loop j=1..cols(mat) -q
+                if ok(mat[i,j])
+                    printf "%g", mat[i,j]
+                else
+                    printf "NaN "
+                endif
+                if j<cols(mat)
+                    printf ", "
+                endif
+            endloop
+            printf "\n"
+        endloop
+        printf "e \n"
+
+    end outfile
+    string fname = b.fname
+    gnuplot --input="@tmpfile" --output="@fname"
+
+end function
+
+
+function void do_stacked_bar (bundle *b)
+/* barstacked = T by k matrix, k=separate bar plot (x1,...,xk), T=time dim.
+    lines = draw horizonal lines -- only LHS at the moment */
+
+    if inbundle(b, "barstacked")
+        matrix mat = b.barstacked
+    else
+        funcerr "Warning: do_stacked_bar() requires at least matrix 'barstacked'!"
+    endif
+    if inbundle(b, "lines")
+        mat ~= b.lines
+    elif inbundle(b, "lines_rhs")
+        mat ~= b.lines_rhs
+    endif
+
+    write_gp_settings(&b)	# Run basic settings
+
+    set warnings off  # omit warning for NAs
+    tmpfile = b.tmpfile
+    outfile @tmpfile --append
+
+        # Set style
+        printf "set style data histogram \n"
+        printf "set style histogram rowstacked\n"
+        # Colored vs. mono
+        #if mono==0
+        #    printf "set style fill solid border -1 \n"	# OR border -2 ??
+        #    printf "set style fill solid 0.35\n"
+        #else
+        #        printf "set style fill transparent solid %.2f noborder\n", b.alpha
+        printf "set style fill pattern 9 border -2\n"	# you can change pattern 'n'
+        # FIXME: For large datesets (many rows) one has to set "border -2"--WHY?
+        #endif
+
+        # write data block
+        printf "$data <<EOF\n"
+        loop i=1..rows(mat) -q
+            loop j=1..cols(mat) -q
+                printf "%g ", mat[i,j]
+            endloop
+            if inbundle(b, "Date")
+                if i==1 || i % b.skipx == 0 #|| i==rows(mat)-15		# put xtics at 1st obs, every nstep obs. and last obs.
+                    printf "%s", b.Date[i]
+                else
+                    #printf "-1"		# put major tick for (almost) each  obs.
+                endif
+            endif
+            printf "\n"
+        endloop
+        printf "EOF\n"
+
+        # write plot specification
+        nstack = cols(b.barstacked)
+        printf "plot \\\n"
+        loop j=1..cols(mat) -q
+            if j == 1 && inbundle(b, "Date")  # first date entry
+                k = cols(mat)+1
+                printf "$data using 1:xtic($%d < 0. ? \"\" : stringcolumn(%d)) t '%s' fillstyle solid 0.5 lc rgb '%s'", \
+                  k, k, b.legend_str[j], b.colors[j]
+            else
+                if j>=1 && j<=nstack	# stacked barplot
+                    printf "$data using %d t '%s' fillstyle pattern %d lc rgb '%s'", j, b.legend_str[j], b.pat[j], b.colors[j]
+
+                else		# TODO: only lhs-lines allowed at the moment
+                    printf "$data using $j t '%s' w lines linetype %d dt %d lc rgb '%s' \
+                      pt %d ps %.2f lw %.2f pointinterval %.2f", b.legend_str[j], ($j-nstack), b.lines_dt[j-nstack], \
+                      b.colors[j], b.pt[j-nstack], b.ps[j-nstack], b.lines_lw[j-nstack], b.lines_pi
+                endif
+
+            endif
+            printf(j == cols(mat) ? "\n" : ", \\\n")
+        endloop
+
+    end outfile
+    string fname = b.fname
+    gnuplot --input="@tmpfile" --output="@fname"
+end function
+
+
+function void do_standard_plot (bundle *b)
+/* lines = draw horizonal lines
+    hfilled = draw horizonal shaded areas */
+
+    write_gp_settings(&b)	# Run basic settings
+
+    set warnings off
+    tmpfile = b.tmpfile
+
+    outfile @tmpfile --append
+
+        if !single_key_in_bundle(&b, defarray("points", "points_rhs", "lines", "lines_rhs", \
+            "impulses", "impulses_rhs"))
+            funcerr "Warning: do_standard_plot() requires at least matrix 'lines', 'points', or 'impulses'!"
+        endif
+
+        #-------------
+        # Plot Impulse
+        #-------------
+        if single_key_in_bundle(&b, defarray("impulses", "impulses_rhs"))
+            matrix b.IMAT = {}
+            if inbundle(b, "impulses")
+                b.IMAT = b.impulses
+            endif
+            if inbundle(b, "impulses_rhs")
+                matrix b.IMAT ~= b.impulses_rhs
+            endif
+        endif
+
+        #------------
+        # Plot lines
+        #------------
+        if single_key_in_bundle(&b, defarray("lines", "lines_rhs"))
+            matrix b.LMAT = {}
+            if inbundle(b, "lines")
+                matrix b.LMAT = b.lines
+            endif
+            if inbundle(b, "lines_rhs")
+                b.LMAT ~= b.lines_rhs
+            endif
+        endif
+
+
+        #------------
+        # Plot points
+        #------------
+        if single_key_in_bundle(&b, defarray("points", "points_rhs"))
+            matrix b.PMAT = {}
+            if inbundle(b, "points")
+                matrix b.PMAT = b.points
+            endif
+            if inbundle(b, "points_rhs")
+                matrix b.PMAT ~= b.points_rhs
+            endif
+        endif
+
+        # Write plot command
+        write_standardplot_cmd(&b)
+
+        #----------------------------------------------------------
+        # write data block for horizontal mat2=hfilled shaded area
+        #----------------------------------------------------------
+        if inbundle(b, "hfilled")
+            loop j=1..rows(b.hfilled) -q		# CI
+                printf "$j %g %g\n", b.hfilled[j,1], b.hfilled[j,2]
+            endloop
+            printf "e\n"
+        endif
+
+        #-------------------
+        # Plot impulse values
+        # write data block
+        #-------------------
+        if single_key_in_bundle(&b, defarray("impulses", "impulses_rhs"))
+            write_data_block(&b, b.IMAT)
+        endif
+
+        #-------------------
+        # Plot lines values
+        # write data block
+        #-------------------
+        if single_key_in_bundle(&b, defarray("lines", "lines_rhs"))
+            write_data_block(&b, b.LMAT)
+        endif
+
+        #-------------------
+        # Plot points values
+        # write data block
+        #-------------------
+        if single_key_in_bundle(&b, defarray("points", "points_rhs"))
+            write_data_block(&b, b.PMAT)
+        endif
+
+    end outfile
+    string fname = b.fname
+    gnuplot --input="@tmpfile" --output="@fname"
+end function
+
+
+function void do_scatter_plot (bundle *b)
+
+    write_gp_settings(&b)						# call basic settings
+
+    b.ps = (b.ps.=0) ? 0.5 : b.ps		# make sure points are plotted
+
+    set warnings off
+    tmpfile = b.tmpfile
+
+    outfile @tmpfile --append
+
+        if !single_key_in_bundle(&b, defarray("lines", "lines_rhs", "points", "points_rhs"))
+            funcerr "Error: do_scatter_plot() requires at least matrix 'lines' and 'points'."
+        endif
+
+        # Transparency
+        #        printf "set style fill transparent solid %.2f noborder\n", b.alpha		# FIXME: doesn't work yet
+        #printf "set style circle radius 0.08\n"
+
+
+        #------------------------------------
+        # Setup matrices for lines and points
+        #------------------------------------
+        if single_key_in_bundle(&b, defarray("lines", "lines_rhs"))
+            matrix LMAT = {}
+            if inbundle(b, "lines")
+                matrix LMAT = b.lines
+            endif
+
+            if inbundle(b, "lines_rhs")
+                matrix LMAT ~= b.lines_rhs
+            endif
+            matrix b.xval = LMAT[,1]		# first column refers to values on the x-axis
+            b.LMAT = LMAT[,2:]
+        endif
+        if single_key_in_bundle(&b, defarray("points", "points_rhs"))
+            matrix PMAT = {}
+            if inbundle(b, "points")
+                matrix PMAT = b.points
+            endif
+            if inbundle(b, "points_rhs")
+                matrix PMAT ~= b.points_rhs
+            endif
+            matrix b.xval = PMAT[,1]		# first column refers to values on the x-axis
+            b.PMAT = PMAT[,2:]
+        endif
+
+        # Write plot cmd
+        #----------------
+        write_scatterplot_cmd(&b)
+
+        #-------------------
+        # Plot lines values
+        # write data block
+        #-------------------
+        if single_key_in_bundle(&b, defarray("lines", "lines_rhs"))
+            write_data_block(&b, b.LMAT)
+        endif
+
+        #-------------------
+        # Plot points values
+        # write data block
+        #-------------------
+        if single_key_in_bundle(&b, defarray("points", "points_rhs"))
+            write_data_block(&b, b.PMAT)
+        endif
+
+    end outfile
+    string fname = b.fname
+    gnuplot --input="@tmpfile" --output="@fname"
+end function
