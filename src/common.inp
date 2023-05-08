@@ -1,0 +1,19 @@
+function scalar any_key_in_bundle (const bundle b, const strings keys)
+    /* Return TRUE if any of the keys in `keys` are present in the bundle `b`, and FALSE otherwise.
+
+    Args:
+        b (bundle): A dictionary-like object containing key-value pairs.
+        keys (list[str]): A list of keys to search for in `b`.
+
+    Returns:
+        bool: TRUE if any of the keys in `keys` are present in `b`, and FALSE otherwise.
+    */
+
+    scalar ret = 0
+
+    loop i = 1..nelem(keys)
+        ret += inbundle(b, keys[i])
+    endloop
+
+    return ret > 0 ? TRUE : FALSE
+end function

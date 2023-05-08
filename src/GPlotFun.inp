@@ -1,21 +1,4 @@
 # helper function
-function scalar single_key_in_bundle (bundle *b, const strings keys)
-/* Searches for all elements of 's' in b'. Returns 1 if
-    at least one elements is part of b, else 0. */
-
-    scalar ret = 0
-    loop i = 1..nelem(keys) --quiet
-        ret = ret || inbundle(b, keys[i])
-        if ret
-            break
-        endif
-    endloop
-
-    return ret
-end function
-
-
-# helper function
 function strings vector_to_strings (const matrix X)
     /* Put numerical values of a matrix into an array of strings */
 
@@ -171,17 +154,12 @@ function strings get_color_pallet (const string pal)
 end function
 
 
-#private
 function void GPlotFun (bundle *self)
-    #--------------
-    # MAIN FUNCTION
-    #--------------
+    /* Main function. */
 
-    # Set up the bundle
-    # override defaults
     self = self + default_opts()
 
-
+    # TODO: outsource
     # Color check for point and lines
     if inbundle(self, "colors")
         if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> BUG: "string" doesn't work
@@ -192,6 +170,7 @@ function void GPlotFun (bundle *self)
         self.colors = self.color			# use default palette
     endif
 
+    # TODO: outsource
     # Color check for vertical lines
     if inbundle(self, "colors")
         if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> BUG: "string" doesn't work
@@ -202,8 +181,7 @@ function void GPlotFun (bundle *self)
         self.colors = self.color			# use default palette
     endif
 
-
-    # CHECKS
+    # TODO: outsource
     # FIXME: maybe legend_str is not needed being specified
     if !inbundle(self, "legend_str") && self.which != "heatmap"	#TODO: rename to Legend
         funcerr "Provide an array of legend names"
@@ -225,11 +203,9 @@ function void GPlotFun (bundle *self)
         do_stacked_bar(&self)
         #elif which == "standard"
         #    do_standard_plot(&b)
-
     elif self.which == "heatmap"
         do_heatmap(&self)
     endif
-
 end function
 
 
@@ -274,7 +250,7 @@ end function
 function void write_data_block (bundle *b, const matrix mat)
     /* Write data block */
 
-    if b.which=="standard" && single_key_in_bundle(&b, defarray("lines", "lines_rhs", \
+    if b.which=="standard" && any_key_in_bundle(b, defarray("lines", "lines_rhs", \
       "points", "points_rhs", "impulses", "impulses_rhs"))
 
         loop i=1..cols(mat) -q
@@ -407,7 +383,7 @@ function void write_standardplot_cmd (bundle *b)
     if inbundle(b, "hfilled")	# Plot CI
         printf "'-' using 1:2:3 t '' lc rgb '#dddddd' w filledcurve"
 
-        if single_key_in_bundle(&b, defarray("IMAT", "PMAT", "LMAT"))
+        if any_key_in_bundle(b, defarray("IMAT", "PMAT", "LMAT"))
             printf ", \\\n"
             #printf(j == cols(b.LMAT) ? "\n" : ", \\\n")
         else
@@ -446,7 +422,7 @@ function void write_standardplot_cmd (bundle *b)
             endif
 
 
-            if single_key_in_bundle(&b, defarray("PMAT", "LMAT"))
+            if any_key_in_bundle(b, defarray("PMAT", "LMAT"))
                 printf ", \\\n"
             else
                 printf(j == cols(b.LMAT) ? "\n" : ", \\\n")
@@ -624,7 +600,7 @@ function void write_gp_settings (bundle *b)
         if !inbundle(b, "ynames")
 
             printf "set ytics nomirror border out\n"
-            if single_key_in_bundle(&b, defarray("lines_rhs", "impulses_rhs", "points_rhs"))
+            if any_key_in_bundle(b, defarray("lines_rhs", "impulses_rhs", "points_rhs"))
                 printf "set y2tics nomirror border out\n"
             endif
             # print y-range settings
@@ -928,12 +904,11 @@ function void do_standard_plot (bundle *b)
 
     write_gp_settings(&b)	# Run basic settings
 
-    set warnings off
+    set warnings off   # TODO: should be done on a more global level
     tmpfile = b.tmpfile
 
     outfile @tmpfile --append
-
-        if !single_key_in_bundle(&b, defarray("points", "points_rhs", "lines", "lines_rhs", \
+        if !any_key_in_bundle(b, defarray("points", "points_rhs", "lines", "lines_rhs", \
             "impulses", "impulses_rhs"))
             funcerr "Warning: do_standard_plot() requires at least matrix 'lines', 'points', or 'impulses'!"
         endif
@@ -941,7 +916,7 @@ function void do_standard_plot (bundle *b)
         #-------------
         # Plot Impulse
         #-------------
-        if single_key_in_bundle(&b, defarray("impulses", "impulses_rhs"))
+        if any_key_in_bundle(b, defarray("impulses", "impulses_rhs"))
             matrix b.IMAT = {}
             if inbundle(b, "impulses")
                 b.IMAT = b.impulses
@@ -954,7 +929,7 @@ function void do_standard_plot (bundle *b)
         #------------
         # Plot lines
         #------------
-        if single_key_in_bundle(&b, defarray("lines", "lines_rhs"))
+        if any_key_in_bundle(b, defarray("lines", "lines_rhs"))
             matrix b.LMAT = {}
             if inbundle(b, "lines")
                 matrix b.LMAT = b.lines
@@ -968,7 +943,7 @@ function void do_standard_plot (bundle *b)
         #------------
         # Plot points
         #------------
-        if single_key_in_bundle(&b, defarray("points", "points_rhs"))
+        if any_key_in_bundle(b, defarray("points", "points_rhs"))
             matrix b.PMAT = {}
             if inbundle(b, "points")
                 matrix b.PMAT = b.points
@@ -995,7 +970,7 @@ function void do_standard_plot (bundle *b)
         # Plot impulse values
         # write data block
         #-------------------
-        if single_key_in_bundle(&b, defarray("impulses", "impulses_rhs"))
+        if any_key_in_bundle(b, defarray("impulses", "impulses_rhs"))
             write_data_block(&b, b.IMAT)
         endif
 
@@ -1003,7 +978,7 @@ function void do_standard_plot (bundle *b)
         # Plot lines values
         # write data block
         #-------------------
-        if single_key_in_bundle(&b, defarray("lines", "lines_rhs"))
+        if any_key_in_bundle(b, defarray("lines", "lines_rhs"))
             write_data_block(&b, b.LMAT)
         endif
 
@@ -1011,7 +986,7 @@ function void do_standard_plot (bundle *b)
         # Plot points values
         # write data block
         #-------------------
-        if single_key_in_bundle(&b, defarray("points", "points_rhs"))
+        if any_key_in_bundle(b, defarray("points", "points_rhs"))
             write_data_block(&b, b.PMAT)
         endif
 
@@ -1032,7 +1007,7 @@ function void do_scatter_plot (bundle *b)
 
     outfile @tmpfile --append
 
-        if !single_key_in_bundle(&b, defarray("lines", "lines_rhs", "points", "points_rhs"))
+        if !any_key_in_bundle(b, defarray("lines", "lines_rhs", "points", "points_rhs"))
             funcerr "Error: do_scatter_plot() requires at least matrix 'lines' and 'points'."
         endif
 
@@ -1044,7 +1019,7 @@ function void do_scatter_plot (bundle *b)
         #------------------------------------
         # Setup matrices for lines and points
         #------------------------------------
-        if single_key_in_bundle(&b, defarray("lines", "lines_rhs"))
+        if any_key_in_bundle(b, defarray("lines", "lines_rhs"))
             matrix LMAT = {}
             if inbundle(b, "lines")
                 matrix LMAT = b.lines
@@ -1056,7 +1031,7 @@ function void do_scatter_plot (bundle *b)
             matrix b.xval = LMAT[,1]		# first column refers to values on the x-axis
             b.LMAT = LMAT[,2:]
         endif
-        if single_key_in_bundle(&b, defarray("points", "points_rhs"))
+        if any_key_in_bundle(b, defarray("points", "points_rhs"))
             matrix PMAT = {}
             if inbundle(b, "points")
                 matrix PMAT = b.points
@@ -1076,7 +1051,7 @@ function void do_scatter_plot (bundle *b)
         # Plot lines values
         # write data block
         #-------------------
-        if single_key_in_bundle(&b, defarray("lines", "lines_rhs"))
+        if any_key_in_bundle(b, defarray("lines", "lines_rhs"))
             write_data_block(&b, b.LMAT)
         endif
 
@@ -1084,7 +1059,7 @@ function void do_scatter_plot (bundle *b)
         # Plot points values
         # write data block
         #-------------------
-        if single_key_in_bundle(&b, defarray("points", "points_rhs"))
+        if any_key_in_bundle(b, defarray("points", "points_rhs"))
             write_data_block(&b, b.PMAT)
         endif
 
