@@ -610,13 +610,18 @@ function void do_frequency_plot (bundle *b)
     tmpfile = b.tmpfile
     string ylabel = "Frequency"
 
+    if !inbundle(b, binwidth)
+        scalar b.binwidth = maxc(b.data[,1], TRUE) - minc(b.data[,1], TRUE) / 10
+        printf "\nInfo: Set binwidth to %g\n", b.binwidth
+    endif
+
     set warnings off  # omit warning for NAs
 
     outfile @tmpfile --append
         # Let gnuplot do the computation
-        printf "bin_width = 1\n" # TODO: paramterize
-        printf "bin_number(x) = floor(x/bin_width)\n"
-        printf "rounded(x) = bin_width * ( bin_number(x) + 0.5 )\n"
+        printf "binwidth = %g\n", b.binwidth
+        printf "bin_number(x) = floor(x/binwidth)\n"
+        printf "rounded(x) = binwidth * ( bin_number(x) + 0.5 )\n"
 
         # value < 1: leave small gap between solid (filled-in) bars.
         print "set boxwidth 0.8 relative"

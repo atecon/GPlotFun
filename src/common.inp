@@ -205,7 +205,8 @@ function void print_term_str (bundle *b)
         Error: If the file extension provided in `b` is not supported.
     */
 
-    if b.fileextension == "png" || b.fname == "display"
+if b.fileextension == "gp"
+    elif b.fileextension == "png" || b.fname == "display"
         printf "set term pngcairo size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
     elif b.fileextension == "pdf"
         printf "set term pdf size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
@@ -475,9 +476,9 @@ end function
 
 function void write_frequency_plot_data (const matrix mat)
     /* Write data for frequency plot.
-    "mat" must have two columns:
-    1. Index vector
-    2. Vector with frequency values. */
+    "mat" must a single columns vector with values. */
+
+    errorif(cols(mat) > 1, "Data has more than one column. Not supported.")
 
     printf "%16.g", mat
     printf "\ne\n"

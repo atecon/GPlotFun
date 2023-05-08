@@ -144,18 +144,7 @@ loop i=1..7
         # Frequency plot
         bundle b = null
         b.which = "frequency"
-
-        b.legend_show = 1
-        b.legend_pos = 0
-        #    b.mono = 1
-        b.xmin = 20
-        b.ymin = 0
-        b.data = seq(1, $nobs)' ~ {pgdp}
-        b.data[2,2] = NA
-
-        # make plot wider
-        #b.width = 800
-        #b.height = 420
+        b.data = {pgdp}
         b.title = "This is a frequency plot"
         #b.legend_str = "foo"
 
