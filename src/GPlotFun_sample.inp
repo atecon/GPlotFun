@@ -1,12 +1,10 @@
 clear
 set verbose off
+include GPlotFun.gfn
 
 open hendry_jae.gdt -q
 
-string WD = "/home/at/git/GPlotFun"			# adjust path
-include "@WD/src/GPlotFun.inp"
-
-scalar runEX = 1			# Select an example
+scalar runEX = 7			# Select an example
 
 if runEX==1
     # setup the bundle
@@ -14,7 +12,6 @@ if runEX==1
     matrix b.lines = {pgdp, gdp}
     matrix b.obsdate = {$obsdate}
     GPlotFun(&b)
-
 
 elif runEX==2
     bundle b = null
@@ -111,7 +108,6 @@ elif runEX==5		 # stacked barplot
     b.which = "stackedbar"    
     GPlotFun(&b)
 
-
 elif runEX==6
     # Heatmap Plot
     bundle b = null
@@ -137,6 +133,29 @@ elif runEX==6
     b.fname = fname
     GPlotFun(&b)
 
+elif runEX == 7
+    # Frequency plot
+    bundle b = null
+    b.which = "frequency"
+
+    #    b.legend_show = 1
+    #    b.legend_pos = 0
+    #    b.mono = 1
+    b.xmin = 0
+    b.ymin = 0
+    list L = 1
+    b. = {L}'
+
+    # make plot wider
+    b.width = 800
+    b.height = 420
+    b.title = "This is a heatmap"
+
+    # store as png-file
+    # string b.fname = sprintf("%s/figs/frequency_plot.png", $workdir)
+    b.fname = "display"
+
+    GPlotFun(&b)
 endif
 
 
