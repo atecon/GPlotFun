@@ -7,11 +7,10 @@ tags = C12 C52 C53
 min-version = 2018a
 data-requirement = no-data-ok
 public = GPlotFun
-  
 help = GPlotFun.pdf
 sample-script = GPlotFun_sample.inp
 #data-files = FEPdata.gdt
-
+depends = extra
 # still some zip-related things missing?
 # lives-in-subdir and stuff?
 

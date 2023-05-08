@@ -1,3 +1,5 @@
+include common.inp --force
+
 function void GPlotFun (bundle *self)
     /* Main function. */
 
@@ -17,9 +19,9 @@ function void GPlotFun (bundle *self)
     # TODO: outsource
     # Color check for vertical lines
     if inbundle(self, "colors")
-        if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> BUG: "string" doesn't work
-            tmp = get_color_pallet(self.colors)     		# just a trick
-            self.colors = tmp					# update
+        if typestr(typeof(self.colors))=="null"	# user selects a palette via string --> FIXME: "string" doesn't work
+            tmp = get_color_pallet(self.colors)  		 # just a trick
+            self.colors = tmp					         # update
         endif
     else
         self.colors = self.color			# use default palette
@@ -577,6 +579,81 @@ function void do_scatter_plot (bundle *b)
                 matrix PMAT ~= b.points_rhs
             endif
             matrix b.xval = PMAT[,1]		# first column refers to values on the x-axis
+            b.PMAT = PMAT[,2:]
+        endif
+
+        # Write plot cmd
+        #----------------
+        write_scatterplot_cmd(&b)
+
+        #-------------------
+        # Plot lines values
+        # write data block
+        #-------------------
+        if any_key_in_bundle(b, defarray("lines", "lines_rhs"))
+            write_data_block(&b, b.LMAT)
+        endif
+
+        #-------------------
+        # Plot points values
+        # write data block
+        #-------------------
+        if any_key_in_bundle(b, defarray("points", "points_rhs"))
+            write_data_block(&b, b.PMAT)
+        endif
+
+    end outfile
+    string fname = b.fname
+    gnuplot --input="@tmpfile" --output="@fname"
+end function
+
+
+
+function void do_frequenc_plot (bundle *b)
+    /* Plot frequencies */
+
+    write_gp_settings(&b)                       # call basic settings
+
+    b.ps = (b.ps.=0) ? 0.5 : b.ps       # make sure points are plotted
+
+    set warnings off
+    tmpfile = b.tmpfile
+
+    outfile @tmpfile --append
+
+        if !any_key_in_bundle(b, defarray("lines", "lines_rhs", "points", "points_rhs"))
+            funcerr "Error: do_scatter_plot() requires at least matrix 'lines' and 'points'."
+        endif
+
+        # Transparency
+        #        printf "set style fill transparent solid %.2f noborder\n", b.alpha     # FIXME: doesn't work yet
+        #printf "set style circle radius 0.08\n"
+
+
+        #------------------------------------
+        # Setup matrices for lines and points
+        #------------------------------------
+        if any_key_in_bundle(b, defarray("lines", "lines_rhs"))
+            matrix LMAT = {}
+            if inbundle(b, "lines")
+                matrix LMAT = b.lines
+            endif
+
+            if inbundle(b, "lines_rhs")
+                matrix LMAT ~= b.lines_rhs
+            endif
+            matrix b.xval = LMAT[,1]        # first column refers to values on the x-axis
+            b.LMAT = LMAT[,2:]
+        endif
+        if any_key_in_bundle(b, defarray("points", "points_rhs"))
+            matrix PMAT = {}
+            if inbundle(b, "points")
+                matrix PMAT = b.points
+            endif
+            if inbundle(b, "points_rhs")
+                matrix PMAT ~= b.points_rhs
+            endif
+            matrix b.xval = PMAT[,1]        # first column refers to values on the x-axis
             b.PMAT = PMAT[,2:]
         endif
 

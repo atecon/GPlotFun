@@ -192,13 +192,13 @@ end function
 
 function void print_term_str (bundle *b)
 
-    if b.ftype=="png" || b.fname=="display"
+    if b.fileextension=="png" || b.fname=="display"
         printf "set term pngcairo size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
-    elif b.ftype=="pdf"
+    elif b.fileextension=="pdf"
         printf "set term pdf size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
-    elif b.ftype=="eps"
+    elif b.fileextension=="eps"
         printf "set term eps size %.2f,%.2f font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs   # NOTE: width, height must be in inches!
-    elif b.ftype=="svg"
+    elif b.fileextension=="svg"
         printf "set term svg size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
     else
         funcerr "*** Setting resolution is only allowed for png, pdf, eps and svg files. ***"
@@ -296,14 +296,12 @@ function void write_gp_settings (bundle *b)
     b.tmpfile = tmpfile
 
     outfile @tmpfile --quiet
-
         # terminal settings
         printf "set encoding utf8\n"
 
         # Set resolution and terminal
-        scalar slong = strlen(b.fname)
-        string b.ftype = substr(b.fname,(slong-2),slong)    # retrieve last 3 characters-->filetype
-        # TODO: rather or additionally search the '.' (dot) before file-type to make stuff more robust
+        string b.fileextension = splitfname(b.fname)[3]
+
         print_term_str(&b)
 
         # Options
