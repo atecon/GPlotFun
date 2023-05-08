@@ -4,6 +4,8 @@ include GPlotFun.gfn
 
 open hendry_jae.gdt -q
 
+set workdir "/home/artur/git/GPlotFun/src"
+
 scalar runEX = 7			# Select an example
 
 if runEX==1
@@ -141,18 +143,17 @@ elif runEX == 7
     #    b.legend_show = 1
     #    b.legend_pos = 0
     #    b.mono = 1
-    b.xmin = 0
-    b.ymin = 0
-    list L = 1
-    b. = {L}'
+    #b.xmin = 0
+    #b.ymin = 0
+    scalar N = 100
+    b.data = seq(1, N)' ~ mnormal(N,1)
 
     # make plot wider
     b.width = 800
     b.height = 420
     b.title = "This is a heatmap"
 
-    # store as png-file
-    # string b.fname = sprintf("%s/figs/frequency_plot.png", $workdir)
+    #string b.fname = sprintf("%s/figs/frequency_plot.pdf", $workdir)
     b.fname = "display"
 
     GPlotFun(&b)

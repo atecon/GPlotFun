@@ -170,8 +170,13 @@ end function
 
 
 function void print_legend_str (bundle *b)
+    /* Add a string containing gnuplot commands to set the position and visibility
+        of the legend in a plot.
 
-    if b.legend_show==0
+    Args:
+        b (bundle): A dictionary-like object containing information about the plot's legend settings.
+    */
+    if b.legend_show == 0
         printf "set nokey\n"
     else
         if b.legend_pos == 0
@@ -307,14 +312,10 @@ function void write_gp_settings (bundle *b)
     outfile @tmpfile --quiet
         printf "set encoding utf8\n"
         print_term_str(&b)
-
-        # Options
         printf "set datafile missing \"NA\" \n"         # TODO: is this correctly handled?
-
-        # Legend
         print_legend_str(&b)
 
-        # GRID
+        # TODO: outsource
         if b.grid==0
             printf "unset grid\n"
         else
@@ -325,7 +326,7 @@ function void write_gp_settings (bundle *b)
             #            printf "set grid back ls 102 \n"
         endif
 
-        # XTICS
+        # TODO: outsource
         #printf "set xtics 500 border in scale 1,0 rotate by -90 \n"
         string str = (inbundle(b, "Date")) ? "rotate by -90" : ""
         printf "set xtics border out scale 1,0.5 nomirror %s\n", str    #autojustify
@@ -335,9 +336,8 @@ function void write_gp_settings (bundle *b)
         # MXTICS
         printf "unset mxtics\n"     # don't print minor xtics
 
-        # Y tics
+        # TODO: outsource
         if !inbundle(b, "ynames")
-
             printf "set ytics nomirror border out\n"
             if any_key_in_bundle(b, defarray("lines_rhs", "impulses_rhs", "points_rhs"))
                 printf "set y2tics nomirror border out\n"
@@ -358,6 +358,7 @@ function void write_gp_settings (bundle *b)
                     printlab[i] = 1
                 endif
             endloop
+
             printf "set ytics ("
             string vname = ynames[1]
             vname = strsub(vname, "_", "-")     # substitute certain strings
@@ -372,8 +373,7 @@ function void write_gp_settings (bundle *b)
                     endif
                 endif
             endloop
-            printf " ) font 'serif,%.1f' out\n", b.fs #rotate by 45
-
+            printf " ) font 'serif,%.1f' out\n", b.fs # rotate by 45
         endif
 
         # Labels + title
@@ -428,7 +428,6 @@ function void write_gp_settings (bundle *b)
 
         if inbundle(b, "vlines") && b.add_vline_label               # Add label to vertical lines
             # TODO: needs further testing except for 'barstacked' case
-
             if inbundle(b, "y_max")
                 scalar y_max = b.y_max
             else
@@ -471,5 +470,15 @@ function void write_gp_settings (bundle *b)
         endif
 
     end outfile
+end function
 
+
+function void write_frequency_plot_data (const matrix mat)
+    /* Write data for frequency plot.
+    "mat" must have two columns:
+    1. Index vector
+    2. Vector with frequency values. */
+
+    printf "%16.g", mat
+    printf "\ne\n"
 end function

@@ -51,6 +51,10 @@ function void GPlotFun (bundle *self)
         #    do_standard_plot(&b)
     elif self.which == "heatmap"
         do_heatmap(&self)
+    elif self.which == "frequency"
+        do_frequency_plot(&self)
+    else
+        errorif(TRUE, "Unknown plotting type.")
     endif
 end function
 
@@ -63,14 +67,11 @@ function void write_scatterplot_cmd (bundle *b)
     printf "plot \\\n"
 
     if inbundle(b,"LMAT")
-
         scalar clhs = (inbundle(b, "lines")) ? (cols(b.lines)-1) : 0
         #scalar clhs = cols(b.lines)-1		# '-1' as first col. of b.lines refers to x-axis values
 
         loop j=1..cols(b.LMAT) -q		# Lines
-
             if j<=clhs					# LHS values
-
                 printf "'-'using 1:2 t '%s' w lines linetype $j dt %d lc \
                   rgb '%s' pt %d ps %.2f lw %.2f pointinterval %.2f", \
                   b.legend_str[j+addcol], b.lines_dt[j], b.colors[j+addcol], \
@@ -95,13 +96,10 @@ function void write_scatterplot_cmd (bundle *b)
     endif
 
     if inbundle(b,"PMAT")			# Points
-
         scalar clhs = (inbundle(b, "points")) ? (cols(b.points)-1) : 0
 
         loop j=1..cols(b.PMAT) -q
-
             if j<=clhs					# RHS values
-
                 printf "'-'using 1:2 t '%s' w points lc rgb '%s' pt %d ps %.2f", \
                   b.legend_str[j+addcol], b.colors[j+addcol], b.pt[j], b.ps[j]
             else
@@ -111,9 +109,7 @@ function void write_scatterplot_cmd (bundle *b)
             endif
             printf(j == cols(b.PMAT) ? "\n" : ", \\\n")
         endloop
-
     endif
-
 end function
 
 
@@ -140,14 +136,10 @@ function void write_standardplot_cmd (bundle *b)
         endif
     endif
 
-
     # impulses
     if inbundle(b,"IMAT")
-
         scalar clhs = (inbundle(b, "impulses")) ? cols(b.impulses) : 0
-
         loop j=1..cols(b.IMAT) -q
-
             if j==1 && inbundle(b, "Date")
 
                 if j<=clhs					# LHS values
@@ -352,9 +344,9 @@ function void do_heatmap (bundle *b)
         printf "e \n"
 
     end outfile
+
     string fname = b.fname
     gnuplot --input="@tmpfile" --output="@fname"
-
 end function
 
 
@@ -609,75 +601,86 @@ end function
 
 
 
-function void do_frequenc_plot (bundle *b)
-    /* Plot frequencies */
+function void do_frequency_plot (bundle *b)
+    /* Frequency plot */
 
-    write_gp_settings(&b)                       # call basic settings
+    if inbundle(b, "data")
+        matrix mat = b.data
+    else
+        funcerr "Warning: do_frequency_plot() requires at least matrix 'data'!"
+    endif
 
-    b.ps = (b.ps.=0) ? 0.5 : b.ps       # make sure points are plotted
-
-    set warnings off
+    write_gp_settings(&b)
     tmpfile = b.tmpfile
+
+    set warnings off  # omit warning for NAs
 
     outfile @tmpfile --append
 
-        if !any_key_in_bundle(b, defarray("lines", "lines_rhs", "points", "points_rhs"))
-            funcerr "Error: do_scatter_plot() requires at least matrix 'lines' and 'points'."
+        # Let gnuplot do the computation
+        printf "bin_width = 1\n" # TODO: paramterize
+        printf "bin_number(x) = floor(x/bin_width)\n"
+        printf "rounded(x) = bin_width * ( bin_number(x) + 0.5 )\n"
+
+        print "set boxwidth 0.8 relative"  # value < 1: leave small gap between solid (filled-in) bars.
+
+        print "set style fill solid 0.5" # TODO: parameterize
+
+        # Put the border more to the background by applying it
+        # only on the left and bottom part and put it and the tics in gray
+        #printf "set style line 11 lc rgb \"#808080\" lt 1 \n"
+        #printf "set border 3 back ls 11\n"         # get rid of upper + left border
+        #        printf "set tics nomirror \n"
+        #        printf "set datafile missing \"NA\" \n"
+
+        # TODO: outsource
+        if inbundle(b, ymin) && inbundle(b, y_max)
+            # set the value-range for legend
+            printf "set yrange[%.5f:%.5f] \n", b.ymin, b.y_max
         endif
 
-        # Transparency
-        #        printf "set style fill transparent solid %.2f noborder\n", b.alpha     # FIXME: doesn't work yet
-        #printf "set style circle radius 0.08\n"
-
-
-        #------------------------------------
-        # Setup matrices for lines and points
-        #------------------------------------
-        if any_key_in_bundle(b, defarray("lines", "lines_rhs"))
-            matrix LMAT = {}
-            if inbundle(b, "lines")
-                matrix LMAT = b.lines
-            endif
-
-            if inbundle(b, "lines_rhs")
-                matrix LMAT ~= b.lines_rhs
-            endif
-            matrix b.xval = LMAT[,1]        # first column refers to values on the x-axis
-            b.LMAT = LMAT[,2:]
+        /*
+        # SET palette color
+        # Defining a palette with discrete colors
+        #printf "set palette defined ( 0 '#000fff', 1 '#90ff70', 2 '#ee0000') \n"
+        # MATLAB COLORS:
+        if b.mono==0
+            printf "set palette defined (0 0 0 0.5, 1 0 0 1, 2 0 0.5 1, 3 0 1 1, \
+              4 0.5 1 0.5, 5 1 1 0, 6 1 0.5 0, 7 1 0 0, 8 0.5 0 0)\n"
+            #printf "set palette maxcolors 10 \n"
+        else
+            #printf "set palette gray negative\n" #gray positive
+            printf "set palette gray negative gamma 1.5\n"
         endif
-        if any_key_in_bundle(b, defarray("points", "points_rhs"))
-            matrix PMAT = {}
-            if inbundle(b, "points")
-                matrix PMAT = b.points
-            endif
-            if inbundle(b, "points_rhs")
-                matrix PMAT ~= b.points_rhs
-            endif
-            matrix b.xval = PMAT[,1]        # first column refers to values on the x-axis
-            b.PMAT = PMAT[,2:]
+        */
+
+        if b.nocolorbox == 1
+            printf "unset colorbox\n"
         endif
 
-        # Write plot cmd
-        #----------------
-        write_scatterplot_cmd(&b)
-
-        #-------------------
-        # Plot lines values
-        # write data block
-        #-------------------
-        if any_key_in_bundle(b, defarray("lines", "lines_rhs"))
-            write_data_block(&b, b.LMAT)
+        /*
+        # Write xtics (date strings)
+        if inbundle(b, "Date")
+            scalar count = 1
+            printf "set xtics ("
+            loop i=1..cols(mat) -q
+                if count==b.skipx || i==1
+                    printf "\"%s\" %d, ", b.Date[i], $i
+                    count=1
+                endif
+                count++
+            endloop
+            printf " ) out \n"
         endif
+        */
 
-        #-------------------
-        # Plot points values
-        # write data block
-        #-------------------
-        if any_key_in_bundle(b, defarray("points", "points_rhs"))
-            write_data_block(&b, b.PMAT)
-        endif
+        printf "plot '-' using (rounded($1)):(1) smooth frequency with boxes ls 1\n"
+        write_frequency_plot_data(mat)
 
     end outfile
+
     string fname = b.fname
+    fname
+
     gnuplot --input="@tmpfile" --output="@fname"
 end function
