@@ -191,14 +191,22 @@ end function
 
 
 function void print_term_str (bundle *b)
+    /* Add a string containing a gnuplot command to set the terminal for the current plot.
 
-    if b.fileextension=="png" || b.fname=="display"
+    Args:
+        b (bundle): Containing information about the plot's file format and other settings.
+
+    Raises:
+        Error: If the file extension provided in `b` is not supported.
+    */
+
+    if b.fileextension == "png" || b.fname == "display"
         printf "set term pngcairo size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
-    elif b.fileextension=="pdf"
+    elif b.fileextension == "pdf"
         printf "set term pdf size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
-    elif b.fileextension=="eps"
+    elif b.fileextension == "eps"
         printf "set term eps size %.2f,%.2f font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs   # NOTE: width, height must be in inches!
-    elif b.fileextension=="svg"
+    elif b.fileextension == "svg"
         printf "set term svg size %.1f,%.1f enhanced font '%s,%.1f'\n", b.width,b.height,b.fstyle,b.fs
     else
         funcerr "*** Setting resolution is only allowed for png, pdf, eps and svg files. ***"
@@ -294,14 +302,10 @@ function void write_gp_settings (bundle *b)
 
     tmpfile = sprintf("%s/gplotfun_tmp_%g.gp", $dotdir, int(randgen1(u,1,10^6)))
     b.tmpfile = tmpfile
+    string b.fileextension = splitfname(b.fname)[3]
 
     outfile @tmpfile --quiet
-        # terminal settings
         printf "set encoding utf8\n"
-
-        # Set resolution and terminal
-        string b.fileextension = splitfname(b.fname)[3]
-
         print_term_str(&b)
 
         # Options
