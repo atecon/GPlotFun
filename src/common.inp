@@ -61,13 +61,11 @@ end function
 
 
 function bundle default_opts ()
+    # Define default values
+
     bundle self
 
-    # Define default values
-    #-----------------------
-
     string self.which = "standard"  # standard plot incl. lines, CIs around lines, impulses, vertical shaded areas
-
     string self.fname = "display"   # output file
 
     # font related
@@ -80,13 +78,14 @@ function bundle default_opts ()
     self.skipx = 10                 # put xticks every n-th unit
 
     # legend
-    self.legend_show = 1                    # show legend (default: true)
-    self.legend_pos = 0                 # default pos. of legend
+    self.legend_show = 1            # show legend (default: true)
+    self.legend_pos = 0             # default pos. of legend
     strings self.legend_str = array(12)
 
     # style
-    self.grid = 1                   # draw no grid
-    self.noborder = 0               # draw no border = draw top and rhs axis
+    self.grid = TRUE                   # draw grid
+    self.noborder = FALSE               # draw no border = draw top and rhs axis
+    scalar self.transparency_level = 0.5
 
     # linetype
     self.ps = 0*ones(12,1)              # point size
@@ -96,6 +95,7 @@ function bundle default_opts ()
     #    self.lines_rhs_dt = ones(12,1)         # dash type (default: solid lines) [1:10]: http://gnuplot.sourceforge.net/demo_5.1/dts.html
     self.vlines_dt = ones(12,1)         # dash type for vertical lines
 
+
     # lines_lw
     self.lines_lw = 1.5*ones(12,1)      #    for rhs lines
     self.lines_rhs_lw = 1.5*ones(12,1)      # for lhs lines
@@ -104,7 +104,7 @@ function bundle default_opts ()
     self.vlines_lw = ones(12,1)         # for vertical lines
 
     # line colors
-    self.mono = 0                   # monochrome off
+    self.monochrome = FALSE             # monochrome off
     /*
        strings lc = array(12)
        loop i=1..nelem(lc) -q
@@ -125,7 +125,7 @@ function bundle default_opts ()
     self.vcolors =  get_color_pallet("jet")     # greys(), jet(), dark2()
 
     # colorbox for heatmap
-    self.nocolorbox = 0
+    self.nocolorbox = FALSE
 
     # define pattern and transparency style
     # https://stackoverflow.com/questions/19412382/gnuplot-line-types

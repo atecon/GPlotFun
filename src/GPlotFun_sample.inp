@@ -140,21 +140,22 @@ elif runEX == 7
     bundle b = null
     b.which = "frequency"
 
-    #    b.legend_show = 1
-    #    b.legend_pos = 0
+    b.legend_show = 1
+    b.legend_pos = 0
     #    b.mono = 1
-    #b.xmin = 0
-    #b.ymin = 0
-    scalar N = 100
-    b.data = seq(1, N)' ~ mnormal(N,1)
+    b.xmin = 20
+    b.ymin = 0
+    b.data = seq(1, $nobs)' ~ {pgdp}
+    b.data[2,2] = NA
 
     # make plot wider
-    b.width = 800
-    b.height = 420
-    b.title = "This is a heatmap"
+    #b.width = 800
+    #b.height = 420
+    b.title = "This is a frequency plot"
+    #b.legend_str = "foo"
 
-    #string b.fname = sprintf("%s/figs/frequency_plot.pdf", $workdir)
-    b.fname = "display"
+    string b.fname = sprintf("frequency_plot.png")
+    #b.fname = "display"
 
     GPlotFun(&b)
 endif

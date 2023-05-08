@@ -298,7 +298,7 @@ function void do_heatmap (bundle *b)
         # Defining a palette with discrete colors
         #printf "set palette defined ( 0 '#000fff', 1 '#90ff70', 2 '#ee0000') \n"
         # MATLAB COLORS:
-        if b.mono==0
+        if b.monochrome==0
             printf "set palette defined (0 0 0 0.5, 1 0 0 1, 2 0 0.5 1, 3 0 1 1, \
               4 0.5 1 0.5, 5 1 1 0, 6 1 0.5 0, 7 1 0 0, 8 0.5 0 0)\n"
             #printf "set palette maxcolors 10 \n"
@@ -374,8 +374,8 @@ function void do_stacked_bar (bundle *b)
         # Set style
         printf "set style data histogram \n"
         printf "set style histogram rowstacked\n"
-        # Colored vs. mono
-        #if mono==0
+        # Colored vs. monochrome
+        #if monochrome==0
         #    printf "set style fill solid border -1 \n"	# OR border -2 ??
         #    printf "set style fill solid 0.35\n"
         #else
@@ -600,83 +600,46 @@ function void do_scatter_plot (bundle *b)
 end function
 
 
-
 function void do_frequency_plot (bundle *b)
     /* Frequency plot */
 
-    if inbundle(b, "data")
-        matrix mat = b.data
-    else
-        funcerr "Warning: do_frequency_plot() requires at least matrix 'data'!"
-    endif
+    errorif(!inbundle(b, "data"),
+            "Warning: do_frequency_plot() requires at least matrix 'data'.")
 
     write_gp_settings(&b)
     tmpfile = b.tmpfile
+    string ylabel = "Frequency"
 
     set warnings off  # omit warning for NAs
 
     outfile @tmpfile --append
-
         # Let gnuplot do the computation
         printf "bin_width = 1\n" # TODO: paramterize
         printf "bin_number(x) = floor(x/bin_width)\n"
         printf "rounded(x) = bin_width * ( bin_number(x) + 0.5 )\n"
 
-        print "set boxwidth 0.8 relative"  # value < 1: leave small gap between solid (filled-in) bars.
-
-        print "set style fill solid 0.5" # TODO: parameterize
+        # value < 1: leave small gap between solid (filled-in) bars.
+        print "set boxwidth 0.8 relative"
+        printf "set style fill solid %.f\n", b.transparency_level
 
         # Put the border more to the background by applying it
         # only on the left and bottom part and put it and the tics in gray
-        #printf "set style line 11 lc rgb \"#808080\" lt 1 \n"
-        #printf "set border 3 back ls 11\n"         # get rid of upper + left border
-        #        printf "set tics nomirror \n"
-        #        printf "set datafile missing \"NA\" \n"
+        printf "set style line 11 lc rgb \"#808080\" lt 1 \n"
+        printf "set border 3 back ls 11\n"         # get rid of upper + left border
+        printf "set tics nomirror \n"
+        #printf "set xlabel '%s'\n"
+        printf "set ylabel '%s\n", ylabel
+        printf "set style line 1 lc rgb 'gray' lt 1 \n"
+        #printf "set logscale y 2\n"
 
         # TODO: outsource
         if inbundle(b, ymin) && inbundle(b, y_max)
-            # set the value-range for legend
             printf "set yrange[%.5f:%.5f] \n", b.ymin, b.y_max
         endif
 
-        /*
-        # SET palette color
-        # Defining a palette with discrete colors
-        #printf "set palette defined ( 0 '#000fff', 1 '#90ff70', 2 '#ee0000') \n"
-        # MATLAB COLORS:
-        if b.mono==0
-            printf "set palette defined (0 0 0 0.5, 1 0 0 1, 2 0 0.5 1, 3 0 1 1, \
-              4 0.5 1 0.5, 5 1 1 0, 6 1 0.5 0, 7 1 0 0, 8 0.5 0 0)\n"
-            #printf "set palette maxcolors 10 \n"
-        else
-            #printf "set palette gray negative\n" #gray positive
-            printf "set palette gray negative gamma 1.5\n"
-        endif
-        */
+        printf "plot '-' using (rounded($1)):(1) smooth frequency with boxes ls 1 title '' \n"
 
-        if b.nocolorbox == 1
-            printf "unset colorbox\n"
-        endif
-
-        /*
-        # Write xtics (date strings)
-        if inbundle(b, "Date")
-            scalar count = 1
-            printf "set xtics ("
-            loop i=1..cols(mat) -q
-                if count==b.skipx || i==1
-                    printf "\"%s\" %d, ", b.Date[i], $i
-                    count=1
-                endif
-                count++
-            endloop
-            printf " ) out \n"
-        endif
-        */
-
-        printf "plot '-' using (rounded($1)):(1) smooth frequency with boxes ls 1\n"
-        write_frequency_plot_data(mat)
-
+        write_frequency_plot_data(b.data)
     end outfile
 
     string fname = b.fname
@@ -684,3 +647,15 @@ function void do_frequency_plot (bundle *b)
 
     gnuplot --input="@tmpfile" --output="@fname"
 end function
+
+
+
+
+
+
+
+
+
+
+
+
