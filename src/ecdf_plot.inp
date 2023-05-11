@@ -4,19 +4,23 @@ function bundle ecdf_plot_defaults (void)
     bundle self = _(
                     filename = "display",
                     title = "",
-                    ylabel = "",
+                    ylabel = "Density",
                     xlabel = "",
                     yrange_min = 0,
                     yrange_max = 1.025,
                     xrange_min = NA,
                     xrange_max = NA,
                     fontsize = 10,
+                    fontstyle = "Vera",
                     fontsize_tics = 8,
                     linewidth = 1.5,
                     add_grid = TRUE,
                     dashed_lines = FALSE,
                     key_position = "top left",
-                    minimum_nobs = 30 \
+                    minimum_nobs = 30,
+                    plot_width = 680,
+                    plot_height = 400,
+                    monochrome = FALSE \
                     )
 
     return self
@@ -141,18 +145,18 @@ function void plot_ecdf2 (const matrices Mats, const bundle self)
     string filename = self.filename
 
     outfile @tmpfile --append
-        printf "set term pngcairo font 'Vera,9' size 640,480 noenhanced\n"
+        printf "%s\n", get_term_string(self)
         printf "set encoding utf8\n"
         printf "set termoption lw %g\n", self.linewidth  # set linewidth globally
         printf "%s\n", dashed_lines_option(self.dashed_lines)
-        printf "set linetype 1 pt 6  lc rgb '#1B9E77' # dark teal\n"
-        printf "set linetype 2 pt 7  lc rgb '#D95F02' # dark orange\n"
-        printf "set linetype 3 pt 11 lc rgb '#7570B3' # dark lilac\n"
-        printf "set linetype 4 pt 13 lc rgb '#E7298A' # dark magenta\n"
-        printf "set linetype 5 pt 4  lc rgb '#66A61E' # dark lime green\n"
-        printf "set linetype 6 pt 3  lc rgb '#E6AB02' # dark banana\n"
-        printf "set linetype 7 pt 5  lc rgb '#A6761D' # dark tan\n"
-        printf "set linetype 8 pt 2  lc rgb '#666666' # dark gray\n"
+        # printf "set linetype 1 pt 6  lc rgb '#1B9E77' # dark teal\n"
+        # printf "set linetype 2 pt 7  lc rgb '#D95F02' # dark orange\n"
+        # printf "set linetype 3 pt 11 lc rgb '#7570B3' # dark lilac\n"
+        # printf "set linetype 4 pt 13 lc rgb '#E7298A' # dark magenta\n"
+        # printf "set linetype 5 pt 4  lc rgb '#66A61E' # dark lime green\n"
+        # printf "set linetype 6 pt 3  lc rgb '#E6AB02' # dark banana\n"
+        # printf "set linetype 7 pt 5  lc rgb '#A6761D' # dark tan\n"
+        # printf "set linetype 8 pt 2  lc rgb '#666666' # dark gray\n"
         printf "set border 3 back lc rgb '#808080'\n"
         printf "set tics nomirror\n"
         printf "set title '%s' font ', %d'\n", self.title, self.fontsize
@@ -200,9 +204,18 @@ function string dashed_lines_option (const bool dashed_lines)
     if dashed_lines == FALSE
         return ""
     else
-        return "set for [i=1:8] linetype i dashtype i\n"
+        return "set for [i=1:8] linetype i dashtype i"
     endif
 end function
+
+function string get_monochrome_option (const bool monochrome)
+    if monochrome == TRUE
+        return "monochrome"
+    else
+        return ""
+    endif
+end function
+
 
 function string get_key_position_option (const string position)
     if position == "none"
@@ -242,6 +255,46 @@ function void ecdf_plot (const numeric x "Series or  matrix",
         matrices Mats = ecdf_by_column(x)
         plot_ecdf2(Mats, self)
     endif
+end function
+
+
+function string get_term_string (const bundle self)
+    /* Add a string containing a gnuplot command to set the terminal for the current plot.
+
+    Args:
+        b (bundle): Containing information about the plot's file format and other settings.
+
+    Raises:
+        Error: If the file extension provided in `b` is not supported.
+    */
+
+    string fileextension = splitfname(self.filename)[3]
+
+    string ret
+
+    if fileextension == "gp"
+        return ""
+    elif fileextension == "png" || self.filename == "display"
+        ret = "set term pngcairo"
+    elif fileextension == "pdf"
+        ret = "set term pdfcairo"
+    elif fileextension == "eps"
+        ret = "set term eps"
+    elif fileextension == "svg"
+        ret = "set term svg"
+    else
+        funcerr "*** Setting resolution is only allowed for gp, png, pdf, eps and svg files. ***"
+    endif
+
+    ret += sprintf(" size %.1f,%.1f enhanced font '%s,%.1f' %s\n",
+                    self.plot_width,
+                    self.plot_height,
+                    self.fontstyle,
+                    self.fontsize,
+                    get_monochrome_option(self.monochrome))
+
+
+    return ret
 end function
 
 
