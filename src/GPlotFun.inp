@@ -1,4 +1,6 @@
 include common.inp --force
+include ecdf_plot.inp --force
+
 
 function void GPlotFun (bundle *self)
     /* Main function. */
@@ -648,8 +650,6 @@ function void do_frequency_plot (bundle *b)
     end outfile
 
     string fname = b.fname
-    fname
-
     gnuplot --input="@tmpfile" --output="@fname"
 end function
 
