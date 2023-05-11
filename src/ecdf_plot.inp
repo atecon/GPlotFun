@@ -1,0 +1,256 @@
+function bundle ecdf_plot_defaults (void)
+    /* Default values for the plot. */
+
+    bundle self = _(
+                    filename = "display",
+                    title = "",
+                    ylabel = "",
+                    xlabel = "",
+                    yrange_min = 0,
+                    yrange_max = 1.025,
+                    xrange_min = NA,
+                    xrange_max = NA,
+                    fontsize = 10,
+                    fontsize_tics = 8,
+                    linewidth = 1.5,
+                    add_grid = TRUE,
+                    dashed_lines = FALSE,
+                    key_position = "top left",
+                    minimum_nobs = 30 \
+                    )
+
+    return self
+end function
+
+
+function scalar has_sufficient_obs (const numeric x, const int min_nobs)
+    /* Checks if the input series or column vector has sufficient observations.
+
+    Parameters:
+        x (numeric): Either a gretl series or a gretl column vector.
+        min_nobs (int): The minimum number of observations required.
+
+    Returns:
+        scalar: TRUE if the input has at least `min_nobs` observations, otherwise FALSE.
+
+    This function checks the type of the input using the `typestr()` function in gretl. If the input is a series, the function temporarily sets up a new sample that excludes missing observations and checks if the resulting series has at least `min_nobs` observations. If the input is a column vector, the function checks if all rows have non-missing values using the `ok()` function in gretl.
+
+    Examples:
+        >>> has_sufficient_obs(series(1, 2, 3), 3)
+        TRUE
+        >>> has_sufficient_obs(series(c(1, NA, 2, NA)), 3)
+        FALSE
+    */
+
+    string dtype = typestr(typeof(x))
+    scalar ret = FALSE
+
+    if dtype == "series"
+        catch smpl x --no-missing --replace
+        ret = $error == TRUE ? FALSE : ret
+        ret = nobs(x) < min_nobs ? FALSE : TRUE
+    else
+        ret = sumc(ok(x)) == rows(x) ? TRUE : FALSE
+    endif
+
+    return ret
+end function
+
+
+function matrices ecdf_by_column (const matrix x)
+    /* Computes the empirical cumulative distribution function (ECDF) for each column of input matrix x and stores the resulting matrices in a matrix array named Mats.
+
+    :param x: A gretl matrix.
+    :return: A matrix array containing the ECDF for each column of x.
+    */
+    matrices Mats = array(0)
+
+    loop idx=1..cols(x)
+        Mats += ecdf(x[,idx])
+    endloop
+
+    return Mats
+end function
+
+
+function matrix get_ecdf_series (const series x, const bundle self)
+    /* Removes invalid observations from the gretl series x, then computes the empirical cumulative distribution function (ECDF) using the ecdf() function.
+
+    :param x: A gretl series.
+    :param self: A gretl bundle.
+    :return: The ECDF of x with invalid observations removed, or an explanatory message if an error occurs. */
+
+    catch smpl x --no-missing
+    scalar err = $error
+    errorif(err || ($nobs < self.minimum_nobs),
+            sprintf("Invalid observations in series %s", self.varnames[1]))
+
+    matrix ecdf = ecdf(x)  # TODO: or can ecdf handle missing values internally?
+    cdense = ecdf[,2] ~ ecdf[,1]
+
+    return cdense
+end function
+
+
+function void plot_ecdf (const matrix cdense, const bundle self)
+    /* Plots the empirical cumulative distribution function (ECDF) represented by the matrix cdense, with various plot options defined in the gretl bundle self.
+
+    :param cdense: A gretl matrix containing the ECDF to be plotted.
+    :param self: A gretl bundle containing various plot options including title, font sizes, axis labels, and plot ranges. */
+
+    string filename = self.filename
+
+    plot cdense
+        options with-lines fit=none
+        printf "set linetype 1 lc rgb \"black\" lw %g", self.linewidth
+        literal set nokey
+        literal set grid
+        printf "set title '%s' font ', %d'", self.title, self.fontsize
+        printf "set xlabel '%s' font ', %d'", self.xlabel, self.fontsize
+        printf "set ylabel '%s' font ', %d'", self.ylabel, self.fontsize
+        printf "set xtics font \", %d\"", self.fontsize_tics
+        printf "set ytics font \", %d\"", self.fontsize_tics
+        #printf "set xrange[%g:%g]", self.xrange_min, self.xrange_max
+        printf "set yrange[%g:%g]", self.yrange_min, self.yrange_max
+    end plot --output="@filename"
+end function
+
+
+function void write_ecdf_plot_data (const matrices Mats)
+    /* Write data for ecdf plot. */
+
+    loop idx=1..nelem(Mats)
+        if cols(Mats[idx]) < 2
+            printf "WARNING: Data for %d-th array has less than two columns. Ignore.", $idx
+        endif
+
+        printf "%16.g", Mats[idx]
+        printf "e\n"
+    endloop
+end function
+
+
+function void plot_ecdf2 (const matrices Mats, const bundle self)
+    /* Plots the empirical cumulative distribution function (ECDF) represented by the matrix cdense,
+    with various plot options defined in the gretl bundle self.
+
+    :param cdense: A gretl matrix containing the ECDF to be plotted.
+    :param self: A gretl bundle containing various plot options including title, font sizes, axis labels, and plot ranges. */
+
+    string tmpfile = sprintf("%s/ecdf_%d.gp", $dotdir, randgen1(i, 0, 10e5))
+    string filename = self.filename
+
+    outfile @tmpfile --append
+        printf "set term pngcairo font 'Vera,9' size 640,480 noenhanced\n"
+        printf "set encoding utf8\n"
+        printf "set termoption lw %g\n", self.linewidth  # set linewidth globally
+        printf "%s\n", dashed_lines_option(self.dashed_lines)
+        printf "set linetype 1 pt 6  lc rgb '#1B9E77' # dark teal\n"
+        printf "set linetype 2 pt 7  lc rgb '#D95F02' # dark orange\n"
+        printf "set linetype 3 pt 11 lc rgb '#7570B3' # dark lilac\n"
+        printf "set linetype 4 pt 13 lc rgb '#E7298A' # dark magenta\n"
+        printf "set linetype 5 pt 4  lc rgb '#66A61E' # dark lime green\n"
+        printf "set linetype 6 pt 3  lc rgb '#E6AB02' # dark banana\n"
+        printf "set linetype 7 pt 5  lc rgb '#A6761D' # dark tan\n"
+        printf "set linetype 8 pt 2  lc rgb '#666666' # dark gray\n"
+        printf "set border 3 back lc rgb '#808080'\n"
+        printf "set tics nomirror\n"
+        printf "set title '%s' font ', %d'\n", self.title, self.fontsize
+        printf "set xlabel '%s' font ', %d'\n", self.xlabel, self.fontsize
+        printf "set ylabel '%s' font ', %d'\n", self.ylabel, self.fontsize
+        printf "set xtics font \", %d\"\n", self.fontsize_tics
+        printf "set ytics font \", %d\"\n", self.fontsize_tics
+        #printf "set xzeroaxis\n"
+        printf "set datafile missing '?'\n"
+        printf "%s\n", get_grid_option(self.add_grid)
+        printf "%s\n", get_key_position_option(self.key_position)
+        printf "set yrange[%g:%g]\n", self.yrange_min, self.yrange_max
+
+        print_plot_command(nelem(Mats), self)
+        write_ecdf_plot_data(Mats)
+    end outfile
+
+    gnuplot --input="@tmpfile" --output="@filename"
+end function
+
+
+function void print_plot_command (const int nitems, const bundle self)
+    /* Print the gnuplot 'plot' command. */
+
+    printf "plot "
+
+    loop idx=1..nitems
+        printf "'-' using 1:2 w lines "
+
+        if nelem(self.varnames)
+            printf "title '%s'", self.varnames[idx]
+        else
+            printf "title ''"
+        endif
+
+        if idx < nitems
+            printf ", "
+        endif
+    endloop
+    printf "\n"
+end function
+
+
+function string dashed_lines_option (const bool dashed_lines)
+    if dashed_lines == FALSE
+        return ""
+    else
+        return "set for [i=1:8] linetype i dashtype i\n"
+    endif
+end function
+
+function string get_key_position_option (const string position)
+    if position == "none"
+        return "set nokey"
+    else
+        return sprintf("set key %s", position)
+    endif
+end function
+
+function string get_grid_option (const bool B)
+    if B == TRUE
+        return "set grid"
+    else
+        return ""
+    endif
+end function
+
+
+function void ecdf_plot (const numeric x "Series or  matrix",
+                         bundle self[null],
+                         string filename[null])
+    /* Main function for plotting empirical cumlated densities. */
+
+    bundle defaults = ecdf_plot_defaults()
+    if !exists(self)
+        bundle self
+    endif
+    bundle self = self + defaults
+    string x_istype = typestr(typeof(x))
+    strings self.varnames = x_istype == "series" ? defarray(varname(x)) : cnameget(x)
+    self.filename = exists(filename) ? filename : self.filename
+
+    if x_istype == "series"
+        matrix cdense = get_ecdf_series(x, self)
+        plot_ecdf(cdense, self)
+    else
+        matrices Mats = ecdf_by_column(x)
+        plot_ecdf2(Mats, self)
+    endif
+end function
+
+
+/*
+# EXAMPLE
+open hendry_jae.gdt -q
+matrix mat = {diff(gdp)} ~ {diff(pgdp)}
+cnameset(mat, defarray("gdp", "pgdp"))
+ecdf_plot(mat, _(title = "foo"), "ecdf_matrix.png")
+ecdf_plot(gdp, _(title = "foo"), "ecdf_series.png")
+*/
+
