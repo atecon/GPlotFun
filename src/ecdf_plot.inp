@@ -16,7 +16,7 @@ function bundle ecdf_plot_defaults (void)
                     linewidth = 1.5,
                     add_grid = TRUE,
                     dashed_lines = FALSE,
-                    key_position = "top left",
+                    key_position = "bottom right",
                     minimum_nobs = 30,
                     plot_width = 680,
                     plot_height = 400,

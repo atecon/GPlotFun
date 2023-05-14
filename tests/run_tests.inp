@@ -8,7 +8,6 @@ include extra.gfn
 open hendry_jae.gdt -q
 set workdir "./tests"
 
-
 function void test_has_sufficient_obs_true (const series y)
     print "Start testing function has_sufficient_obs()with series and sufficient data"
 
@@ -40,11 +39,11 @@ function void test_has_sufficient_obs_false (const series y)
 end function
 test_has_sufficient_obs_false(gdp)
 
+
 matrix mat = {diff(gdp)} ~ {diff(pgdp)}
 cnameset(mat, defarray("gdp", "pgdp"))
 ecdf_plot(mat, _(title = "foo"), "ecdf_matrix.png")
 ecdf_plot(gdp, _(title = "foo"), "ecdf_series.png")
-
 
 
 loop i=1..7
